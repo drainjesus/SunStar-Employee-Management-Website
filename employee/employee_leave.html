@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Training & Development - SunStar Admin</title>
+  <title>File a Leave - SunStar Davao</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -38,59 +38,108 @@
 </head>
 
 <body class="min-h-screen bg-white font-sans text-sun-ink">
-  <div class="flex h-screen bg-white">
+  <style>
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-modal-in {
+      animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+  </style>
+  <div class="flex h-screen bg-white overflow-hidden">
+    <!-- Sidebar (Identical to Dashboard) -->
     <aside class="hidden w-64 border-r border-zinc-200 bg-white lg:flex lg:flex-col shadow-sm">
       <div class="mb-8 px-5 pt-8 pb-2">
         <p class="font-logo text-3xl font-black tracking-tight text-black">SunStar <span class="text-sun-yellow">Davao</span></p>
-        <p class="mt-1 font-sans text-xs font-black uppercase tracking-[0.15em] text-zinc-500">Admin Portal</p>
+        <p class="mt-1 font-sans text-xs font-black uppercase tracking-[0.15em] text-zinc-500 text-center lg:text-left">Employee Portal</p>
       </div>
 
       <nav class="flex-1 space-y-2.5 px-4 mt-2">
         <div>
-          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Overview</p>
-          <a href="admin-dashboard.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>Dashboard</div></a>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Main</p>
+          <a href="employee_dashboard.html"
+            class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-layout-dashboard">
+                <rect width="7" height="9" x="3" y="3" rx="1" />
+                <rect width="7" height="5" x="14" y="3" rx="1" />
+                <rect width="7" height="9" x="14" y="12" rx="1" />
+                <rect width="7" height="5" x="3" y="16" rx="1" />
+              </svg>
+              My Dashboard
+            </div>
+          </a>
         </div>
+
         <div>
-          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Personnel</p>
-          <div class="space-y-0.5">
-            <a href="admin_employee_management.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Employee Management</div></a>
-            <a href="admin_master_data.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>Master Data</div></a>
-          </div>
+           <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Attendance & Leave</p>
+           <div class="space-y-0.5">
+              <a href="employee_attendance.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900">
+                <div class="flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-fingerprint"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M7 12a5 5 0 0 1 5-5"/><path d="M12 20a5 5 0 0 0 5-5"/><path d="M17 12a1 1 0 0 1 1 1"/><path d="M12 12h.01"/><path d="M12 17a3 3 0 0 1-3-3"/></svg>
+                  Attendance
+                </div>
+              </a>
+              <a href="employee_leave.html" class="group flex items-center justify-between rounded-md bg-sun-yellowLight px-3 py-1.5 text-sm font-semibold text-zinc-900 transition-colors duration-200 hover:bg-sun-yellow">
+                <div class="flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-plus text-sun-yellowDark group-hover:text-black"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/></svg>
+                  File a Leave
+                </div>
+              </a>
+           </div>
         </div>
+
         <div>
-          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Operations</p>
-          <div class="space-y-0.5">
-            <a href="admin_attendance_monitoring.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-clock"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/></svg>Attendance</div></a>
-            <a href="admin_leave_management.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-off"><path d="M4.2 4.2A2 2 0 0 0 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 1.82-1.18"/><path d="M21 15.5V6a2 2 0 0 0-2-2H9.5"/><path d="M16 2v4"/><path d="M3 10h7"/><path d="M21 10h-5.5"/><line x1="2" x2="22" y1="2" y2="22"/></svg>Leave Management</div></a>
-          </div>
+           <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Training & Performance</p>
+           <div class="space-y-0.5">
+              <a href="employee_training.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+                <div class="flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap"><path d="M21.42 10.922a2 2 0 0 1-.019 3.022l-7.1 7.1a2 2 0 0 1-2.796 0l-7.1-7.1a2 2 0 0 1-.018-3.022l7.1-7.1a2 2 0 0 1 2.825 0l7.1 7.1z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>
+                  Training & Dev.
+                </div>
+              </a>
+              <a href="employee_performance.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+                <div class="flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                  Performance
+                </div>
+              </a>
+           </div>
         </div>
+
         <div>
-          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Professional Growth</p>
-          <div class="space-y-0.5">
-            <a href="admin_training_development.html" class="group flex items-center justify-between rounded-md bg-sun-yellowLight px-3 py-1.5 text-sm font-semibold text-zinc-900 transition-colors duration-200 hover:bg-sun-yellow"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap text-sun-yellowDark group-hover:text-black"><path d="M21.42 10.922a2 2 0 0 1-.019 3.022l-7.1 7.1a2 2 0 0 1-2.796 0l-7.1-7.1a2 2 0 0 1-.018-3.022l7.1-7.1a2 2 0 0 1 2.825 0l7.1 7.1z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>Training & Dev.</div></a>
-            <a href="admin_employee_performance.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>Performance</div></a>
-          </div>
-        </div>
-        <div>
-          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Reports</p>
-          <a href="admin_report_analytics.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 group-active:bg-sun-yellowLight"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Report & Analytics</div></a>
+           <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Account</p>
+           <a href="employee_settings.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+             <div class="flex items-center gap-3">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-1.94 1.5l-.3 1.2a2 2 0 0 1-1.43 1.43l-1.2.3A2 2 0 0 0 5.4 8.36l.18.72a2 2 0 0 1-.46 1.95l-.84.84a2 2 0 0 0 0 2.83l.84.84a2 2 0 0 1 .46 1.95l-.18.72a2 2 0 0 0 1.5 2.43l1.2.3a2 2 0 0 1 1.43 1.43l.3 1.2a2 2 0 0 0 1.94 1.5h.44a2 2 0 0 0 1.94-1.5l.3-1.2a2 2 0 0 1 1.43-1.43l1.2-.3a2 2 0 0 0 1.5-2.43l-.18-.72a2 2 0 0 1 .46-1.95l.84-.84a2 2 0 0 0 0-2.83l-.84-.84a2 2 0 0 1-.46-1.95l.18-.72a2 2 0 0 0-1.5-2.43l-1.2-.3a2 2 0 0 1-1.43-1.43l-.3-1.2A2 2 0 0 0 12.22 2z"/><circle cx="12" cy="12" r="3"/></svg>
+               Settings
+             </div>
+           </a>
         </div>
       </nav>
 
+      <!-- Logout Section -->
       <div class="mt-auto px-4 flex flex-col gap-3 border-t border-zinc-200 pt-4 pb-6">
-        <div class="flex items-center gap-3 px-2">
-          <div
-            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-sun-yellow text-sm font-bold text-black border border-sun-yellowDark shadow-sm">
-            AD
+        <div class="flex items-center gap-3 px-2 group relative">
+          <div id="userProfilePic"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-sun-yellow border border-zinc-700 shadow-sm uppercase overflow-hidden">
+            JD
           </div>
-          <div class="flex flex-col overflow-hidden">
-            <span class="truncate text-sm font-medium tracking-tight text-zinc-900">Admin User</span>
-            <span class="truncate text-xs text-zinc-500">Authenticated Admin</span>
+          <div class="flex flex-col overflow-hidden flex-1">
+            <span id="sidebarUserName" class="truncate text-sm font-medium tracking-tight text-zinc-900">Employee</span>
+            <span id="sidebarUserRole" class="truncate text-[10px] uppercase font-black tracking-widest text-zinc-500">Staff</span>
           </div>
+          <button onclick="document.getElementById('uploadPhotoModal').classList.remove('hidden')" 
+            class="h-7 w-7 rounded-full bg-sun-yellowLight/50 text-sun-yellowDark flex items-center justify-center hover:bg-sun-yellow hover:text-black transition-all shadow-sm shrink-0 border border-sun-yellowLight group-hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
         </div>
 
         <button onclick="document.getElementById('logoutModal').classList.remove('hidden')"
-          class="group flex w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200">
+          class="group flex w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 hover:bg-zinc-50 hover:text-zinc-900 border border-zinc-200">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
             class="lucide lucide-log-out">
@@ -103,259 +152,210 @@
       </div>
     </aside>
 
+    <!-- Main Content -->
     <main class="flex-1 overflow-auto bg-zinc-50/50">
       <div class="border-b border-zinc-200 bg-white px-6 py-4 sm:px-8 flex items-center justify-between sticky top-0 z-10 w-full shadow-sm">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-widest text-zinc-500">Human Resources</p>
-          <h1 class="mt-1 text-2xl font-bold">Training & Development</h1>
+          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Leave Management</p>
+          <h1 class="mt-1 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-600">Leave Portal</h1>
+        </div>
+        <div class="flex items-center gap-2">
+           <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+           <p class="text-[10px] font-black uppercase text-zinc-400">System Active</p>
         </div>
       </div>
 
       <div class="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
+
+        <!-- Leave Balance Overview -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+           <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <p class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-2">Total Credits</p>
+              <p class="text-3xl font-black text-zinc-900" id="totalCredits">15</p>
+           </div>
+           <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <p class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-2">Used</p>
+              <p class="text-3xl font-black text-sun-yellowDark" id="usedCredits">0</p>
+           </div>
+           <div class="rounded-2xl border border-sun-yellow bg-sun-yellowLight/30 p-6 shadow-sm">
+              <p class="text-[10px] font-black uppercase text-sun-yellowDark tracking-[0.2em] mb-2">Remaining</p>
+              <p class="text-3xl font-black text-zinc-900" id="remainCredits">15</p>
+           </div>
+        </div>
         
-        <!-- Tabs Implementation -->
-        <div class="border-b border-zinc-200">
-          <nav class="flex space-x-8" aria-label="Tabs">
-            <button onclick="switchTab('programs')" class="tab-btn border-sun-yellow text-sun-ink border-b-2 py-4 px-1 text-sm font-bold" id="tab-programs">
-              Training Programs
-            </button>
-            <button onclick="switchTab('skills')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-skills">
-              Employee Skills
-            </button>
-            <button onclick="switchTab('certs')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-certs">
-              Certifications
-            </button>
-          </nav>
-        </div>
-
-        <!-- Training Programs Section -->
-        <div id="content-programs" class="tab-content space-y-6">
-          <div class="flex justify-end">
-            <button onclick="document.getElementById('addTrainingModal').classList.remove('hidden')" class="inline-flex items-center justify-center rounded-md bg-sun-yellow px-4 py-2 text-sm font-bold text-black shadow-sm hover:bg-sun-yellowDark transition group">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 group-hover:rotate-12 transition">
-                <path d="M5 12h14"/><path d="M12 5v14"/>
-              </svg>
-              New Training Program
-            </button>
-          </div>
-          <div id="programsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-
-        <!-- Employee Skills Section -->
-        <div id="content-skills" class="tab-content hidden animate-in fade-in duration-300 space-y-6">
-          <div class="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
-            <div class="p-4 border-b border-zinc-100 bg-zinc-50/50 flex justify-between items-center">
-              <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Skill Inventory</h2>
-              <div class="flex items-center gap-3">
-                 <input type="text" id="skillSearch" oninput="renderSkills()" placeholder="Filter employee..." class="text-xs border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-sun-yellow w-48">
-              </div>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-sm">
-                <thead class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                  <tr>
-                    <th class="px-6 py-4">Employee</th>
-                    <th class="px-6 py-4">Department</th>
-                    <th class="px-6 py-4">Key Skills</th>
-                    <th class="px-6 py-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="skillsTableBody" class="divide-y divide-zinc-100 italic">
-                  <!-- Dynamically populated -->
-                </tbody>
+        <!-- History Table -->
+        <div class="space-y-4">
+           <div class="flex items-center justify-between">
+              <h2 class="text-xl font-black uppercase text-zinc-900 tracking-tight flex items-center gap-2">
+                 <span class="h-2 w-8 bg-sun-yellow rounded-full"></span>
+                 Request History
+              </h2>
+              <button onclick="document.getElementById('fileLeaveModal').classList.remove('hidden')" class="bg-sun-yellow text-zinc-900 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-sun-yellowLight transition-all active:scale-[0.98] shadow-lg shadow-sun-yellow/10 flex items-center gap-2 border border-sun-yellowDark">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                 Apply for Leave
+              </button>
+           </div>
+           <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+              <table class="w-full text-left text-sm border-collapse">
+                 <thead>
+                    <tr class="border-b border-zinc-100 bg-zinc-50/50">
+                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Filed</th>
+                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Leave Date</th>
+                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Type</th>
+                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Duration</th>
+                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Status</th>
+                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] text-right">Details</th>
+                    </tr>
+                 </thead>
+                 <tbody id="leaveHistoryBody" class="divide-y divide-zinc-50">
+                    <!-- Dynamic -->
+                 </tbody>
               </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Certifications Section -->
-        <div id="content-certs" class="tab-content hidden animate-in fade-in duration-300 space-y-6">
-          <div class="flex justify-end">
-            <button onclick="openAddCertModal()" class="inline-flex items-center justify-center rounded-md bg-sun-yellow px-4 py-2 text-sm font-bold text-black shadow-sm hover:bg-sun-yellowDark transition group">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 group-hover:rotate-12 transition">
-                <path d="M5 12h14"/><path d="M12 5v14"/>
-              </svg>
-              Add Certification
-            </button>
-          </div>
-          <div id="certsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Dynamically populated -->
-          </div>
+              <div id="noDataMsg" class="hidden px-8 py-20 text-center">
+                 <div class="h-12 w-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-300"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
+                 </div>
+                 <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No leave requests found</p>
+              </div>
+           </div>
         </div>
 
       </div>
     </main>
   </div>
 
-  <!-- New Training Modal -->
-  <div id="addTrainingModal" class="relative z-50 hidden">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 overflow-y-auto font-sans">
-      <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-        <div class="relative w-full max-w-lg rounded-xl bg-white p-8 shadow-2xl border border-zinc-200 text-left">
-          <div class="flex items-center justify-between mb-6 text-zinc-900 uppercase font-black tracking-tight">
-            <h2 class="text-xl">Create Program</h2>
-            <button onclick="document.getElementById('addTrainingModal').classList.add('hidden')" class="text-zinc-400 hover:text-zinc-600">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
+  <!-- Apply for Leave Modal -->
+  <div id="fileLeaveModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md transition-all"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="relative max-w-xl w-full rounded-3xl bg-white p-8 shadow-2xl border border-zinc-200 overflow-hidden animate-modal-in">
+        <header class="mb-8">
+          <h3 class="text-2xl font-black text-zinc-900 uppercase tracking-tighter">Submit Leave Request</h3>
+          <p class="text-[10px] text-zinc-400 font-black uppercase tracking-[0.2em] mt-1">Ensure all details are accurate for HR approval</p>
+        </header>
+
+        <form id="leaveForm" class="space-y-6" onsubmit="submitForm(event)">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div>
+                <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Type of Leave</label>
+                <select id="reason" required class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 focus:border-sun-yellow focus:ring-0 focus:outline-none transition">
+                   <option value="Vacation">Vacation Leave</option>
+                   <option value="Sick">Sick Leave</option>
+                   <option value="Emergency">Emergency Leave</option>
+                </select>
+             </div>
+             <div>
+                <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Date of Leave</label>
+                <input type="date" id="dateOfLeave" required class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 focus:border-sun-yellow outline-none">
+             </div>
+             <div>
+                <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Duration (Number of Days)</label>
+                <input type="number" id="days" value="1" min="1" required class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 focus:border-sun-yellow outline-none">
+             </div>
+             <div>
+                <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Date Filed</label>
+                <input type="text" id="dateFiled" readonly class="w-full bg-zinc-100 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-500 cursor-not-allowed">
+             </div>
           </div>
           
-          <form id="trainingForm" class="space-y-4">
-            <div>
-              <label class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Program Name</label>
-              <input type="text" id="progName" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow focus:ring-2 focus:ring-sun-yellow/20 outline-none">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Category</label>
-                <select id="progCategory" class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-                  <option>Editorial</option>
-                  <option>Ethics</option>
-                  <option>Digital Media</option>
-                  <option>Technical</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Date</label>
-                <input type="date" id="progDate" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Target Department</label>
-              <select id="progDept" class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-                <option>Editorial</option>
-                <option>Marketing</option>
-                <option>IT/Development</option>
-                <option>Finance</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Description</label>
-              <textarea id="progDesc" rows="3" class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none"></textarea>
-            </div>
-            <div class="pt-4 flex gap-3">
-              <button type="button" onclick="document.getElementById('addTrainingModal').classList.add('hidden')" class="flex-1 rounded-md border border-zinc-200 py-3 text-sm font-bold text-zinc-600 hover:bg-zinc-50 transition">Cancel</button>
-              <button type="submit" class="flex-1 rounded-md bg-sun-yellow py-3 text-sm font-bold text-black hover:bg-sun-yellowDark transition shadow-md shadow-sun-yellow/10">Save Program</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Enrollees Management Modal -->
-  <div id="enrolleesModal" class="relative z-50 hidden" aria-labelledby="enrollees-modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-      <div class="flex min-h-full items-center justify-center p-4">
-        <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-zinc-200">
-          <div class="flex items-center justify-between border-b border-zinc-200 bg-zinc-50/50 px-6 py-4">
-            <div>
-              <h3 class="text-lg font-bold text-zinc-900" id="enrolleeProgramName">Program Participants</h3>
-              <p class="text-xs text-zinc-500 font-medium uppercase tracking-widest mt-0.5">Verification & Skill Assignment</p>
-            </div>
-            <button type="button" onclick="document.getElementById('enrolleesModal').classList.add('hidden')" class="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-500 transition-colors">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          </div>
-          <div class="max-h-[60vh] overflow-y-auto p-6">
-            <table class="w-full text-left text-sm">
-              <thead class="border-b border-zinc-100 text-[10px] font-black uppercase text-zinc-400 tracking-widest">
-                <tr>
-                  <th class="px-4 py-3">Employee Name</th>
-                  <th class="px-4 py-3">Dept/Role</th>
-                  <th class="px-4 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="enrolleeTableBody" class="divide-y divide-zinc-50">
-                <!-- Participants injected here -->
-              </tbody>
-            </table>
-            <div id="noEnrolleesMsg" class="hidden text-center py-12 text-zinc-400 italic">No employees have enrolled in this program yet.</div>
-          </div>
-          <div class="bg-zinc-50 px-6 py-4 flex justify-end">
-             <button onclick="document.getElementById('enrolleesModal').classList.add('hidden')" class="px-4 py-2 text-sm font-bold text-zinc-600 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 transition">Close Panel</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Manage Skills Modal -->
-  <div id="manageSkillsModal" class="relative z-50 hidden">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-      <div class="relative w-full max-w-md rounded-xl bg-white p-8 shadow-2xl border border-zinc-200 text-left">
-        <h2 class="text-xl font-black text-zinc-900 uppercase tracking-tight mb-4">Manage Skills</h2>
-        <p id="skillEmployeeName" class="text-sm font-bold text-zinc-500 mb-6 border-l-4 border-sun-yellow pl-3"></p>
-        <form id="skillForm" class="space-y-4">
-          <input type="hidden" id="skillEmployeeId">
           <div>
-            <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Skills (Comma separated)</label>
-            <input type="text" id="skillInput" placeholder="e.g. SEO, Writing, Photography" class="w-full rounded-md border border-zinc-200 px-3 py-3 text-sm focus:border-sun-yellow outline-none">
-            <p class="mt-2 text-[10px] text-zinc-400 italic font-medium uppercase">Note: skills will be displayed as tags in the matrix.</p>
+             <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Additional Note / Reason Details</label>
+             <textarea id="note" required rows="4" placeholder="Briefly explain your reason for leave..." class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 focus:border-sun-yellow outline-none transition resize-none"></textarea>
           </div>
-          <div class="flex gap-3 pt-4">
-            <button type="button" onclick="document.getElementById('manageSkillsModal').classList.add('hidden')" class="flex-1 py-3 text-sm font-bold text-zinc-500 bg-zinc-100 rounded-md">Cancel</button>
-            <button type="submit" class="flex-1 py-3 text-sm font-bold text-black bg-sun-yellow rounded-md hover:bg-sun-yellowDark transition">Update Skills</button>
+
+          <div class="flex gap-4 pt-4 border-t border-zinc-100">
+              <button type="submit" class="flex-1 bg-sun-yellow py-4 text-sm font-bold text-zinc-900 rounded-2xl border border-sun-yellowDark hover:bg-sun-yellowLight transition-all active:scale-[0.98] shadow-lg">Submit Request</button>
+              <button type="button" onclick="document.getElementById('fileLeaveModal').classList.add('hidden')" class="flex-1 bg-white border border-zinc-200 py-4 text-sm font-bold text-zinc-400 rounded-2xl hover:bg-zinc-50 transition-all">Cancel</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- Add Cert Modal -->
-  <div id="addCertModal" class="relative z-50 hidden">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-      <div class="relative w-full max-w-md rounded-xl bg-white p-8 shadow-2xl border border-zinc-200 text-left">
-        <h2 class="text-xl font-black text-zinc-900 uppercase tracking-tight mb-6 text-center">Employee Certification</h2>
-        <form id="certForm" class="space-y-4">
-          <div>
-            <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Employee</label>
-            <select id="certEmpId" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-              <!-- Populated dynamically -->
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Certification Name</label>
-            <input type="text" id="certName" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow outline-none placeholder:text-zinc-300" placeholder="e.g. Google Data Analyst">
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Date Issued</label>
-              <input type="date" id="certDate" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Expiry Date</label>
-              <input type="date" id="certExpiry" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Issuer</label>
-            <input type="text" id="certIssuer" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow outline-none placeholder:text-zinc-300" placeholder="e.g. Coursera">
-          </div>
-          <div class="flex gap-3 pt-6">
-            <button type="button" onclick="document.getElementById('addCertModal').classList.add('hidden')" class="flex-1 py-3 text-sm font-bold text-zinc-500 bg-zinc-100 rounded-md">Cancel</button>
-            <button type="submit" class="flex-1 py-3 text-sm font-bold text-black bg-sun-yellow rounded-md hover:bg-sun-yellowDark transition shadow-md shadow-sun-yellow/10">Add Record</button>
-          </div>
-        </form>
+  <!-- Success Modal -->
+  <div id="successModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="max-w-sm w-full bg-white rounded-3xl p-10 shadow-2xl text-center border border-zinc-200 animate-modal-in">
+        <div class="mx-auto h-20 w-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-6 shadow-inner border border-green-100">
+           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3 class="text-2xl font-black uppercase text-zinc-900 tracking-tighter mb-2">Request Sent!</h3>
+        <p class="text-sm text-zinc-500 mb-10 font-medium italic leading-relaxed">Your leave request has been submitted and is currently pending for HR review.</p>
+        <button onclick="document.getElementById('successModal').classList.add('hidden')" class="w-full bg-zinc-900 py-4 text-sm font-bold text-white rounded-2xl hover:bg-zinc-800 transition shadow-xl uppercase tracking-widest italic">Proceed</button>
       </div>
     </div>
   </div>
 
-  <!-- Logout Confirmation -->
+  <!-- View Note Modal -->
+  <div id="viewNoteModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="relative max-w-sm w-full rounded-2xl bg-white p-8 shadow-2xl border border-zinc-200 animate-modal-in">
+        <div class="h-12 w-12 bg-sun-yellow/10 text-sun-yellowDark rounded-full flex items-center justify-center mb-6 mx-auto border border-sun-yellow/20">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter text-center mb-2">Leave Note</h3>
+        <div class="bg-zinc-50 rounded-xl p-5 border border-zinc-100 min-h-[100px] mb-8">
+            <p id="noteContent" class="text-sm text-zinc-600 font-medium italic leading-relaxed text-center"></p>
+        </div>
+        <button onclick="document.getElementById('viewNoteModal').classList.add('hidden')" class="w-full bg-sun-yellow py-4 text-sm font-bold text-zinc-900 rounded-xl border border-sun-yellowDark hover:bg-sun-yellowLight transition-all active:scale-[0.98] uppercase tracking-widest">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Photo Modal -->
+  <div id="uploadPhotoModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="relative max-w-sm w-full rounded-2xl bg-white p-8 shadow-2xl border border-zinc-200 text-center animate-modal-in">
+        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">Update Profile Photo</h3>
+        <p class="text-[10px] text-zinc-400 mb-6 font-black uppercase tracking-[0.2em]">Personalize your profile</p>
+        <div class="mb-6 mx-auto h-32 w-32 rounded-full border-4 border-zinc-50 bg-zinc-100 flex items-center justify-center overflow-hidden shadow-inner">
+           <img id="previewImg" src="" class="hidden w-full h-full object-cover">
+           <svg id="previewPlaceholder" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-zinc-300"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handlePreview(event)">
+        <div class="flex flex-col gap-3">
+            <button onclick="document.getElementById('photoInput').click()" class="w-full border-2 border-dashed border-zinc-200 py-3 text-[10px] font-black uppercase text-zinc-400 rounded-xl hover:bg-zinc-50 hover:border-sun-yellow transition-all duration-300">Choose Files</button>
+            <button onclick="savePhoto()" class="w-full bg-sun-yellow py-4 text-sm font-bold text-zinc-900 rounded-xl shadow-lg uppercase tracking-widest hover:bg-sun-yellowLight transition-all active:scale-[0.98] border border-sun-yellowDark">Save Changes</button>
+            <button onclick="document.getElementById('uploadPhotoModal').classList.add('hidden')" class="w-full bg-white text-zinc-400 py-3 text-xs font-black uppercase tracking-widest hover:text-zinc-900 transition active:scale-95">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Photo Modal -->
+  <div id="successPhotoModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="relative max-w-sm w-full rounded-3xl bg-white p-10 shadow-3xl border border-zinc-200 text-center animate-modal-in">
+        <div class="relative mb-6 mx-auto h-24 w-24">
+            <div id="successPhotoPreview" class="h-full w-full rounded-full border-4 border-white shadow-lg overflow-hidden bg-zinc-100"></div>
+            <div class="absolute -bottom-1 -right-1 h-8 w-8 bg-green-500 text-white rounded-full flex items-center justify-center border-4 border-white shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+        </div>
+        <h3 class="text-2xl font-black text-zinc-900 uppercase tracking-tighter mb-2">Success!</h3>
+        <p class="text-sm text-zinc-500 mb-10 font-medium italic leading-relaxed">Your profile picture has been updated across the system.</p>
+        <button onclick="document.getElementById('successPhotoModal').classList.add('hidden')" class="w-full bg-zinc-900 py-4 text-sm font-bold text-white rounded-2xl hover:bg-zinc-800 transition shadow-xl uppercase tracking-widest italic">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout Modal -->
   <div id="logoutModal" class="relative z-50 hidden">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 flex min-h-full items-center justify-center p-4">
-      <div class="relative max-w-md w-full rounded-xl bg-white p-6 shadow-xl border border-zinc-200 text-left">
-        <h3 class="text-lg font-black text-zinc-900 uppercase tracking-tighter mb-2">Ready to leave?</h3>
-        <p class="text-sm text-zinc-500 mb-6 italic">You will need to log in again to access the dashboard.</p>
-        <div class="flex flex-row-reverse gap-2">
-            <button onclick="window.location.href='../index.html'" class="flex-1 bg-sun-yellow py-2.5 text-sm font-bold rounded-md hover:bg-sun-yellowDark transition">Log out</button>
-            <button onclick="document.getElementById('logoutModal').classList.add('hidden')" class="flex-1 bg-white border py-2.5 text-sm font-bold rounded-md text-zinc-600 hover:bg-zinc-50 transition">Cancel</button>
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="relative max-w-sm w-full rounded-2xl bg-white p-8 shadow-2xl border border-zinc-200 animate-modal-in">
+        <div class="h-12 w-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mb-6 mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+        </div>
+        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tight text-center mb-2">Signing Out?</h3>
+        <p class="text-sm text-zinc-500 mb-8 font-medium text-center leading-relaxed">You are about to log out from the SunStar Davao Employee Portal.</p>
+        <div class="flex flex-col gap-3">
+            <button onclick="window.location.href='../index.html'" class="w-full bg-sun-yellow py-3 text-sm font-bold text-zinc-900 rounded-xl hover:bg-sun-yellowLight transition shadow-lg uppercase tracking-widest border border-sun-yellowDark">Yes, logout</button>
+            <button onclick="document.getElementById('logoutModal').classList.add('hidden')" class="w-full bg-white border border-zinc-200 py-3 text-sm font-bold text-zinc-400 rounded-xl hover:bg-zinc-100 transition uppercase tracking-widest">Cancel</button>
         </div>
       </div>
     </div>
@@ -368,305 +368,287 @@
   <script src="../backend-database/supabase-hr-service.js"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      await syncEmployeesFromSupabase();
-      await syncTrainingsFromSupabase();
-      syncEmployeeFields();
-      renderPrograms();
-      renderSkills();
-      renderCerts();
-    });
+    const LEAVE_KEY = 'sunstar_leaves';
+    const EMPLOYEE_KEY = 'sunstar_employees';
+    const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
+
+    let activeUser = null;
+
+    function safeParse(value, fallback) {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return fallback;
+      }
+    }
+
+    function getEmployees() {
+      return safeParse(localStorage.getItem(EMPLOYEE_KEY), []);
+    }
+
+    function getLeaves() {
+      return safeParse(localStorage.getItem(LEAVE_KEY), []);
+    }
+
+    function getActiveUserName() {
+      if (!activeUser) return '';
+      return `${activeUser.firstName || ''} ${activeUser.lastName || ''}`.trim();
+    }
+
+    function isMyLeave(leave) {
+      if (!activeUser) return false;
+      const leaveName = String(leave.name || '').trim().toLowerCase();
+      return String(leave.empId) === String(activeUser.id) || leaveName === getActiveUserName().toLowerCase();
+    }
 
     async function syncEmployeesFromSupabase() {
       if (!window.EmployeeDataService) return;
       const remote = await window.EmployeeDataService.fetchEmployees();
       if (Array.isArray(remote)) {
-        localStorage.setItem('sunstar_employees', JSON.stringify(remote));
+        localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(remote));
       }
     }
 
-    async function syncTrainingsFromSupabase() {
+    async function syncLeavesFromSupabase() {
       if (!window.HRDataService) return;
-      const remote = await window.HRDataService.fetchTrainings();
+      const remote = await window.HRDataService.fetchLeaves();
       if (Array.isArray(remote)) {
-        localStorage.setItem('sunstar_trainings', JSON.stringify(remote));
+        localStorage.setItem(LEAVE_KEY, JSON.stringify(remote));
       }
     }
 
-    function syncEmployeeFields() {
-      let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      let changed = false;
-      employees = employees.map(emp => {
-        if (!emp.skills) { emp.skills = []; changed = true; }
-        if (!emp.certs) { emp.certs = []; changed = true; }
-        return emp;
-      });
-      if (changed) localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-    }
+    function resolveActiveUser() {
+      const employees = getEmployees();
+      const sessionUserId = localStorage.getItem(SESSION_USER_KEY);
+      let me = null;
 
-    /* 1. Training Programs Logic */
-    function getTrainings() {
-      const data = localStorage.getItem('sunstar_trainings');
-      if (!data) return [];
-      try {
-        return JSON.parse(data);
-      } catch {
-        return [];
+      if (sessionUserId !== null) {
+        me = employees.find(emp => String(emp.id) === String(sessionUserId));
       }
-    }
 
-    function renderPrograms() {
-      const trainings = getTrainings();
-      const grid = document.getElementById('programsGrid');
-      grid.innerHTML = trainings.length ? '' : '<p class="col-span-full text-center py-20 text-zinc-400">No training programs scheduled.</p>';
-      trainings.forEach(prog => {
-        const dateObj = new Date(prog.date);
-        const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
-        const card = document.createElement('div');
-        const statusColor = prog.status === 'Active' ? 'bg-sun-yellow' : 'bg-zinc-100 text-zinc-500';
-        card.className = "bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden hover:border-sun-yellow transition duration-300";
-        card.innerHTML = `
-          <div class="${statusColor} px-4 py-3 flex justify-between items-center">
-            <span class="text-[10px] font-black uppercase text-black bg-white/30 px-2 py-0.5 rounded tracking-tighter">${prog.status}</span>
-            <span class="text-xs font-bold italic opacity-80">${formattedDate}</span>
-          </div>
-          <div class="p-5">
-            <h3 class="text-lg font-black text-zinc-900 leading-tight">${prog.name}</h3>
-            <p class="mt-2 text-sm text-zinc-500 line-clamp-2">${prog.desc}</p>
-            <div class="mt-5 pb-1 flex items-center justify-between border-t border-zinc-50 pt-4">
-              <div class="flex flex-col">
-                 <span class="text-[10px] font-black uppercase tracking-widest text-sun-yellowDark">${prog.dept}</span>
-                 <span class="text-[11px] font-bold text-zinc-400 mt-0.5">${(prog.enrollees || []).length} Enrolled</span>
-              </div>
-              <button onclick="openEnrolleesModal(${prog.id})" class="text-[10px] font-black text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 uppercase tracking-widest bg-zinc-50 px-3 py-2 rounded-lg transition duration-200 shadow-sm border border-zinc-200 active:scale-95">View Participants</button>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    document.getElementById('trainingForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const newProg = {
-        id: Date.now(),
-        name: document.getElementById('progName').value,
-        category: document.getElementById('progCategory').value,
-        date: document.getElementById('progDate').value,
-        dept: document.getElementById('progDept').value,
-        desc: document.getElementById('progDesc').value,
-        status: 'Upcoming',
-        enrollees: []
-      };
-      const trainings = getTrainings();
-      trainings.unshift(newProg);
-      localStorage.setItem('sunstar_trainings', JSON.stringify(trainings));
-      if (window.HRDataService) {
-        await window.HRDataService.upsertTraining(newProg);
+      if (!me && employees.length > 0) {
+        me = employees[0];
       }
-      document.getElementById('addTrainingModal').classList.add('hidden');
-      document.getElementById('trainingForm').reset();
-      renderPrograms();
-    });
 
-    /* Participant Management */
-    let activeProgramId = null;
+      activeUser = me;
+      if (activeUser) {
+        localStorage.setItem(SESSION_USER_KEY, String(activeUser.id));
+      }
 
-    function openEnrolleesModal(progId) {
-       activeProgramId = progId;
-       const trainings = getTrainings();
-       const prog = trainings.find(t => t.id == progId);
-       if (!prog) return;
-
-       document.getElementById('enrolleeProgramName').textContent = prog.name;
-       const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-       const tbody = document.getElementById('enrolleeTableBody');
-       const noData = document.getElementById('noEnrolleesMsg');
-       tbody.innerHTML = '';
-       
-       const participantIds = prog.enrollees || [];
-       if (participantIds.length === 0) {
-          noData.classList.remove('hidden');
-       } else {
-          noData.classList.add('hidden');
-          participantIds.forEach(eid => {
-             const emp = employees.find(e => e.id == eid);
-             if (emp) {
-                const tr = document.createElement('tr');
-                const hasSkill = emp.skills.includes(prog.name);
-                tr.className = "hover:bg-zinc-50 transition";
-                tr.innerHTML = `
-                   <td class="px-4 py-4 font-bold text-zinc-900">${emp.firstName} ${emp.lastName}</td>
-                   <td class="px-4 py-4 text-xs font-medium text-zinc-500 uppercase">${emp.role || 'Staff'}</td>
-                   <td class="px-4 py-4 text-right">
-                      <button onclick="verifyParticipant(${emp.id}, '${prog.name}')" 
-                        class="text-[10px] font-black uppercase px-3 py-1.5 rounded-md transition ${hasSkill ? 'bg-green-50 text-green-600 border border-green-200 cursor-default' : 'bg-sun-yellow text-zinc-900 border border-sun-yellowDark hover:bg-sun-yellowLight active:scale-95 hover:shadow-sm'}">
-                        ${hasSkill ? 'Verified ✓' : 'Verify Skill'}
-                      </button>
-                   </td>
-                `;
-                tbody.appendChild(tr);
-             }
-          });
-       }
-       document.getElementById('enrolleesModal').classList.remove('hidden');
+      document.getElementById('sidebarUserName').textContent = activeUser ? getActiveUserName() : 'No Employee';
+      document.getElementById('sidebarUserRole').textContent = activeUser ? (activeUser.role || 'Staff') : 'N/A';
     }
 
-     async function verifyParticipant(empId, skillName) {
-       let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-       const idx = employees.findIndex(e => e.id == empId);
-       if (idx !== -1) {
-          if (!employees[idx].skills.includes(skillName)) {
-             employees[idx].skills.push(skillName);
-             localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-           if (window.EmployeeDataService) {
-            await window.EmployeeDataService.upsertEmployee(employees[idx]);
-           }
-             alert(`Skill "${skillName}" successfully verified and added to their profile!`);
-             openEnrolleesModal(activeProgramId); // Refresh modal table
-             renderSkills(); // Update skills tab if needed
-          }
-       }
+    function initPage() {
+      resolveActiveUser();
+      const today = new Date();
+      const filingDate = today.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+      document.getElementById('dateFiled').value = filingDate;
+      renderHistory();
+      updateBalanceCards();
     }
 
-    /* 2. Employee Skills Logic */
-    function renderSkills() {
-      const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const query = document.getElementById('skillSearch').value.toLowerCase();
-      const tbody = document.getElementById('skillsTableBody');
+    function updateBalanceCards() {
+      const leaves = getLeaves();
+      const myApproved = leaves.filter(l => isMyLeave(l) && String(l.status || '') === 'Approve');
+      const usedDays = myApproved.reduce((sum, item) => sum + Number(item.days || 1), 0);
+      document.getElementById('totalCredits').textContent = '15';
+      document.getElementById('usedCredits').textContent = usedDays;
+      document.getElementById('remainCredits').textContent = Math.max(0, 15 - usedDays);
+    }
+
+    function renderHistory() {
+      const leaves = getLeaves();
+      const tbody = document.getElementById('leaveHistoryBody');
+      const noData = document.getElementById('noDataMsg');
+
       tbody.innerHTML = '';
+      const myLeaves = leaves.filter(isMyLeave);
+      myLeaves.sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled));
 
-      employees.filter(emp => `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(query)).forEach(emp => {
-        const skillsHtml = emp.skills.length ? emp.skills.map(s => `<span class="bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded-md border border-zinc-200 text-[10px] font-bold uppercase tracking-tighter">${s}</span>`).join(' ') : '<span class="text-zinc-400 italic text-[11px]">No skills listed...</span>';
+      if (myLeaves.length === 0) {
+        noData.classList.remove('hidden');
+        return;
+      }
+
+      noData.classList.add('hidden');
+
+      myLeaves.forEach(l => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-zinc-50 transition duration-150";
+        tr.className = 'hover:bg-zinc-50/50 transition';
+
+        let statusClasses = 'inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset';
+        if (l.status === 'Pending') {
+          statusClasses += ' bg-zinc-100 text-zinc-600 ring-zinc-500/20';
+        } else if (l.status === 'To verify') {
+          statusClasses += ' bg-blue-50 text-blue-700 ring-blue-600/20';
+        } else if (l.status === 'Approve') {
+          statusClasses += ' bg-green-50 text-green-700 ring-green-600/20';
+        } else {
+          statusClasses += ' bg-red-50 text-red-700 ring-red-600/10';
+        }
+
+        const escapedNote = (l.note || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
         tr.innerHTML = `
-          <td class="px-6 py-4 font-medium tracking-tight text-zinc-900 uppercase">${emp.firstName} ${emp.lastName}</td>
-          <td class="px-6 py-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">${emp.role || 'Staff'}</td>
-          <td class="px-6 py-4"><div class="flex flex-wrap gap-1.5">${skillsHtml}</div></td>
-          <td class="px-6 py-4 text-right">
-            <button onclick="openManageSkills(${emp.id})" class="text-[10px] font-black uppercase text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900 transition tracking-widest px-3 py-1.5 bg-zinc-100 rounded-lg shadow-sm border border-zinc-200 active:scale-95">Edit Skills</button>
-          </td>
-        `;
+             <td class="px-8 py-5 border-r border-zinc-50">
+                <p class="font-bold text-zinc-900 text-xs">${l.dateFiled || '--'}</p>
+             </td>
+             <td class="px-8 py-5 border-r border-zinc-50">
+                <p class="font-bold text-xs text-zinc-700">${formatReadable(l.dateOfLeave)}</p>
+             </td>
+             <td class="px-8 py-5 border-r border-zinc-50">
+                <span class="inline-flex items-center rounded-md bg-sun-yellowLight/50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-sun-yellowDark ring-1 ring-inset ring-sun-yellow/20">${l.reason || 'General'}</span>
+             </td>
+             <td class="px-8 py-5 border-r border-zinc-50 font-black text-xs text-zinc-900">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</td>
+             <td class="px-8 py-5 border-r border-zinc-50"><span class="${statusClasses}">${l.status === 'Approve' ? 'Approved' : (l.status === 'Decline' ? 'Declined' : l.status)}</span></td>
+             <td class="px-8 py-5 text-right">
+                <button onclick="viewNote('${escapedNote}')" class="h-8 w-8 bg-zinc-50 rounded-lg flex items-center justify-center text-zinc-400 hover:text-sun-yellowDark hover:bg-sun-yellowLight/50 transition-all ml-auto border border-zinc-100">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </button>
+             </td>
+          `;
         tbody.appendChild(tr);
       });
     }
 
-    function openManageSkills(empId) {
-      const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const emp = employees.find(e => e.id == empId);
-      if (!emp) return;
-      document.getElementById('skillEmployeeId').value = empId;
-      document.getElementById('skillEmployeeName').textContent = `${emp.firstName} ${emp.lastName}`;
-      document.getElementById('skillInput').value = emp.skills.join(', ');
-      document.getElementById('manageSkillsModal').classList.remove('hidden');
+    function formatReadable(dateStr) {
+       if(!dateStr) return '---';
+       const d = new Date(dateStr);
+       d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+       return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
     }
 
-    document.getElementById('skillForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const empId = document.getElementById('skillEmployeeId').value;
-      const skills = document.getElementById('skillInput').value.split(',').map(s => s.trim()).filter(s => s);
-      let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const idx = employees.findIndex(emp => emp.id == empId);
-      if (idx !== -1) {
-        employees[idx].skills = skills;
-        localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-        if (window.EmployeeDataService) {
-          await window.EmployeeDataService.upsertEmployee(employees[idx]);
-        }
-      }
-      document.getElementById('manageSkillsModal').classList.add('hidden');
-      renderSkills();
-    });
+     async function submitForm(e) {
+       e.preventDefault();
 
-    /* 3. Certifications Logic */
-    function renderCerts() {
-      const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const grid = document.getElementById('certsGrid');
-      grid.innerHTML = '';
-      
-      let allCerts = [];
-      employees.forEach(emp => {
-        emp.certs.forEach(cert => {
-          allCerts.push({ ...cert, empName: `${emp.firstName} ${emp.lastName}` });
-        });
-      });
-
-      if (!allCerts.length) {
-        grid.innerHTML = '<p class="col-span-full text-center text-zinc-400 italic py-16 uppercase tracking-widest font-black text-xs opacity-50">No certifications recorded</p>';
+       if (!activeUser) {
+        alert('No employee profile found. Please contact admin.');
         return;
-      }
+       }
 
-      allCerts.forEach(cert => {
-        const card = document.createElement('div');
-        card.className = "bg-white p-6 rounded-xl border border-zinc-200 shadow-sm flex items-start gap-4 hover:border-sun-yellow hover:shadow-lg transition-all duration-300";
-        card.innerHTML = `
-          <div class="h-12 w-12 rounded-xl bg-sun-yellow flex items-center justify-center text-black flex-shrink-0 border border-sun-yellowDark shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-          </div>
-          <div class="flex-1">
-            <div class="flex justify-between items-start">
-              <h3 class="font-black text-zinc-900 uppercase tracking-tight text-base">${cert.name}</h3>
-              <span class="text-[10px] font-black bg-sun-yellow text-black border border-sun-yellowDark px-2 py-0.5 rounded tracking-tighter shadow-sm">VERIFIED</span>
-            </div>
-            <p class="text-xs font-medium tracking-tight text-zinc-500 mt-1 uppercase">${cert.empName}</p>
-            <div class="mt-4 pt-3 border-t border-zinc-50 flex items-center justify-between text-[10px] font-bold text-zinc-500 uppercase italic">
-              <span>By ${cert.issuer}</span>
-              <span class="${new Date(cert.expiry) < new Date() ? 'text-red-500' : ''}">Exp: ${cert.expiry}</span>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
+       const reason = document.getElementById('reason').value;
+       const dateLeave = document.getElementById('dateOfLeave').value;
+       const days = document.getElementById('days').value;
+       const note = document.getElementById('note').value;
+       const dateFiled = document.getElementById('dateFiled').value;
+
+       let leaves = getLeaves();
+       
+       const newRequest = {
+          id: Date.now(),
+         empId: activeUser.id,
+         name: getActiveUserName(),
+          dateFiled: dateFiled,
+          dateOfLeave: dateLeave,
+          reason: reason,
+          note: note,
+          days: parseInt(days),
+          status: 'Pending'
+       };
+
+       leaves.push(newRequest);
+       localStorage.setItem(LEAVE_KEY, JSON.stringify(leaves));
+       if (window.HRDataService) {
+         await window.HRDataService.upsertLeave(newRequest);
+       }
+
+       document.getElementById('fileLeaveModal').classList.add('hidden');
+       document.getElementById('leaveForm').reset();
+       initPage();
+       setTimeout(() => {
+          document.getElementById('successModal').classList.remove('hidden');
+       }, 300);
     }
 
-    function openAddCertModal() {
-      const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const select = document.getElementById('certEmpId');
-      select.innerHTML = employees.length ? employees.map(emp => `<option value="${emp.id}">${emp.firstName} ${emp.lastName}</option>`).join('') : '<option disabled>No employees registered</option>';
-      document.getElementById('addCertModal').classList.remove('hidden');
+    window.viewNote = function(msg) {
+       document.getElementById('noteContent').textContent = msg || '-- No note provided --';
+       document.getElementById('viewNoteModal').classList.remove('hidden');
     }
 
-    document.getElementById('certForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const empId = document.getElementById('certEmpId').value;
-      const newCert = {
-        id: Date.now(),
-        name: document.getElementById('certName').value,
-        date: document.getElementById('certDate').value,
-        expiry: document.getElementById('certExpiry').value,
-        issuer: document.getElementById('certIssuer').value
-      };
-      
-      let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const idx = employees.findIndex(emp => emp.id == empId);
-      if (idx !== -1) {
-        employees[idx].certs.push(newCert);
-        localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-        if (window.EmployeeDataService) {
-          await window.EmployeeDataService.upsertEmployee(employees[idx]);
-        }
-        document.getElementById('addCertModal').classList.add('hidden');
-        document.getElementById('certForm').reset();
-        renderCerts();
-      }
+     function refreshProfilePic() {
+       resolveActiveUser();
+       const container = document.getElementById('userProfilePic');
+       if (!activeUser) {
+         container.textContent = 'NA';
+         return;
+       }
+       if (activeUser.profilePic) {
+         container.innerHTML = `<img src="${activeUser.profilePic}" class="w-full h-full object-cover">`;
+       } else {
+         const initials = `${(activeUser.firstName || 'N')[0]}${(activeUser.lastName || 'A')[0]}`;
+         container.textContent = initials;
+       }
+    }
+
+    function handlePreview(e) {
+       const file = e.target.files[0];
+       if (file) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+             const preview = document.getElementById('previewImg');
+             preview.src = event.target.result;
+             preview.classList.remove('hidden');
+             document.getElementById('previewPlaceholder').classList.add('hidden');
+          };
+          reader.readAsDataURL(file);
+       }
+    }
+
+     async function savePhoto() {
+       const preview = document.getElementById('previewImg');
+       if (!preview.src || preview.src === window.location.href || preview.src === "") {
+          alert('Please select an image first.');
+          return;
+       }
+
+       resolveActiveUser();
+       if (!activeUser) {
+         alert('No employee profile found to update photo.');
+         return;
+       }
+
+       let employees = getEmployees();
+       let userIdx = employees.findIndex(e => String(e.id) === String(activeUser.id));
+       if (userIdx !== -1) {
+          employees[userIdx].profilePic = preview.src;
+         localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(employees));
+         if (window.EmployeeDataService) {
+          await window.EmployeeDataService.upsertEmployee(employees[userIdx]);
+         }
+          
+          const profileContainers = ['userProfilePic', 'successPhotoPreview'];
+          profileContainers.forEach(cid => {
+             const el = document.getElementById(cid);
+             if (el) el.innerHTML = `<img src="${preview.src}" class="w-full h-full object-cover">`;
+          });
+
+          refreshProfilePic();
+          document.getElementById('uploadPhotoModal').classList.add('hidden');
+          setTimeout(() => {
+             document.getElementById('successPhotoModal').classList.remove('hidden');
+          }, 300);
+       }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await syncEmployeesFromSupabase();
+      await syncLeavesFromSupabase();
+      initPage();
+      refreshProfilePic();
     });
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('border-sun-yellow', 'text-sun-ink');
-        btn.classList.add('border-transparent', 'text-zinc-500');
-      });
-      document.getElementById('content-' + tabId).classList.remove('hidden');
-      document.getElementById('tab-' + tabId).classList.add('border-sun-yellow', 'text-sun-ink');
-      document.getElementById('tab-' + tabId).classList.remove('border-transparent', 'text-zinc-500');
-      if (tabId === 'skills') renderSkills();
-      if (tabId === 'certs') renderCerts();
-    }
+    window.addEventListener('storage', function() {
+      initPage();
+      refreshProfilePic();
+    });
+
+    window.addEventListener('focus', async function() {
+      await syncEmployeesFromSupabase();
+      await syncLeavesFromSupabase();
+      initPage();
+      refreshProfilePic();
+    });
   </script>
-  <script src="../backend-database/mobile-responsive.js"></script>
 </body>
 </html>
-
-
