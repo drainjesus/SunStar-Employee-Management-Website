@@ -311,6 +311,17 @@
         return d.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
       }
 
+      function formatFiledDate(dateStr, createdAt) {
+        if (createdAt) {
+          const createdDate = new Date(createdAt);
+          if (!Number.isNaN(createdDate.getTime())) {
+            return createdDate.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+          }
+        }
+
+        return formatReadableDate(dateStr);
+      }
+
       function parseTimeInput(value) {
         if (!value) return null;
         const raw = String(value).trim();
@@ -320,13 +331,14 @@
         if (match12Hour) {
           let hours = Number(match12Hour[1]);
           const minutes = Number(match12Hour[2]);
+          const seconds = Number(raw.match(/:(\d{2})\s*(?:AM|PM)$/i)?.[1] || 0);
           const meridiem = match12Hour[3].toUpperCase();
 
           if (hours === 12) hours = 0;
           if (meridiem === 'PM') hours += 12;
 
-          if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
-            return { hours, minutes };
+          if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59 && seconds >= 0 && seconds <= 59) {
+            return { hours, minutes, seconds };
           }
         }
 
@@ -334,8 +346,9 @@
         if (match24Hour) {
           const hours = Number(match24Hour[1]);
           const minutes = Number(match24Hour[2]);
-          if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
-            return { hours, minutes };
+          const seconds = Number(raw.match(/^\d{1,2}:\d{2}:(\d{2})/)?.[1] || 0);
+          if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59 && seconds >= 0 && seconds <= 59) {
+            return { hours, minutes, seconds };
           }
         }
 
@@ -343,23 +356,31 @@
       }
 
       function formatFiledTime(timeStr, createdAt) {
-        const parsedTime = parseTimeInput(timeStr);
-        if (parsedTime) {
-          const timeDate = new Date(2000, 0, 1, parsedTime.hours, parsedTime.minutes, 0, 0);
-          return timeDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        }
-
         if (createdAt) {
           const createdDate = new Date(createdAt);
           if (!Number.isNaN(createdDate.getTime())) {
-            return createdDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            return createdDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
           }
+        }
+
+        const parsedTime = parseTimeInput(timeStr);
+        if (parsedTime) {
+          const seconds = parsedTime.seconds || 0;
+          const timeDate = new Date(2000, 0, 1, parsedTime.hours, parsedTime.minutes, seconds, 0);
+          return timeDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
         }
 
         return '--:--';
       }
 
       function getFiledSortValue(leave) {
+        if (leave.createdAt) {
+          const createdDate = new Date(leave.createdAt);
+          if (!Number.isNaN(createdDate.getTime())) {
+            return createdDate.getTime();
+          }
+        }
+
         const datePart = parseDateInput(leave.dateFiled);
         let base = 0;
 
@@ -370,14 +391,11 @@
 
         const timePart = parseTimeInput(leave.timeFiled);
         if (timePart) {
-          return base + (timePart.hours * 60 + timePart.minutes) * 60000;
+          return base + (((timePart.hours * 60 + timePart.minutes) * 60) + (timePart.seconds || 0)) * 1000;
         }
 
-        if (leave.createdAt) {
-          const createdDate = new Date(leave.createdAt);
-          if (!Number.isNaN(createdDate.getTime())) {
-            return createdDate.getTime();
-          }
+        if (leave.id !== undefined && leave.id !== null && !Number.isNaN(Number(leave.id))) {
+          return Number(leave.id);
         }
 
         return base;
@@ -435,7 +453,7 @@
           const selectClasses = "rounded-md border border-zinc-200 py-1.5 pl-3 pr-8 text-xs font-bold text-zinc-700 bg-white shadow-sm focus:border-sun-yellow outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
 
           const remainingCredits = 15 - (l.status === 'Approve' ? l.days : 0);
-          const filedDate = formatReadableDate(l.dateFiled);
+          const filedDate = formatFiledDate(l.dateFiled, l.createdAt);
           const filedTime = formatFiledTime(l.timeFiled, l.createdAt);
           
           const storeKey = `leave_${l.id || index}`;

@@ -9,10 +9,16 @@
 
   function safeDateString(input) {
     if (!input) return null;
-    if (/^\d{4}-\d{2}-\d{2}$/.test(String(input))) return String(input);
-    const parsed = new Date(input);
+    const value = String(input).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+
+    const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return null;
-    return parsed.toISOString().slice(0, 10);
+
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   }
 
   function mapTrainingDbToLocal(row) {
