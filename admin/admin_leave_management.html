@@ -401,7 +401,7 @@
             <td class="px-6 py-4">${statusBadge}</td>
             <td class="px-6 py-4 text-right">
               <div class="flex flex-col items-end gap-2">
-                <button type="button" onclick="openLeaveDetailsModal('${l.id}')" class="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition">View Details</button>
+                <button type="button" data-leave-id="${String(l.id)}" class="view-leave-details-btn rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition">View Details</button>
                 <select onchange="updateLeaveStatus(${l.id}, this.value)" class="${selectClasses}" ${isApproved ? 'disabled' : ''}>
                   <option value="Pending" ${l.status === 'Pending' ? 'selected' : ''}>Pending</option>
                   <option value="To verify" ${l.status === 'To verify' ? 'selected' : ''}>To verify</option>
@@ -426,6 +426,21 @@
         return status || 'Pending';
       }
 
+      function getLeaveDescription(leave) {
+        if (!leave || typeof leave !== 'object') return 'No brief description provided.';
+        const candidates = [
+          leave.note,
+          leave.description,
+          leave.leaveDescription,
+          leave.remarks,
+          leave.comment,
+          leave.details
+        ];
+
+        const found = candidates.find(value => typeof value === 'string' && value.trim().length > 0);
+        return found ? found.trim() : 'No brief description provided.';
+      }
+
       window.openLeaveDetailsModal = function(id) {
         const leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
         const l = leaves.find(item => String(item.id) === String(id));
@@ -437,10 +452,18 @@
           document.getElementById('leaveDetailEffectivity').textContent = formatReadableDate(l.dateOfLeave);
           document.getElementById('leaveDetailDuration').textContent = `${l.days || 1} ${(l.days || 1) > 1 ? 'Days' : 'Day'}`;
           document.getElementById('leaveDetailStatus').textContent = toDisplayStatus(l.status);
-          document.getElementById('leaveDetailDescription').textContent = l.note || 'No brief description provided.';
+          document.getElementById('leaveDetailDescription').textContent = getLeaveDescription(l);
           document.getElementById('viewLeaveDetailsModal').classList.remove('hidden');
         }
       };
+
+      tbody.addEventListener('click', function(event) {
+        const button = event.target.closest('.view-leave-details-btn');
+        if (!button) return;
+        const leaveId = button.getAttribute('data-leave-id');
+        if (!leaveId) return;
+        window.openLeaveDetailsModal(leaveId);
+      });
 
       window.updateLeaveStatus = async function(id, newStatus) {
         let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
