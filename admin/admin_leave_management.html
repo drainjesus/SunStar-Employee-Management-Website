@@ -308,8 +308,12 @@
         }
       }
 
-      await syncLeavesFromSupabase();
-      await syncAttendanceFromSupabase();
+      try {
+        await syncLeavesFromSupabase();
+        await syncAttendanceFromSupabase();
+      } catch (error) {
+        console.warn('Leave page sync failed. Falling back to local data.', error);
+      }
 
       function formatReadableDate(dateStr) {
         if(!dateStr || dateStr === '---') return '---';
@@ -370,6 +374,16 @@
           const remainingCredits = 15 - (l.status === 'Approve' ? l.days : 0);
           const filedTime = l.timeFiled || "08:30 AM";
           const leaveIdentity = encodeURIComponent(getLeaveIdentityKey(l));
+          const leavePayload = encodeURIComponent(JSON.stringify({
+            employee: l.name || 'Unknown employee',
+            category: l.reason || 'Personal',
+            dateFiled: l.dateFiled || '---',
+            filedTime: filedTime,
+            effectivity: formatReadableDate(l.dateOfLeave),
+            duration: `${l.days || 1} ${(l.days || 1) > 1 ? 'Days' : 'Day'}`,
+            status: toDisplayStatus(l.status),
+            description: getLeaveDescription(l)
+          }));
 
           tr.innerHTML = `
             <td class="px-6 py-4">
@@ -402,7 +416,7 @@
             <td class="px-6 py-4">${statusBadge}</td>
             <td class="px-6 py-4 text-right">
               <div class="flex flex-col items-end gap-2">
-                <button type="button" data-leave-identity="${leaveIdentity}" onclick="openLeaveDetailsModal(this.dataset.leaveIdentity)" class="view-leave-details-btn rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition">View Details</button>
+                <button type="button" data-leave-identity="${leaveIdentity}" data-leave-payload="${leavePayload}" onclick="openLeaveDetailsModal(this.dataset.leavePayload || this.dataset.leaveIdentity)" class="view-leave-details-btn rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition">View Details</button>
                 <select onchange="updateLeaveStatus(${l.id}, this.value)" class="${selectClasses}" ${isApproved ? 'disabled' : ''}>
                   <option value="Pending" ${l.status === 'Pending' ? 'selected' : ''}>Pending</option>
                   <option value="To verify" ${l.status === 'To verify' ? 'selected' : ''}>To verify</option>
@@ -469,27 +483,53 @@
         return leaves.find(item => getLeaveIdentityKey(item) === decodedIdentity) || null;
       }
 
-      window.openLeaveDetailsModal = function(encodedIdentity) {
-        const l = findLeaveByIdentity(encodedIdentity);
-        if (l) {
-          const filedTime = l.timeFiled || '--:--';
-          document.getElementById('leaveDetailEmployee').textContent = l.name || 'Unknown employee';
-          document.getElementById('leaveDetailCategory').textContent = l.reason || 'Personal';
-          document.getElementById('leaveDetailDateFiled').textContent = `${l.dateFiled || '---'} ${filedTime}`;
-          document.getElementById('leaveDetailEffectivity').textContent = formatReadableDate(l.dateOfLeave);
-          document.getElementById('leaveDetailDuration').textContent = `${l.days || 1} ${(l.days || 1) > 1 ? 'Days' : 'Day'}`;
-          document.getElementById('leaveDetailStatus').textContent = toDisplayStatus(l.status);
-          document.getElementById('leaveDetailDescription').textContent = getLeaveDescription(l);
-          document.getElementById('viewLeaveDetailsModal').classList.remove('hidden');
+      function showLeaveDetailsModal(details) {
+        document.getElementById('leaveDetailEmployee').textContent = details.employee || 'Unknown employee';
+        document.getElementById('leaveDetailCategory').textContent = details.category || 'Personal';
+        document.getElementById('leaveDetailDateFiled').textContent = `${details.dateFiled || '---'} ${details.filedTime || '--:--'}`;
+        document.getElementById('leaveDetailEffectivity').textContent = details.effectivity || '---';
+        document.getElementById('leaveDetailDuration').textContent = details.duration || '1 Day';
+        document.getElementById('leaveDetailStatus').textContent = details.status || 'Pending';
+        document.getElementById('leaveDetailDescription').textContent = details.description || 'No brief description provided.';
+        document.getElementById('viewLeaveDetailsModal').classList.remove('hidden');
+      }
+
+      window.openLeaveDetailsModal = function(encodedPayloadOrIdentity) {
+        const raw = String(encodedPayloadOrIdentity || '');
+        if (!raw) return;
+
+        try {
+          const decoded = decodeURIComponent(raw);
+          if (decoded.startsWith('{')) {
+            const payload = JSON.parse(decoded);
+            showLeaveDetailsModal(payload);
+            return;
+          }
+        } catch (error) {
+          // Fallback to identity lookup when payload decoding fails.
         }
+
+        const l = findLeaveByIdentity(raw);
+        if (!l) return;
+
+        showLeaveDetailsModal({
+          employee: l.name || 'Unknown employee',
+          category: l.reason || 'Personal',
+          dateFiled: l.dateFiled || '---',
+          filedTime: l.timeFiled || '--:--',
+          effectivity: formatReadableDate(l.dateOfLeave),
+          duration: `${l.days || 1} ${(l.days || 1) > 1 ? 'Days' : 'Day'}`,
+          status: toDisplayStatus(l.status),
+          description: getLeaveDescription(l)
+        });
       };
 
       tbody.addEventListener('click', function(event) {
         const button = event.target.closest('.view-leave-details-btn');
         if (!button) return;
-        const leaveIdentity = button.getAttribute('data-leave-identity');
-        if (!leaveIdentity) return;
-        window.openLeaveDetailsModal(leaveIdentity);
+        const payloadOrIdentity = button.getAttribute('data-leave-payload') || button.getAttribute('data-leave-identity');
+        if (!payloadOrIdentity) return;
+        window.openLeaveDetailsModal(payloadOrIdentity);
       });
 
       window.updateLeaveStatus = async function(id, newStatus) {
