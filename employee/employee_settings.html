@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Settings - SunStar Davao</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Roboto+Slab:wght@700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              sun: {
+                yellow: "#f4d000",
+                yellowLight: "#fef08a",
+                yellowDark: "#ca8a04",
+                ink: "#111111"
+              }
+            },
+            fontFamily: {
+              logo: ["Alfa Slab One", "serif"],
+              davao: ["Roboto Slab", "serif"],
+              sans: ["Inter", "sans-serif"]
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-zinc-50 font-sans text-sun-ink">
+  <div class="flex h-screen bg-zinc-50 overflow-hidden">
+    <aside class="hidden w-64 border-r border-zinc-200 bg-white lg:flex lg:flex-col shadow-sm">
+      <div class="mb-8 px-5 pt-8 pb-2">
+        <p class="font-logo text-3xl font-black tracking-tight text-black">SunStar <span class="text-sun-yellow">Davao</span></p>
+        <p class="mt-1 font-sans text-xs font-black uppercase tracking-[0.15em] text-zinc-500 text-center lg:text-left">Employee Portal</p>
+      </div>
+
+      <nav class="flex-1 space-y-2.5 px-4 mt-2">
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Main</p>
+          <a href="employee_dashboard.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+              My Dashboard
+            </div>
+          </a>
+        </div>
+
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Attendance & Leave</p>
+          <div class="space-y-0.5">
+            <a href="employee_attendance.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+              <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M7 12a5 5 0 0 1 5-5"/><path d="M12 20a5 5 0 0 0 5-5"/><path d="M17 12a1 1 0 0 1 1 1"/><path d="M12 12h.01"/><path d="M12 17a3 3 0 0 1-3-3"/></svg>
+                Attendance
+              </div>
+            </a>
+            <a href="employee_leave.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+              <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/></svg>
+                File a Leave
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Training & Performance</p>
+          <div class="space-y-0.5">
+            <a href="employee_training.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+              <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.42 10.922a2 2 0 0 1-.019 3.022l-7.1 7.1a2 2 0 0 1-2.796 0l-7.1-7.1a2 2 0 0 1-.018-3.022l7.1-7.1a2 2 0 0 1 2.825 0l7.1 7.1z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>
+                Training & Dev.
+              </div>
+            </a>
+            <a href="employee_performance.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+              <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                Performance
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Account</p>
+          <a href="employee_settings.html" class="group flex items-center justify-between rounded-md bg-sun-yellowLight px-3 py-1.5 text-sm font-semibold text-zinc-900 transition-colors duration-200 hover:bg-sun-yellow">
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sun-yellowDark group-hover:text-black"><path d="M12.22 2h-.44a2 2 0 0 0-1.94 1.5l-.3 1.2a2 2 0 0 1-1.43 1.43l-1.2.3A2 2 0 0 0 5.4 8.36l.18.72a2 2 0 0 1-.46 1.95l-.84.84a2 2 0 0 0 0 2.83l.84.84a2 2 0 0 1 .46 1.95l-.18.72a2 2 0 0 0 1.5 2.43l1.2.3a2 2 0 0 1 1.43 1.43l.3 1.2a2 2 0 0 0 1.94 1.5h.44a2 2 0 0 0 1.94-1.5l.3-1.2a2 2 0 0 1 1.43-1.43l1.2-.3a2 2 0 0 0 1.5-2.43l-.18-.72a2 2 0 0 1 .46-1.95l.84-.84a2 2 0 0 0 0-2.83l-.84-.84a2 2 0 0 1-.46-1.95l.18-.72a2 2 0 0 0-1.5-2.43l-1.2-.3a2 2 0 0 1-1.43-1.43l-.3-1.2A2 2 0 0 0 12.22 2z"/><circle cx="12" cy="12" r="3"/></svg>
+              Settings
+            </div>
+          </a>
+        </div>
+      </nav>
+
+      <div class="mt-auto px-4 flex flex-col gap-3 border-t border-zinc-200 pt-4 pb-6">
+        <div class="flex items-center gap-3 px-2">
+          <div id="userInitials" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-sun-yellow border border-zinc-700 shadow-sm uppercase">NA</div>
+          <div class="flex flex-col overflow-hidden">
+            <span id="sidebarName" class="truncate text-sm font-medium tracking-tight text-zinc-900">Employee</span>
+            <span id="sidebarRole" class="truncate text-[10px] uppercase font-black tracking-widest text-zinc-500">Staff Writer</span>
+          </div>
+        </div>
+
+        <button onclick="document.getElementById('logoutModal').classList.remove('hidden')" class="group flex w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 hover:bg-zinc-50 hover:text-zinc-900">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 overflow-auto">
+      <header class="border-b border-zinc-200 bg-white px-6 py-4 sm:px-8 sticky top-0 z-10">
+        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Account Management</p>
+        <h1 class="mt-1 text-2xl font-bold text-zinc-900">Employee Settings</h1>
+      </header>
+
+      <div class="p-6 sm:p-8 max-w-5xl mx-auto space-y-6">
+        <section class="rounded-xl border border-zinc-200 bg-white shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-zinc-900">Profile Summary</h2>
+          <p class="mt-1 text-sm text-zinc-500">Your login credentials are tied to your employee profile. Any changes here are reflected in admin records and login authentication.</p>
+          <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+            <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+              <dt class="text-[11px] font-black uppercase tracking-wider text-zinc-400">Employee</dt>
+              <dd id="profileName" class="mt-1 text-sm font-semibold text-zinc-900">-</dd>
+            </div>
+            <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+              <dt class="text-[11px] font-black uppercase tracking-wider text-zinc-400">Current Email</dt>
+              <dd id="profileEmail" class="mt-1 text-sm font-semibold text-zinc-900">-</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="rounded-xl border border-zinc-200 bg-white shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-zinc-900">Credentials</h2>
+          <p class="mt-1 text-sm text-zinc-500">Change your email and password securely.</p>
+
+          <form id="settingsForm" class="mt-6 space-y-5" novalidate>
+            <div>
+              <label for="newEmail" class="mb-1.5 block text-sm font-semibold text-zinc-800">New Email</label>
+              <input id="newEmail" type="email" class="w-full rounded-lg border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-zinc-900 focus:ring-4 focus:ring-zinc-100" placeholder="name@sunstar.com" required />
+            </div>
+
+            <div>
+              <label for="currentPassword" class="mb-1.5 block text-sm font-semibold text-zinc-800">Current Password</label>
+              <input id="currentPassword" type="password" class="w-full rounded-lg border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-zinc-900 focus:ring-4 focus:ring-zinc-100" placeholder="Enter current password" required />
+            </div>
+
+            <div class="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label for="newPassword" class="mb-1.5 block text-sm font-semibold text-zinc-800">New Password</label>
+                <input id="newPassword" type="password" minlength="6" class="w-full rounded-lg border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-zinc-900 focus:ring-4 focus:ring-zinc-100" placeholder="At least 6 characters" />
+              </div>
+              <div>
+                <label for="confirmPassword" class="mb-1.5 block text-sm font-semibold text-zinc-800">Confirm New Password</label>
+                <input id="confirmPassword" type="password" minlength="6" class="w-full rounded-lg border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-zinc-900 focus:ring-4 focus:ring-zinc-100" placeholder="Re-enter new password" />
+              </div>
+            </div>
+
+            <p id="settingsStatus" class="hidden rounded-lg border px-3 py-2 text-sm"></p>
+
+            <div class="flex items-center justify-end gap-3">
+              <button type="button" id="resetBtn" class="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">Reset</button>
+              <button type="submit" class="rounded-lg border border-sun-yellowDark bg-sun-yellow px-4 py-2 text-sm font-bold text-zinc-900 hover:bg-sun-yellowLight">Save Changes</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="logoutModal" class="relative z-50 hidden" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-xl">
+        <h3 class="text-lg font-semibold text-zinc-900">Ready to leave?</h3>
+        <p class="mt-2 text-sm text-zinc-500">You are about to log out from your session.</p>
+        <div class="mt-6 flex gap-2">
+          <button onclick="window.location.href='../index.html'" class="flex-1 rounded-lg border border-sun-yellowDark bg-sun-yellow px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-sun-yellowLight">Log out</button>
+          <button onclick="document.getElementById('logoutModal').classList.add('hidden')" class="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../backend-database/supabase-config.js"></script>
+  <script src="../backend-database/supabase-client.js"></script>
+  <script src="../backend-database/supabase-employee-service.js"></script>
+
+  <script>
+    const EMPLOYEE_KEY = 'sunstar_employees';
+    const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
+
+    const profileName = document.getElementById('profileName');
+    const profileEmail = document.getElementById('profileEmail');
+    const sidebarName = document.getElementById('sidebarName');
+    const sidebarRole = document.getElementById('sidebarRole');
+    const userInitials = document.getElementById('userInitials');
+
+    const form = document.getElementById('settingsForm');
+    const newEmailInput = document.getElementById('newEmail');
+    const currentPasswordInput = document.getElementById('currentPassword');
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const settingsStatus = document.getElementById('settingsStatus');
+
+    let activeUser = null;
+
+    function safeParse(value, fallback) {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return fallback;
+      }
+    }
+
+    function getEmployees() {
+      return safeParse(localStorage.getItem(EMPLOYEE_KEY), []);
+    }
+
+    function setEmployees(employees) {
+      localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(employees));
+    }
+
+    async function syncEmployeesFromSupabase() {
+      if (!window.EmployeeDataService) return;
+      const remote = await window.EmployeeDataService.fetchEmployees();
+      if (Array.isArray(remote)) {
+        setEmployees(remote);
+      }
+    }
+
+    function findActiveUser() {
+      const employees = getEmployees();
+      const sessionUserId = localStorage.getItem(SESSION_USER_KEY);
+      let me = null;
+
+      if (sessionUserId !== null) {
+        me = employees.find(emp => String(emp.id) === String(sessionUserId));
+      }
+
+      if (!me && employees.length > 0) {
+        me = employees[0];
+      }
+
+      return me;
+    }
+
+    function renderProfile() {
+      activeUser = findActiveUser();
+
+      if (!activeUser) {
+        profileName.textContent = 'No employee profile found';
+        profileEmail.textContent = '-';
+        sidebarName.textContent = 'Unknown User';
+        sidebarRole.textContent = 'N/A';
+        userInitials.textContent = 'NA';
+        form.querySelectorAll('input, button').forEach(el => {
+          if (el.type !== 'button') el.disabled = true;
+        });
+        showStatus('Unable to load employee profile. Please ask admin to add your account.', false);
+        return;
+      }
+
+      const fullName = `${activeUser.firstName || ''} ${activeUser.lastName || ''}`.trim();
+      const initials = `${(activeUser.firstName || 'N')[0]}${(activeUser.lastName || 'A')[0]}`;
+
+      profileName.textContent = fullName;
+      profileEmail.textContent = activeUser.email || '-';
+      sidebarName.textContent = fullName;
+      sidebarRole.textContent = activeUser.role || 'Staff';
+      userInitials.textContent = initials;
+
+      newEmailInput.value = activeUser.email || '';
+      currentPasswordInput.value = '';
+      newPasswordInput.value = '';
+      confirmPasswordInput.value = '';
+    }
+
+    function showStatus(message, ok) {
+      settingsStatus.className = ok
+        ? 'rounded-lg border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-700'
+        : 'rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700';
+      settingsStatus.textContent = message;
+    }
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      if (!activeUser) {
+        showStatus('No active employee profile.', false);
+        return;
+      }
+
+      const newEmail = newEmailInput.value.trim().toLowerCase();
+      const currentPassword = currentPasswordInput.value;
+      const newPassword = newPasswordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+
+      if (!newEmail) {
+        showStatus('Email is required.', false);
+        return;
+      }
+
+      if (currentPassword !== String(activeUser.password || '')) {
+        showStatus('Current password is incorrect.', false);
+        return;
+      }
+
+      if (newPassword || confirmPassword) {
+        if (newPassword.length < 6) {
+          showStatus('New password must be at least 6 characters.', false);
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          showStatus('New password and confirmation do not match.', false);
+          return;
+        }
+      }
+
+      const employees = getEmployees();
+      const duplicateEmail = employees.find(emp => String(emp.id) !== String(activeUser.id) && String(emp.email || '').toLowerCase() === newEmail);
+      if (duplicateEmail) {
+        showStatus('That email is already used by another employee.', false);
+        return;
+      }
+
+      const index = employees.findIndex(emp => String(emp.id) === String(activeUser.id));
+      if (index === -1) {
+        showStatus('Could not locate your employee record.', false);
+        return;
+      }
+
+      employees[index].email = newEmail;
+      if (newPassword) {
+        employees[index].password = newPassword;
+      }
+
+      setEmployees(employees);
+      if (window.EmployeeDataService) {
+        const saved = await window.EmployeeDataService.upsertEmployee(employees[index]);
+        if (!saved) {
+          showStatus('Saved locally, but Supabase sync failed. Check your API setup.', false);
+          return;
+        }
+      }
+      localStorage.setItem(SESSION_USER_KEY, String(employees[index].id));
+
+      renderProfile();
+      showStatus('Settings updated successfully. Your login credentials are now active.', true);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      renderProfile();
+      settingsStatus.className = 'hidden rounded-lg border px-3 py-2 text-sm';
+      settingsStatus.textContent = '';
+    });
+
+    window.addEventListener('storage', async () => {
+      await syncEmployeesFromSupabase();
+      renderProfile();
+    });
+
+    window.addEventListener('focus', async () => {
+      await syncEmployeesFromSupabase();
+      renderProfile();
+    });
+
+    (async () => {
+      await syncEmployeesFromSupabase();
+      renderProfile();
+    })();
+  </script>
+</body>
+
+</html>

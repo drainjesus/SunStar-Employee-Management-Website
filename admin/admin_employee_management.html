@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Roboto+Slab:wght@700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../backend-database/supabase-config.js"></script>
+  <script src="../backend-database/supabase-client.js"></script>
+  <script src="../backend-database/supabase-admin-service.js"></script>
+  <script src="../backend-database/supabase-employee-service.js"></script>
+
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              sun: {
+                yellow: "#f4d000",
+                yellowLight: "#fef08a",
+                yellowDark: "#ca8a04",
+                ink: "#111111"
+              }
+            },
+            fontFamily: {
+              logo: ["Alfa Slab One", "serif"],
+              davao: ["Roboto Slab", "serif"],
+              sans: ["Inter", "sans-serif"]
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-white font-sans text-sun-ink">
+  <div class="flex h-screen bg-white">
+    <aside class="hidden w-64 border-r border-zinc-200 bg-white lg:flex lg:flex-col shadow-sm">
+      <div class="mb-8 px-5 pt-8 pb-2">
+        <p class="font-logo text-3xl font-black tracking-tight text-black">SunStar <span class="text-sun-yellow">Davao</span></p>
+        <p class="mt-1 font-sans text-xs font-black uppercase tracking-[0.15em] text-zinc-500">Admin Portal</p>
+      </div>
+
+      <nav class="flex-1 space-y-2.5 px-4 mt-2">
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Overview</p>
+          <a href="admin-dashboard.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>Dashboard</div></a>
+        </div>
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Personnel</p>
+          <div class="space-y-0.5">
+            <a href="admin_employee_management.html" class="group flex items-center justify-between rounded-md bg-sun-yellowLight px-3 py-1.5 text-sm font-semibold text-zinc-900 transition-colors duration-200 hover:bg-sun-yellow"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users text-sun-yellowDark group-hover:text-black"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Employee Management</div></a>
+            <a href="admin_master_data.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>Master Data</div></a>
+          </div>
+        </div>
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Operations</p>
+          <div class="space-y-0.5">
+            <a href="admin_attendance_monitoring.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-clock"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/></svg>Attendance</div></a>
+            <a href="admin_leave_management.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-off"><path d="M4.2 4.2A2 2 0 0 0 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 1.82-1.18"/><path d="M21 15.5V6a2 2 0 0 0-2-2H9.5"/><path d="M16 2v4"/><path d="M3 10h7"/><path d="M21 10h-5.5"/><line x1="2" x2="22" y1="2" y2="22"/></svg>Leave Management</div></a>
+          </div>
+        </div>
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Professional Growth</p>
+          <div class="space-y-0.5">
+            <a href="admin_training_development.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap"><path d="M21.42 10.922a2 2 0 0 1-.019 3.022l-7.1 7.1a2 2 0 0 1-2.796 0l-7.1-7.1a2 2 0 0 1-.018-3.022l7.1-7.1a2 2 0 0 1 2.825 0l7.1 7.1z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>Training & Dev.</div></a>
+            <a href="admin_employee_performance.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>Performance</div></a>
+          </div>
+        </div>
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Reports</p>
+          <a href="admin_report_analytics.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 group-active:bg-sun-yellowLight"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Report & Analytics</div></a>
+        </div>
+      </nav>
+
+      <!-- User Profile & Logout Section -->
+      <div class="mt-auto px-4 flex flex-col gap-3 border-t border-zinc-200 pt-4 pb-6">
+        <!-- User Account -->
+        <div class="flex items-center gap-3 px-2">
+          <div
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-sun-yellow text-sm font-bold text-black border border-sun-yellowDark shadow-sm">
+            AD
+          </div>
+          <div class="flex flex-col overflow-hidden">
+            <span class="truncate text-sm font-medium tracking-tight text-zinc-900">Admin User</span>
+            <span class="truncate text-xs text-zinc-500">Authenticated Admin</span>
+          </div>
+        </div>
+
+        <!-- Logout Button -->
+        <button onclick="document.getElementById('logoutModal').classList.remove('hidden')"
+          class="group flex w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-log-out">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" x2="9" y1="12" y2="12" />
+          </svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 overflow-auto bg-zinc-50/50">
+      <div class="border-b border-zinc-200 bg-white px-6 py-4 sm:px-8 flex items-center justify-between sticky top-0 z-10 w-full shadow-sm">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-widest text-zinc-500">Admin</p>
+          <h1 class="mt-1 text-2xl font-bold">Employee Management</h1>
+        </div>
+        <div>
+        </div>
+      </div>
+
+      <div class="p-6 sm:p-8 max-w-7xl mx-auto">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-zinc-900">Registered Employees</h2>
+          <button onclick="openAddModal()" class="inline-flex items-center gap-2 rounded-md bg-sun-yellow px-4 py-2.5 text-sm font-bold text-zinc-900 shadow-sm transition-all hover:bg-sun-yellowLight hover:shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            Add Employee
+          </button>
+        </div>
+        <div class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+          <table class="w-full text-left text-sm text-zinc-600">
+            <thead class="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+              <tr>
+                <th class="px-6 py-4">Full Name</th>
+                <th class="px-6 py-4">Email Address</th>
+                <th class="px-6 py-4">Account Password</th>
+                <th class="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="employeeTableBody" class="divide-y divide-zinc-100">
+              <!-- Dynamically populated via local storage script -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Logout Confirmation Modal -->
+  <div id="logoutModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-zinc-900/50 bg-opacity-75 transition-opacity backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div
+          class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-zinc-200">
+          <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div
+                class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                  stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                <h3 class="text-lg font-semibold leading-6 text-zinc-900" id="modal-title">Ready to leave?</h3>
+                <div class="mt-2 text-sm text-zinc-500">
+                  <p>You are about to log out from your session. You will need to log in again to access the dashboard.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-zinc-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
+            <button type="button"
+              class="inline-flex w-full justify-center rounded-md bg-sun-yellow px-3 py-2 text-sm font-semibold text-black shadow-sm hover:bg-sun-yellowDark sm:w-auto transition duration-200"
+              onclick="window.location.href='../index.html'">Log out</button>
+            <button type="button"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 hover:bg-zinc-50 sm:mt-0 sm:w-auto transition duration-200"
+              onclick="document.getElementById('logoutModal').classList.add('hidden')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Employee Modal -->
+  <div id="addEmployeeModal" class="relative z-50 hidden" aria-labelledby="add-modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-zinc-900/50 bg-opacity-75 transition-opacity backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-4xl border border-zinc-200">
+          
+          <div class="flex items-center justify-between border-b border-zinc-200 bg-zinc-50/50 px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-sun-yellowLight">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus text-sun-yellowDark"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+              </div>
+              <h3 class="text-lg font-bold text-zinc-900" id="modalTitle">Add New Employee</h3>
+            </div>
+            <button type="button" onclick="document.getElementById('addEmployeeModal').classList.add('hidden')" class="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-500 transition-colors">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+
+          <form id="addEmployeeForm" onsubmit="addEmployee(event)" class="max-h-[75vh] overflow-y-auto p-6 scroll-smooth">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-8">
+              
+              <!-- Personal Info -->
+              <div class="space-y-4">
+                <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-200 pb-2">Personal Info</h4>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">First Name</label>
+                    <input type="text" id="firstName" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Last Name</label>
+                    <input type="text" id="lastName" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Age</label>
+                    <input type="number" id="age" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Gender</label>
+                    <select id="gender" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                      <option value="">Select...</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="col-span-2">
+                    <label class="block text-xs font-semibold text-zinc-700">Contact Number</label>
+                    <input type="tel" id="contactNumber" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Employment History -->
+              <div class="space-y-4">
+                <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-200 pb-2">Employment History</h4>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700">Last Employment Title</label>
+                  <input type="text" id="lastTitle" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Date Started</label>
+                    <input type="month" id="dateStarted" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Date Ended</label>
+                    <input type="month" id="dateEnded" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Job Role & Compensation -->
+              <div class="space-y-4">
+                <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-200 pb-2">Job & Compensation</h4>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700">Job Role</label>
+                  <select id="jobRole" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                    <option value="">Select Role...</option>
+                    <option value="Editor">Editor</option>
+                    <option value="Writer">Writer</option>
+                    <option value="Photographer">Photographer</option>
+                    <option value="Manager">Manager</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700">Salary</label>
+                  <div class="mt-1.5 relative rounded-md shadow-sm">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <span class="text-zinc-500 sm:text-sm font-semibold">₱</span>
+                    </div>
+                    <input type="number" id="salary" placeholder="0.00" class="block w-full rounded-md border border-zinc-300 pl-8 pr-12 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Emergency Contacts -->
+              <div class="space-y-4">
+                <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-200 pb-2">Emergency Contacts</h4>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700">Contact Name</label>
+                  <input type="text" id="emergencyName" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Contact Number</label>
+                    <input type="tel" id="emergencyContact" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Relationship</label>
+                    <input type="text" id="emergencyRelation" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Account Details -->
+              <div class="space-y-4 lg:col-span-2 rounded-xl bg-sun-yellowLight/30 p-5 border border-sun-yellowLight">
+                <h4 class="text-xs font-black uppercase tracking-widest text-sun-yellowDark border-b border-sun-yellowLight pb-2">Creating Employee Account</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Email Address</label>
+                    <input type="email" id="email" required placeholder="employee@sunstar.com" class="mt-1.5 w-full rounded-md border border-sun-yellow/50 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/40">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Temporary Password</label>
+                    <input type="password" id="password" required placeholder="••••••••" class="mt-1.5 w-full rounded-md border border-sun-yellow/50 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/40">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            
+            <div class="mt-8 flex items-center justify-end gap-3 border-t border-zinc-200 pt-5">
+              <button type="button" class="rounded-md border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm hover:bg-zinc-50 transition-colors duration-200" onclick="document.getElementById('addEmployeeModal').classList.add('hidden')">Cancel</button>
+              <button type="submit" id="submitBtn" class="rounded-md bg-sun-yellow px-6 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-sun-yellowDark hover:shadow transition-all duration-200">Save Employee</button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="relative z-50 hidden" aria-labelledby="success-modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-zinc-900/50 bg-opacity-75 transition-opacity backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-sm border border-zinc-200">
+          <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 text-center flex flex-col items-center">
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 shadow-inner">
+              <svg class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div class="mt-4 sm:mt-5 text-center">
+              <h3 class="text-xl font-black uppercase tracking-widest leading-6 text-zinc-900" id="success-modal-title">Success!</h3>
+              <div class="mt-3 text-sm text-zinc-500 font-medium">
+                <p id="successMessage">Action completed successfully.</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-zinc-50 border-t border-zinc-100 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+            <button type="button" onclick="document.getElementById('successModal').classList.add('hidden')" class="inline-flex w-full justify-center rounded-md bg-sun-yellow px-3 py-2 text-sm font-bold text-black shadow-sm hover:bg-sun-yellowDark sm:w-full transition duration-200">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteConfirmModal" class="relative z-50 hidden" aria-labelledby="delete-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-zinc-900/50 bg-opacity-75 transition-opacity backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-zinc-200">
+          <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                <h3 class="text-lg font-bold leading-6 text-zinc-900">Delete Employee</h3>
+                <div class="mt-2 text-sm text-zinc-500">
+                  <p>Are you sure you want to permanently delete this employee? This action cannot be undone.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-zinc-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2 border-t border-zinc-100">
+            <button type="button" id="confirmDeleteBtn" class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-bold text-white shadow-sm hover:bg-red-700 sm:w-auto transition duration-200">Yes, Delete</button>
+            <button type="button" onclick="document.getElementById('deleteConfirmModal').classList.add('hidden')" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-bold text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 hover:bg-zinc-50 sm:mt-0 sm:w-auto transition duration-200">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-6 sm:p-8 max-w-7xl mx-auto">
+    <div class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-bold text-zinc-900">Registered Employees</h2>
+        <p class="text-sm text-zinc-500 mt-1">Manage core personnel access and account credentials.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="relative">
+          <input type="text" id="searchInput" onkeyup="updateTable()" placeholder="Search name or email..." class="pl-9 pr-4 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sun-yellow/50 focus:border-sun-yellow transition-all shadow-sm w-full md:w-64">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+        <select id="roleFilter" onchange="updateTable()" class="px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none bg-white shadow-sm font-medium">
+          <option value="">All Roles</option>
+          <option value="Editor">Editor</option>
+          <option value="Writer">Writer</option>
+          <option value="Photographer">Photographer</option>
+          <option value="Manager">Manager</option>
+        </select>
+        <select id="sortFilter" onchange="updateTable()" class="px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none bg-white shadow-sm font-medium">
+          <option value="name-asc">A - Z</option>
+          <option value="name-desc">Z - A</option>
+        </select>
+        <button onclick="openAddModal()" class="inline-flex items-center gap-2 rounded-lg bg-sun-yellow px-4 py-2 text-sm font-bold text-black shadow-sm transition-all hover:bg-sun-yellowDark active:scale-95 shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+          Add
+        </button>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+      <table class="w-full text-left text-sm text-zinc-600">
+        <thead class="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          <tr>
+            <th class="px-6 py-4">Full Name</th>
+            <th class="px-6 py-4">Job Role</th>
+            <th class="px-6 py-4">Email Address</th>
+            <th class="px-6 py-4">Account Password</th>
+            <th class="px-6 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="employeeTableBody" class="divide-y divide-zinc-100">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+      
+      <!-- Pagination -->
+      <div class="border-t border-zinc-200 bg-zinc-50/50 px-6 py-4 flex items-center justify-between">
+        <div class="text-xs text-zinc-500 font-medium">
+          Showing <span id="startIndex" class="font-bold">0</span> to <span id="endIndex" class="font-bold">0</span> of <span id="totalResults" class="font-bold">0</span> entries
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="changePage(-1)" id="prevBtn" class="flex h-8 items-center px-2.5 rounded border border-zinc-300 bg-white text-xs font-bold text-zinc-600 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Prev</button>
+          <div id="pageNumbers" class="flex items-center gap-1">
+            <!-- Page numbers go here -->
+          </div>
+          <button onclick="changePage(1)" id="nextBtn" class="flex h-8 items-center px-2.5 rounded border border-zinc-300 bg-white text-xs font-bold text-zinc-600 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
+    const SESSION_ADMIN_EMAIL_KEY = 'sunstar_logged_in_admin_email';
+
+    let employees = JSON.parse(localStorage.getItem('sunstar_employees')) || [];
+    let adminEmails = [];
+    let editingId = null;
+    let currentPage = 1;
+    const itemsPerPage = 6;
+    let filteredEmployees = [];
+
+    function hasAdminSession() {
+      return localStorage.getItem(SESSION_ROLE_KEY) === 'admin' && !!localStorage.getItem(SESSION_ADMIN_EMAIL_KEY);
+    }
+
+    async function syncAdminsFromSupabase() {
+      if (!window.AdminDataService) return;
+      adminEmails = await window.AdminDataService.fetchAdminEmails();
+    }
+
+    function guardAdminAccess() {
+      if (!hasAdminSession()) {
+        alert('Admin login required. Please sign in as admin first.');
+        window.location.href = '../index.html';
+        return false;
+      }
+      return true;
+    }
+
+    async function syncEmployeesFromSupabase() {
+      if (!window.EmployeeDataService) return;
+      const remote = await window.EmployeeDataService.fetchEmployees();
+      if (Array.isArray(remote)) {
+        employees = remote;
+        localStorage.setItem('sunstar_employees', JSON.stringify(remote));
+      }
+    }
+
+    function updateTable() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const sortBy = document.getElementById('sortFilter').value;
+      const roleFilter = document.getElementById('roleFilter').value;
+
+      // Filter
+      filteredEmployees = employees.filter(emp => {
+        const matchesSearch = (emp.firstName + ' ' + emp.lastName).toLowerCase().includes(searchTerm) || emp.email.toLowerCase().includes(searchTerm);
+        const matchesRole = roleFilter === '' || emp.role === roleFilter;
+        return matchesSearch && matchesRole;
+      });
+
+      // Sort
+      if (sortBy === 'name-asc') {
+        filteredEmployees.sort((a, b) => (a.firstName + ' ' + a.lastName).localeCompare(b.firstName + ' ' + b.lastName));
+      } else if (sortBy === 'name-desc') {
+        filteredEmployees.sort((a, b) => (b.firstName + ' ' + b.lastName).localeCompare(a.firstName + ' ' + a.lastName));
+      }
+
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('employeeTableBody');
+      tbody.innerHTML = '';
+      
+      const totalItems = filteredEmployees.length;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      
+      if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = Math.min(start + itemsPerPage, totalItems);
+      const pageData = filteredEmployees.slice(start, end);
+
+      pageData.forEach(emp => {
+        const initials = (emp.firstName[0] || '') + (emp.lastName[0] || '');
+        const avatarHtml = emp.profilePic 
+          ? `<img src="${emp.profilePic}" class="h-9 w-9 rounded-full object-cover border border-zinc-200 shadow-sm">`
+          : `<div class="h-9 w-9 rounded-full bg-zinc-900 flex items-center justify-center text-[10px] font-black text-sun-yellow uppercase border border-zinc-700 shadow-sm">${initials}</div>`;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-zinc-50/50 transition-colors group";
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              ${avatarHtml}
+              <span class="font-medium tracking-tight text-zinc-900 group-hover:text-amber-600 transition-colors">${emp.firstName} ${emp.lastName}</span>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center rounded-md bg-zinc-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-600 ring-1 ring-inset ring-zinc-500/10">
+              ${emp.role || 'Personnel'}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-zinc-600">${emp.email}</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-2">
+              <input type="password" value="${emp.password}" class="bg-transparent border-none outline-none text-zinc-900 pointer-events-none w-24 tracking-widest font-medium" readonly>
+              <button type="button" onclick="togglePassword(this)" class="text-[9px] font-black text-zinc-500 hover:text-black uppercase tracking-widest border border-zinc-200 px-2 py-0.5 rounded transition-all">Reveal</button>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <div class="flex items-center justify-end gap-2">
+              <button type="button" onclick="openEditModal(${emp.id})" class="text-[10px] font-black text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900 uppercase tracking-widest bg-zinc-100 px-3 py-1.5 rounded-md transition-all shadow-sm active:scale-95">Edit</button>
+              <button type="button" onclick="deleteEmployee(${emp.id})" class="text-[10px] font-black text-red-600 hover:bg-red-100 hover:text-red-700 uppercase tracking-widest bg-red-50 px-3 py-1.5 rounded-md transition-all shadow-sm active:scale-95 border border-red-100">Delete</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Update Pagination UI
+      document.getElementById('startIndex').textContent = totalItems === 0 ? 0 : start + 1;
+      document.getElementById('endIndex').textContent = end;
+      document.getElementById('totalResults').textContent = totalItems;
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled = currentPage === totalPages || totalPages === 0;
+
+      // Render page numbers
+      const pageNumbers = document.getElementById('pageNumbers');
+      pageNumbers.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.onclick = () => { currentPage = i; renderTable(); };
+        btn.className = `h-8 w-8 rounded text-xs font-bold transition-all ${currentPage === i ? 'bg-sun-yellow text-black' : 'bg-white border border-zinc-200 text-zinc-500 hover:bg-zinc-50'}`;
+        pageNumbers.appendChild(btn);
+      }
+    }
+
+    function changePage(dir) {
+      currentPage += dir;
+      renderTable();
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (!guardAdminAccess()) return;
+      await syncAdminsFromSupabase();
+      await syncEmployeesFromSupabase();
+      updateTable();
+    });
+
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'sunstar_employees') {
+        employees = JSON.parse(localStorage.getItem('sunstar_employees')) || [];
+        updateTable();
+      }
+    });
+
+    window.addEventListener('focus', async () => {
+      if (!guardAdminAccess()) return;
+      await syncAdminsFromSupabase();
+      await syncEmployeesFromSupabase();
+      updateTable();
+    });
+
+    function openAddModal() {
+      if (!guardAdminAccess()) return;
+      editingId = null;
+      document.getElementById('addEmployeeForm').reset();
+      document.getElementById('modalTitle').textContent = 'Add New Employee';
+      document.getElementById('submitBtn').textContent = 'Save Employee';
+      document.getElementById('addEmployeeModal').classList.remove('hidden');
+    }
+
+    function openEditModal(id) {
+      editingId = id;
+      const emp = employees.find(e => e.id === id);
+      if(!emp) return;
+
+      document.getElementById('firstName').value = emp.firstName || '';
+      document.getElementById('lastName').value = emp.lastName || '';
+      document.getElementById('age').value = emp.age || '';
+      document.getElementById('gender').value = emp.gender || '';
+      document.getElementById('contactNumber').value = emp.contact || '';
+      document.getElementById('lastTitle').value = emp.lastTitle || '';
+      document.getElementById('dateStarted').value = emp.ds || '';
+      document.getElementById('dateEnded').value = emp.de || '';
+      document.getElementById('jobRole').value = emp.role || '';
+      document.getElementById('salary').value = emp.salary || '';
+      document.getElementById('emergencyName').value = emp.eName || '';
+      document.getElementById('emergencyContact').value = emp.eContact || '';
+      document.getElementById('emergencyRelation').value = emp.eRel || '';
+      document.getElementById('email').value = emp.email || '';
+      document.getElementById('password').value = emp.password || '';
+
+      document.getElementById('modalTitle').textContent = 'Edit Employee';
+      document.getElementById('submitBtn').textContent = 'Update Employee';
+      document.getElementById('addEmployeeModal').classList.remove('hidden');
+    }
+
+    async function addEmployee(e) {
+      e.preventDefault();
+      if (!guardAdminAccess()) return;
+      
+      const data = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        age: document.getElementById('age').value,
+        gender: document.getElementById('gender').value,
+        contact: document.getElementById('contactNumber').value,
+        lastTitle: document.getElementById('lastTitle').value,
+        ds: document.getElementById('dateStarted').value,
+        de: document.getElementById('dateEnded').value,
+        role: document.getElementById('jobRole').value,
+        salary: document.getElementById('salary').value,
+        eName: document.getElementById('emergencyName').value,
+        eContact: document.getElementById('emergencyContact').value,
+        eRel: document.getElementById('emergencyRelation').value,
+        email: document.getElementById('email').value.trim().toLowerCase(),
+        password: document.getElementById('password').value
+      };
+
+      if (adminEmails.includes(data.email)) {
+        alert('This email is reserved for admin. Please use a different employee email.');
+        return;
+      }
+
+      if (!data.email || !data.password || data.password.length < 6) {
+        alert('Employee account must include a valid email and password (at least 6 characters).');
+        return;
+      }
+
+      const duplicate = employees.find(emp => (emp.email || '').toLowerCase() === data.email && emp.id !== editingId);
+      if (duplicate) {
+        alert('This employee email is already in use. Please use another email.');
+        return;
+      }
+
+      if (editingId) {
+        data.id = editingId;
+      } else {
+        data.id = Date.now(); // assign unique ID
+      }
+
+      if (!window.EmployeeDataService) {
+        alert('Supabase employee service is not available. Please check connection and try again.');
+        return;
+      }
+
+      const savedToSupabase = await window.EmployeeDataService.upsertEmployee(data);
+      if (!savedToSupabase) {
+        alert('Unable to save employee account to Supabase. No changes were applied.');
+        return;
+      }
+
+      if (editingId) {
+        const index = employees.findIndex(emp => emp.id === editingId);
+        if (index !== -1) employees[index] = data;
+      } else {
+        employees.push(data);
+      }
+
+      // Keep local cache aligned only after successful remote save.
+      localStorage.setItem('sunstar_employees', JSON.stringify(employees));
+      renderTable(); // Update frontend interface automatically
+
+      document.getElementById('addEmployeeForm').reset();
+      document.getElementById('addEmployeeModal').classList.add('hidden');
+      
+      showSuccessModal(editingId ? "Employee record successfully updated in Supabase." : "New employee successfully registered in Supabase.");
+    }
+
+    let deleteTargetId = null;
+
+    function deleteEmployee(id) {
+      deleteTargetId = id;
+      document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+      if(deleteTargetId !== null) {
+        const deletedId = deleteTargetId;
+        if (!window.EmployeeDataService) {
+          alert('Supabase employee service is not available. Please check connection and try again.');
+          return;
+        }
+
+        const deletedFromSupabase = await window.EmployeeDataService.deleteEmployeeById(deletedId);
+        if (!deletedFromSupabase) {
+          alert('Unable to delete employee from Supabase. No changes were applied.');
+          return;
+        }
+
+        employees = employees.filter(e => e.id !== deleteTargetId);
+        localStorage.setItem('sunstar_employees', JSON.stringify(employees));
+        renderTable();
+        document.getElementById('deleteConfirmModal').classList.add('hidden');
+        showSuccessModal("Employee successfully deleted from Supabase.");
+        deleteTargetId = null;
+      }
+    });
+
+    function showSuccessModal(message) {
+      document.getElementById('successMessage').textContent = message;
+      document.getElementById('successModal').classList.remove('hidden');
+    }
+
+    function togglePassword(btn) {
+      const input = btn.previousElementSibling;
+      if (input.type === 'password') {
+        input.type = 'text';
+        input.classList.remove('tracking-widest');
+        btn.textContent = 'Hide';
+        btn.classList.add('bg-zinc-200', 'text-zinc-700');
+        btn.classList.remove('bg-sun-yellowLight', 'text-sun-yellowDark');
+      } else {
+        input.type = 'password';
+        input.classList.add('tracking-widest');
+        btn.textContent = 'Show';
+        btn.classList.remove('bg-zinc-200', 'text-zinc-700');
+        btn.classList.add('bg-sun-yellowLight', 'text-sun-yellowDark');
+      }
+    }
+  </script>
+
+</body>
+</html>
+

@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SunStar Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Roboto+Slab:wght@700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              sun: {
+                yellow: "#f4d000",
+                yellowLight: "#fef08a",
+                yellowDark: "#ca8a04",
+                ink: "#111111"
+              }
+            },
+            fontFamily: {
+              logo: ["Alfa Slab One", "serif"],
+              davao: ["Roboto Slab", "serif"],
+              sans: ["Inter", "sans-serif"]
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../backend-database/auth-guard.js"></script>
+  <script>
+    window.AuthGuard.requireAdmin();
+  </script>
+</head>
+
+<body class="min-h-screen bg-white font-sans text-sun-ink">
+  <div class="flex h-screen bg-white">
+    <aside class="hidden w-64 border-r border-zinc-200 bg-white lg:flex lg:flex-col shadow-sm">
+      <div class="mb-8 px-5 pt-8 pb-2">
+        <p class="font-logo text-3xl font-black tracking-tight text-black">SunStar <span class="text-sun-yellow">Davao</span></p>
+        <p class="mt-1 font-sans text-xs font-black uppercase tracking-[0.15em] text-zinc-500">Admin Portal</p>
+      </div>
+
+      <nav class="flex-1 space-y-2.5 px-4 mt-2">
+        <!-- OVERVIEW -->
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Overview</p>
+          <a href="#" class="group flex items-center justify-between rounded-md bg-sun-yellowLight px-3 py-1.5 text-sm font-semibold text-zinc-900 transition-colors duration-200">
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard text-sun-yellowDark"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+              Dashboard
+            </div>
+          </a>
+        </div>
+
+        <!-- PERSONNEL -->
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Personnel</p>
+          <div class="space-y-0.5">
+            <a href="admin_employee_management.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Employee Management</div></a>
+            <a href="admin_master_data.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>Master Data</div></a>
+          </div>
+        </div>
+
+        <!-- OPERATIONS -->
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Operations</p>
+          <div class="space-y-0.5">
+            <a href="admin_attendance_monitoring.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-clock"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/></svg>Attendance</div></a>
+            <a href="admin_leave_management.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-off"><path d="M4.2 4.2A2 2 0 0 0 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 1.82-1.18"/><path d="M21 15.5V6a2 2 0 0 0-2-2H9.5"/><path d="M16 2v4"/><path d="M3 10h7"/><path d="M21 10h-5.5"/><line x1="2" x2="22" y1="2" y2="22"/></svg>Leave Management</div></a>
+          </div>
+        </div>
+
+        <!-- GROWTH -->
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Professional Growth</p>
+          <div class="space-y-0.5">
+            <a href="admin_training_development.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap"><path d="M21.42 10.922a2 2 0 0 1-.019 3.022l-7.1 7.1a2 2 0 0 1-2.796 0l-7.1-7.1a2 2 0 0 1-.018-3.022l7.1-7.1a2 2 0 0 1 2.825 0l7.1 7.1z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>Training & Dev.</div></a>
+            <a href="admin_employee_performance.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>Performance</div></a>
+          </div>
+        </div>
+
+        <!-- REPORTS -->
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Reports</p>
+          <a href="admin_report_analytics.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Report & Analytics</div></a>
+        </div>
+      </nav>
+
+      <!-- User Profile & Logout Section -->
+      <div class="mt-auto px-4 flex flex-col gap-3 border-t border-zinc-200 pt-4 pb-6">
+        <!-- User Account -->
+        <div class="flex items-center gap-3 px-2">
+          <div
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-sun-yellow text-sm font-bold text-black shadow-sm">
+            AD
+          </div>
+          <div class="flex flex-col overflow-hidden">
+            <span class="truncate text-sm font-medium tracking-tight text-zinc-900">Admin User</span>
+            <span class="truncate text-xs text-zinc-500">Authenticated Admin</span>
+          </div>
+        </div>
+
+        <!-- Logout Button -->
+        <button onclick="document.getElementById('logoutModal').classList.remove('hidden')"
+          class="group flex w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-log-out">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" x2="9" y1="12" y2="12" />
+          </svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 overflow-auto">
+      <div class="border-b border-zinc-200 bg-white px-6 py-4 sm:px-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">System Overview</p>
+            <h1 class="mt-1 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-600">Enterprise Dashboard</h1>
+          </div>
+          <div class="flex items-center gap-2">
+             <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+             <p class="text-[10px] font-black uppercase text-zinc-400">System Live</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
+        <!-- Core Metrics -->
+        <section class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="group rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-sun-yellow hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+               <div class="h-10 w-10 bg-zinc-50 rounded-xl flex items-center justify-center text-zinc-400 group-hover:bg-sun-yellowLight transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+               </div>
+               <span class="text-[10px] font-black text-green-500 bg-green-50 px-2 py-0.5 rounded-full uppercase tracking-tighter">+2 this week</span>
+            </div>
+            <p class="text-xs font-black uppercase text-zinc-400 tracking-widest">Total Employees</p>
+            <p class="mt-1 text-3xl font-black text-zinc-900" id="statEmployees">0</p>
+          </div>
+
+          <div class="group rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-sun-yellow hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+               <div class="h-10 w-10 bg-zinc-50 rounded-xl flex items-center justify-center text-zinc-400 group-hover:bg-sun-yellowLight transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+               </div>
+               <span class="text-[10px] font-black text-sun-yellowDark bg-sun-yellowLight px-2 py-0.5 rounded-full uppercase tracking-tighter">Live Monitor</span>
+            </div>
+            <p class="text-xs font-black uppercase text-zinc-400 tracking-widest">On Duty Now</p>
+            <p class="mt-1 text-3xl font-black text-zinc-900" id="statOnDuty">0</p>
+          </div>
+
+          <div class="group rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-sun-yellow hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+               <div class="h-10 w-10 bg-zinc-50 rounded-xl flex items-center justify-center text-zinc-400 group-hover:bg-sun-yellowLight transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 2v4"/><path d="M8 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
+               </div>
+               <span class="text-[10px] font-black text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full uppercase tracking-tighter" id="statPendingLeaves">0 Pending</span>
+            </div>
+            <p class="text-xs font-black uppercase text-zinc-400 tracking-widest">Leave Requests</p>
+            <p class="mt-1 text-3xl font-black text-zinc-900" id="statTotalLeaves">0</p>
+          </div>
+
+          <div class="group rounded-3xl border border-sun-yellow bg-sun-yellowLight/50 p-6 shadow-sm transition-all hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+               <div class="h-10 w-10 bg-sun-yellow rounded-xl flex items-center justify-center text-black transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+               </div>
+            </div>
+            <p class="text-xs font-black uppercase text-sun-yellowDark tracking-widest">Training Sessions</p>
+            <p class="mt-1 text-3xl font-black text-zinc-900" id="statTrainings">0</p>
+          </div>
+        </section>
+
+        <div class="space-y-6">
+           <!-- Sub-Module Quick Access -->
+           <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                 <h2 class="text-xl font-black uppercase text-zinc-900 tracking-tight flex items-center gap-2">
+                    <span class="h-2 w-8 bg-sun-yellow rounded-full"></span>
+                    Sub-System Control
+                 </h2>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                 <a href="admin_employee_management.html" class="group p-6 bg-white border border-zinc-200 rounded-3xl hover:border-zinc-300 hover:shadow-md transition-all duration-300">
+                    <div class="h-12 w-12 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-400 mb-4 group-hover:bg-zinc-100 group-hover:text-zinc-900 transition-all duration-500">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h3 class="text-lg font-black text-zinc-900 uppercase tracking-tighter group-hover:translate-x-1 transition-transform">Personnel Mgmt</h3>
+                    <p class="mt-2 text-sm text-zinc-500 font-medium italic leading-relaxed">Manage employee profiles, master data, and official records.</p>
+                 </a>
+
+                 <a href="admin_attendance_monitoring.html" class="group p-6 bg-white border border-zinc-200 rounded-3xl hover:border-zinc-300 hover:shadow-md transition-all duration-300">
+                    <div class="h-12 w-12 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-400 mb-4 group-hover:bg-zinc-100 group-hover:text-zinc-900 transition-all duration-500">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <h3 class="text-lg font-black text-zinc-900 uppercase tracking-tighter group-hover:translate-x-1 transition-transform">Operations Monitor</h3>
+                    <p class="mt-2 text-sm text-zinc-500 font-medium italic leading-relaxed">Track daily attendance, shift coverage, and overtime requests.</p>
+                 </a>
+
+                 <a href="admin_training_development.html" class="group p-6 bg-white border border-zinc-200 rounded-3xl hover:border-zinc-300 hover:shadow-md transition-all duration-300">
+                    <div class="h-12 w-12 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-400 mb-4 group-hover:bg-zinc-100 group-hover:text-zinc-900 transition-all duration-500">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    </div>
+                    <h3 class="text-lg font-black text-zinc-900 uppercase tracking-tighter group-hover:translate-x-1 transition-transform">Talent Dev</h3>
+                    <p class="mt-2 text-sm text-zinc-500 font-medium italic leading-relaxed">Oversee training programs, skill matrices, and certifications.</p>
+                 </a>
+
+                 <a href="admin_report_analytics.html" class="group p-6 bg-white border border-zinc-200 rounded-3xl hover:border-zinc-300 hover:shadow-md transition-all duration-300">
+                    <div class="h-12 w-12 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-400 mb-4 group-hover:bg-zinc-100 group-hover:text-zinc-900 transition-all duration-500">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                    </div>
+                    <h3 class="text-lg font-black text-zinc-900 uppercase tracking-tighter group-hover:translate-x-1 transition-transform">Business Intelligence</h3>
+                    <p class="mt-2 text-sm text-zinc-500 font-medium italic leading-relaxed">Generate comprehensive HR reports and workforce analytics.</p>
+                 </a>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+           loadStats();
+        });
+
+        function loadStats() {
+           const employees = JSON.parse(localStorage.getItem('sunstar_employees')) || [];
+           const attendance = JSON.parse(localStorage.getItem('sunstar_attendance')) || {};
+           const leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
+           const trainings = JSON.parse(localStorage.getItem('sunstar_trainings')) || [];
+
+           document.getElementById('statEmployees').textContent = employees.length;
+           
+           const today = new Date().toISOString().split('T')[0];
+           const todayRecords = Array.isArray(attendance[today]) ? attendance[today] : [];
+           const onDuty = todayRecords.filter(a => a.status === 'Present' || a.status === 'Late').length;
+           document.getElementById('statOnDuty').textContent = onDuty;
+
+           document.getElementById('statTotalLeaves').textContent = leaves.length;
+           const pending = leaves.filter(l => l.status === 'Pending').length;
+           document.getElementById('statPendingLeaves').textContent = `${pending} Pending`;
+
+           document.getElementById('statTrainings').textContent = trainings.length;
+        }
+      </script>
+    </main>
+  </div>
+  <!-- Logout Confirmation Modal -->
+  <div id="logoutModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-zinc-900/50 bg-opacity-75 transition-opacity backdrop-blur-sm"></div>
+
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div
+          class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-zinc-200">
+          <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div
+                class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                  stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                <h3 class="text-lg font-semibold leading-6 text-zinc-900" id="modal-title">Ready to leave?</h3>
+                <div class="mt-2 text-sm text-zinc-500">
+                  <p>You are about to log out from your session. You will need to log in again to access the dashboard.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-zinc-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
+            <button onclick="window.location.href='../index.html'" class="w-full bg-sun-yellow py-3 text-sm font-bold text-zinc-900 rounded-xl hover:bg-sun-yellowLight transition shadow-lg uppercase tracking-widest border border-sun-yellowDark">Yes, logout</button>
+            <button type="button"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 sm:mt-0 sm:w-auto transition duration-200"
+              onclick="document.getElementById('logoutModal').classList.add('hidden')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

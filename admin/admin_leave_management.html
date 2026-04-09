@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leave Management - SunStar Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Roboto+Slab:wght@700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              sun: {
+                yellow: "#f4d000",
+                yellowLight: "#fef08a",
+                yellowDark: "#ca8a04",
+                ink: "#111111"
+              }
+            },
+            fontFamily: {
+              logo: ["Alfa Slab One", "serif"],
+              davao: ["Roboto Slab", "serif"],
+              sans: ["Inter", "sans-serif"]
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-white font-sans text-sun-ink">
+  <div class="flex h-screen bg-white">
+    <aside class="hidden w-64 border-r border-zinc-200 bg-white lg:flex lg:flex-col shadow-sm">
+      <div class="mb-8 px-5 pt-8 pb-2">
+        <p class="font-logo text-3xl font-black tracking-tight text-black">SunStar <span class="text-sun-yellow">Davao</span></p>
+        <p class="mt-1 font-sans text-xs font-black uppercase tracking-[0.15em] text-zinc-500">Admin Portal</p>
+      </div>
+
+      <nav class="flex-1 space-y-2.5 px-4 mt-2">
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Overview</p>
+          <a href="admin-dashboard.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>Dashboard</div></a>
+        </div>
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Personnel</p>
+          <div class="space-y-0.5">
+            <a href="admin_employee_management.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Employee Management</div></a>
+            <a href="admin_master_data.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>Master Data</div></a>
+          </div>
+        </div>
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Operations</p>
+          <div class="space-y-0.5">
+            <a href="admin_attendance_monitoring.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-clock"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/></svg>Attendance</div></a>
+            <a href="admin_leave_management.html" class="group flex items-center justify-between rounded-md bg-sun-yellowLight px-3 py-1.5 text-sm font-semibold text-zinc-900 transition-colors duration-200 hover:bg-sun-yellow"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-off text-sun-yellowDark group-hover:text-black"><path d="M4.2 4.2A2 2 0 0 0 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 1.82-1.18"/><path d="M21 15.5V6a2 2 0 0 0-2-2H9.5"/><path d="M16 2v4"/><path d="M3 10h7"/><path d="M21 10h-5.5"/><line x1="2" x2="22" y1="2" y2="22"/></svg>Leave Management</div></a>
+          </div>
+        </div>
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Professional Growth</p>
+          <div class="space-y-0.5">
+            <a href="admin_training_development.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap"><path d="M21.42 10.922a2 2 0 0 1-.019 3.022l-7.1 7.1a2 2 0 0 1-2.796 0l-7.1-7.1a2 2 0 0 1-.018-3.022l7.1-7.1a2 2 0 0 1 2.825 0l7.1 7.1z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>Training & Dev.</div></a>
+            <a href="admin_employee_performance.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>Performance</div></a>
+          </div>
+        </div>
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Reports</p>
+          <a href="admin_report_analytics.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 group-active:bg-sun-yellowLight"><div class="flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Report & Analytics</div></a>
+        </div>
+      </nav>
+
+      <!-- User Profile & Logout Section -->
+      <div class="mt-auto px-4 flex flex-col gap-3 border-t border-zinc-200 pt-4 pb-6">
+        <!-- User Account -->
+        <div class="flex items-center gap-3 px-2">
+          <div
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-sun-yellow text-sm font-bold text-black border border-sun-yellowDark shadow-sm">
+            AD
+          </div>
+          <div class="flex flex-col overflow-hidden">
+            <span class="truncate text-sm font-medium tracking-tight text-zinc-900">Admin User</span>
+            <span class="truncate text-xs text-zinc-500">Authenticated Admin</span>
+          </div>
+        </div>
+
+        <!-- Logout Button -->
+        <button onclick="document.getElementById('logoutModal').classList.remove('hidden')"
+          class="group flex w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-log-out">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" x2="9" y1="12" y2="12" />
+          </svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 overflow-auto bg-zinc-50/50">
+      <div class="border-b border-zinc-200 bg-white px-6 py-4 sm:px-8 flex items-center justify-between sticky top-0 z-10 w-full shadow-sm">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-widest text-zinc-500">Admin</p>
+          <h1 class="mt-1 text-2xl font-bold">Leave Management</h1>
+        </div>
+      </div>
+
+      <div class="p-6 sm:p-8 max-w-7xl mx-auto">
+        <div class="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+           <!-- Pending Count -->
+           <div class="rounded-xl border border-zinc-200 bg-white p-5 flex items-center gap-4 shadow-sm">
+             <div class="h-10 w-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600 shrink-0">
+               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+             </div>
+             <div>
+               <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Pending Approval</p>
+               <h3 id="countPending" class="text-xl font-black text-zinc-900 leading-none mt-1">0</h3>
+             </div>
+           </div>
+           
+           <!-- To Verify Count -->
+           <div class="rounded-xl border border-zinc-200 bg-white p-5 flex items-center gap-4 shadow-sm">
+             <div class="h-10 w-10 rounded-full bg-sun-yellow/10 flex items-center justify-center text-sun-yellowDark shrink-0">
+               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+             </div>
+             <div>
+               <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">To be Verified</p>
+               <h3 id="countVerify" class="text-xl font-black text-zinc-900 leading-none mt-1">0</h3>
+             </div>
+           </div>
+
+           <!-- Approved Count -->
+           <div class="rounded-xl border border-zinc-200 bg-white p-5 flex items-center gap-4 shadow-sm">
+             <div class="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 shrink-0">
+               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+             </div>
+             <div>
+               <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Approved Leaves</p>
+               <h3 id="countApproved" class="text-xl font-black text-zinc-900 leading-none mt-1">0</h3>
+             </div>
+           </div>
+        </div>
+
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h2 class="text-lg font-bold text-zinc-900">Leave Requests History</h2>
+        </div>
+
+        <div class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+          <table class="w-full text-left text-sm text-zinc-600">
+            <thead class="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+              <tr>
+                  <th class="px-6 py-4">Employee</th>
+                  <th class="px-6 py-4 whitespace-nowrap">Date/Time Filed</th>
+                  <th class="px-6 py-4">Category</th>
+                  <th class="px-6 py-4">Effectivity</th>
+                  <th class="px-6 py-4">Credits</th>
+                  <th class="px-6 py-4 text-center">Duration</th>
+                  <th class="px-6 py-4">Status</th>
+                  <th class="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leaveTableBody" class="divide-y divide-zinc-100">
+              <!-- Dynamically populated from storage -->
+            </tbody>
+          </table>
+          <div class="flex items-center justify-between border-t border-zinc-200 bg-zinc-50 px-6 py-3">
+            <span class="text-sm font-medium text-zinc-500" id="paginationInfo">Showing 1 to 5 of X entries</span>
+            <div class="flex gap-2">
+              <button id="prevPageBtn" class="flex items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-700 shadow-sm hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">Previous</button>
+              <button id="nextPageBtn" class="flex items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-700 shadow-sm hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Logout Confirmation Modal -->
+  <div id="logoutModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-zinc-900/50 bg-opacity-75 transition-opacity backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-zinc-200">
+          <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                <h3 class="text-lg font-semibold leading-6 text-zinc-900" id="modal-title">Ready to leave?</h3>
+                <div class="mt-2 text-sm text-zinc-500">
+                  <p>You are about to log out from your session. You will need to log in again to access the dashboard.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-zinc-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
+            <button type="button" class="inline-flex w-full justify-center rounded-md bg-sun-yellow px-3 py-2 text-sm font-semibold text-black shadow-sm hover:bg-sun-yellowDark sm:w-auto transition duration-200" onclick="window.location.href='../index.html'">Log out</button>
+            <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 hover:bg-zinc-50 sm:mt-0 sm:w-auto transition duration-200" onclick="document.getElementById('logoutModal').classList.add('hidden')">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="max-w-sm w-full bg-white rounded-xl p-6 shadow-2xl border border-zinc-200 text-center">
+        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4 text-green-600 font-black">✓</div>
+        <h3 class="text-lg font-black uppercase text-zinc-900 mb-2">Updated!</h3>
+        <p id="successMessage" class="text-sm text-zinc-500 mb-6"></p>
+        <button onclick="document.getElementById('successModal').classList.add('hidden')" class="w-full bg-sun-yellow py-2.5 text-sm font-bold rounded-md hover:bg-sun-yellowDark transition">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Note Modal -->
+  <div id="viewNoteModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="max-w-md w-full bg-white rounded-xl p-8 shadow-2xl border border-zinc-200">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-black uppercase text-zinc-900 tracking-tight">Leave Message</h3>
+          <button onclick="document.getElementById('viewNoteModal').classList.add('hidden')" class="text-zinc-400 hover:text-zinc-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <div class="bg-zinc-50 rounded-lg p-5 border border-zinc-100">
+          <p id="noteEmployeeName" class="text-[10px] font-black uppercase text-sun-yellowDark mb-2 tracking-widest"></p>
+          <p id="noteContent" class="text-sm text-zinc-600 leading-relaxed italic"></p>
+        </div>
+        <button onclick="document.getElementById('viewNoteModal').classList.add('hidden')" class="mt-6 w-full bg-sun-yellow py-3 text-sm font-bold text-zinc-900 rounded-lg hover:bg-sun-yellowLight transition shadow-md border border-sun-yellowDark uppercase tracking-widest active:scale-95">Close Message</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../backend-database/supabase-config.js"></script>
+  <script src="../backend-database/supabase-client.js"></script>
+  <script src="../backend-database/supabase-hr-service.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+      const tbody = document.getElementById('leaveTableBody');
+      const prevPageBtn = document.getElementById('prevPageBtn');
+      const nextPageBtn = document.getElementById('nextPageBtn');
+      const paginationInfo = document.getElementById('paginationInfo');
+
+      let currentPage = 1;
+      const itemsPerPage = 5;
+
+      async function syncLeavesFromSupabase() {
+        if (!window.HRDataService) return;
+        const remote = await window.HRDataService.fetchLeaves();
+        if (Array.isArray(remote)) {
+          localStorage.setItem('sunstar_leaves', JSON.stringify(remote));
+        }
+      }
+
+      async function syncAttendanceFromSupabase() {
+        if (!window.HRDataService) return;
+        const remote = await window.HRDataService.fetchAttendanceGrouped();
+        if (remote && typeof remote === 'object') {
+          localStorage.setItem('sunstar_attendance', JSON.stringify(remote));
+        }
+      }
+
+      await syncLeavesFromSupabase();
+      await syncAttendanceFromSupabase();
+
+      function formatReadableDate(dateStr) {
+        if(!dateStr || dateStr === '---') return '---';
+        const d = new Date(dateStr);
+        d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+        return d.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+      }
+
+      function updateOverviewCounts(leaves) {
+         const pending = leaves.filter(l => l.status === 'Pending').length;
+         const toVerify = leaves.filter(l => l.status === 'To verify').length;
+         const approved = leaves.filter(l => l.status === 'Approve').length;
+
+         document.getElementById('countPending').textContent = pending;
+         document.getElementById('countVerify').textContent = toVerify;
+         document.getElementById('countApproved').textContent = approved;
+      }
+
+      function renderLeaveTable() {
+        tbody.innerHTML = '';
+        let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
+        updateOverviewCounts(leaves);
+        leaves.sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled));
+
+        const totalItems = leaves.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        if(currentPage > totalPages) currentPage = totalPages;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const currentData = leaves.slice(startIndex, endIndex);
+
+        if (!currentData.length) {
+           tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-sm text-zinc-400 italic">No leave requests found.</td></tr>`;
+           return;
+        }
+
+        currentData.forEach(l => {
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-zinc-50 transition duration-150";
+
+          let statusBadge = '';
+          const commonBadgeClasses = "inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset";
+          
+          if (l.status === 'Pending') {
+            statusBadge = `<span class="${commonBadgeClasses} bg-zinc-100 text-zinc-600 ring-zinc-500/20">Pending</span>`;
+          } else if (l.status === 'To verify') {
+            statusBadge = `<span class="${commonBadgeClasses} bg-blue-50 text-blue-700 ring-blue-600/20">To verify</span>`;
+          } else if (l.status === 'Approve') {
+            statusBadge = `<span class="${commonBadgeClasses} bg-green-50 text-green-700 ring-green-600/20">Approved</span>`;
+          } else {
+            statusBadge = `<span class="${commonBadgeClasses} bg-red-50 text-red-700 ring-red-600/10">Declined</span>`;
+          }
+
+          const isApproved = l.status === 'Approve';
+          const selectClasses = "rounded-md border border-zinc-200 py-1.5 pl-3 pr-8 text-xs font-bold text-zinc-700 bg-white shadow-sm focus:border-sun-yellow outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
+
+          const remainingCredits = 15 - (l.status === 'Approve' ? l.days : 0);
+          const filedTime = l.timeFiled || "08:30 AM";
+
+          tr.innerHTML = `
+            <td class="px-6 py-4">
+               <div class="flex flex-col">
+                  <span class="font-medium tracking-tight text-zinc-900 leading-none">${l.name}</span>
+                  <span class="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Staff Member</span>
+               </div>
+            </td>
+            <td class="px-6 py-4">
+               <div class="flex flex-col">
+                  <span class="text-zinc-600 font-bold text-xs">${l.dateFiled}</span>
+                  <span class="text-[9px] text-zinc-400 font-black uppercase tracking-tighter">${filedTime}</span>
+               </div>
+            </td>
+            <td class="px-6 py-4">
+               <span class="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black uppercase text-zinc-600 ring-1 ring-inset ring-zinc-200">
+                  ${l.reason || 'Personal'}
+               </span>
+            </td>
+            <td class="px-6 py-4 text-zinc-900 font-bold text-xs underline decoration-sun-yellow/30 decoration-2 underline-offset-4">${formatReadableDate(l.dateOfLeave)}</td>
+            <td class="px-6 py-4">
+               <div class="flex items-center gap-2">
+                  <span class="text-zinc-700 font-black text-xs">${remainingCredits}/15</span>
+                  <p class="text-[8px] text-zinc-400 font-bold uppercase tracking-wide">Left</p>
+               </div>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <div class="flex flex-col items-center">
+                 <span class="font-black text-zinc-900 text-xs">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</span>
+                 <button onclick="openNoteModal(${l.id})" class="text-[8px] font-black uppercase text-sun-yellowDark hover:text-zinc-900 transition-colors tracking-widest mt-0.5">View Notes</button>
+              </div>
+            </td>
+            <td class="px-6 py-4">${statusBadge}</td>
+            <td class="px-6 py-4 text-right">
+              <select onchange="updateLeaveStatus(${l.id}, this.value)" class="${selectClasses}" ${isApproved ? 'disabled' : ''}>
+                <option value="Pending" ${l.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="To verify" ${l.status === 'To verify' ? 'selected' : ''}>To verify</option>
+                <option value="Approve" ${l.status === 'Approve' ? 'selected' : ''}>Approve</option>
+                <option value="Decline" ${l.status === 'Decline' ? 'selected' : ''}>Decline</option>
+              </select>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        const endDisplay = Math.min(endIndex, totalItems);
+        paginationInfo.textContent = `Showing ${totalItems > 0 ? startIndex + 1 : 0} to ${endDisplay} of ${totalItems} entries`;
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages;
+      }
+
+      window.openNoteModal = function(id) {
+        const leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
+        const l = leaves.find(item => item.id === id);
+        if (l) {
+          document.getElementById('noteEmployeeName').textContent = l.name;
+          document.getElementById('noteContent').textContent = `"${l.note || 'No additional message provided.'}"`;
+          document.getElementById('viewNoteModal').classList.remove('hidden');
+        }
+      };
+
+      window.updateLeaveStatus = async function(id, newStatus) {
+        let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
+        const index = leaves.findIndex(l => l.id === id);
+        if(index !== -1) {
+          const leave = leaves[index];
+          leave.status = newStatus;
+          
+          if (newStatus === 'Approve') {
+            await syncToAttendance(leave);
+          }
+
+          localStorage.setItem('sunstar_leaves', JSON.stringify(leaves));
+          if (window.HRDataService) {
+            await window.HRDataService.upsertLeave(leave);
+          }
+          renderLeaveTable();
+          showSuccessModal(newStatus);
+        }
+      };
+
+      async function syncToAttendance(leave) {
+        if(!leave.dateOfLeave) return;
+        let attendance = JSON.parse(localStorage.getItem('sunstar_attendance')) || {};
+        if(!attendance[leave.dateOfLeave]) attendance[leave.dateOfLeave] = [];
+        
+        // Avoid duplicates
+        if(!attendance[leave.dateOfLeave].some(r => String(r.empId) === String(leave.empId) || r.name === leave.name)) {
+          const absentRecord = {
+            empId: leave.empId,
+            name: leave.name,
+            clockIn: '--',
+            clockOut: '--',
+            status: 'Absent',
+            color: 'red'
+          };
+          attendance[leave.dateOfLeave].push(absentRecord);
+          localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+          if (window.HRDataService) {
+            await window.HRDataService.upsertAttendanceRecord(leave.dateOfLeave, absentRecord);
+          }
+        }
+      }
+
+      function showSuccessModal(statusType) {
+         const msg = document.getElementById('successMessage');
+         msg.textContent = statusType === 'Approve' ? "Leave approved and synced to attendance." : (statusType === 'Decline' ? "Request declined." : `Status set to ${statusType}.`);
+         document.getElementById('successModal').classList.remove('hidden');
+      }
+
+      prevPageBtn.addEventListener('click', () => { if(currentPage > 1) { currentPage--; renderLeaveTable(); }});
+      nextPageBtn.addEventListener('click', () => { 
+         let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
+         if(currentPage < Math.ceil(leaves.length / itemsPerPage)) { currentPage++; renderLeaveTable(); }
+      });
+
+      renderLeaveTable();
+    });
+  </script>
+</body>
+</html>
+

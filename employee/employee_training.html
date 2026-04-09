@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training & Development - Employee Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Roboto+Slab:wght@700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              sun: {
+                yellow: "#f4d000",
+                yellowLight: "#fef08a",
+                yellowDark: "#ca8a04",
+                ink: "#111111"
+              }
+            },
+            fontFamily: {
+              logo: ["Alfa Slab One", "serif"],
+              davao: ["Roboto Slab", "serif"],
+              sans: ["Inter", "sans-serif"]
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-white font-sans text-sun-ink">
+  <style>
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-modal-in {
+      animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+  </style>
+  <div class="flex h-screen bg-white overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="hidden w-64 border-r border-zinc-200 bg-white lg:flex lg:flex-col shadow-sm">
+      <div class="mb-8 px-5 pt-8 pb-2">
+        <p class="font-logo text-3xl font-black tracking-tight text-black">SunStar <span class="text-sun-yellow">Davao</span></p>
+        <p class="mt-1 font-sans text-xs font-black uppercase tracking-[0.15em] text-zinc-500 text-center lg:text-left">Employee Portal</p>
+      </div>
+
+      <nav class="flex-1 space-y-2.5 px-4 mt-2">
+        <div>
+          <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Main</p>
+          <a href="employee_dashboard.html"
+            class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+              My Dashboard
+            </div>
+          </a>
+        </div>
+        <div>
+           <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Attendance & Leave</p>
+           <div class="space-y-0.5">
+              <a href="employee_attendance.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900">
+                <div class="flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M7 12a5 5 0 0 1 5-5"/><path d="M12 20a5 5 0 0 0 5-5"/><path d="M17 12a1 1 0 0 1 1 1"/><path d="M12 12h.01"/><path d="M12 17a3 3 0 0 1-3-3"/></svg>
+                  Attendance
+                </div>
+              </a>
+              <a href="employee_leave.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+                <div class="flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/></svg>
+                  File a Leave
+                </div>
+              </a>
+           </div>
+        </div>
+        <div>
+           <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Training & Performance</p>
+           <div class="space-y-0.5">
+              <a href="employee_training.html" class="group flex items-center justify-between rounded-md bg-sun-yellowLight px-3 py-1.5 text-sm font-semibold text-zinc-900 transition-colors duration-200 hover:bg-sun-yellow">
+                <div class="flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-sun-yellowDark group-hover:text-black"><path d="M21.42 10.922a2 2 0 0 1-.019 3.022l-7.1 7.1a2 2 0 0 1-2.796 0l-7.1-7.1a2 2 0 0 1-.018-3.022l7.1-7.1a2 2 0 0 1 2.825 0l7.1 7.1z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>
+                  Training & Dev.
+                </div>
+              </a>
+              <a href="employee_performance.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+                <div class="flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                  Performance
+                </div>
+              </a>
+           </div>
+        </div>
+
+        <div>
+           <p class="px-3 mb-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Account</p>
+           <a href="employee_settings.html" class="group flex items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-sun-yellowLight hover:text-zinc-900 border border-transparent">
+             <div class="flex items-center gap-3">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-1.94 1.5l-.3 1.2a2 2 0 0 1-1.43 1.43l-1.2.3A2 2 0 0 0 5.4 8.36l.18.72a2 2 0 0 1-.46 1.95l-.84.84a2 2 0 0 0 0 2.83l.84.84a2 2 0 0 1 .46 1.95l-.18.72a2 2 0 0 0 1.5 2.43l1.2.3a2 2 0 0 1 1.43 1.43l.3 1.2a2 2 0 0 0 1.94 1.5h.44a2 2 0 0 0 1.94-1.5l.3-1.2a2 2 0 0 1 1.43-1.43l1.2-.3a2 2 0 0 0 1.5-2.43l-.18-.72a2 2 0 0 1 .46-1.95l.84-.84a2 2 0 0 0 0-2.83l-.84-.84a2 2 0 0 1-.46-1.95l.18-.72a2 2 0 0 0-1.5-2.43l-1.2-.3a2 2 0 0 1-1.43-1.43l-.3-1.2A2 2 0 0 0 12.22 2z"/><circle cx="12" cy="12" r="3"/></svg>
+               Settings
+             </div>
+           </a>
+        </div>
+      </nav>
+
+      <!-- Logout Section -->
+      <div class="mt-auto px-4 flex flex-col gap-3 border-t border-zinc-200 pt-4 pb-6">
+        <div class="flex items-center gap-3 px-2 group relative">
+          <div id="userProfilePic" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-sun-yellow border border-zinc-700 shadow-sm uppercase overflow-hidden">JD</div>
+          <div class="flex flex-col overflow-hidden flex-1">
+            <span class="truncate text-sm font-medium tracking-tight text-zinc-900" id="userName">Employee</span>
+            <span class="truncate text-[10px] uppercase font-black tracking-widest text-zinc-500" id="userRole">Staff Writer</span>
+          </div>
+          <button onclick="document.getElementById('uploadPhotoModal').classList.remove('hidden')" class="h-7 w-7 rounded-full bg-sun-yellowLight/50 text-sun-yellowDark flex items-center justify-center hover:bg-sun-yellow hover:text-zinc-900 transition-all shadow-sm shrink-0 border border-sun-yellowLight group-hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </div>
+        <button onclick="document.getElementById('logoutModal').classList.remove('hidden')" class="group flex w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 hover:bg-zinc-50 hover:text-zinc-900">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-auto bg-zinc-50/50">
+      <div class="border-b border-zinc-200 bg-white px-6 py-4 sm:px-8 flex items-center justify-between sticky top-0 z-10 w-full shadow-sm">
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Career Advancement</p>
+          <h1 class="mt-1 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-600">Training & Development</h1>
+        </div>
+        <div class="flex items-center gap-2">
+           <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+           <p class="text-[10px] font-black uppercase text-zinc-400">System Active</p>
+        </div>
+      </div>
+
+      <div class="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
+
+        <!-- Tabs (Mirroring Admin) -->
+        <div class="border-b border-zinc-200">
+          <nav class="flex space-x-8" aria-label="Tabs">
+            <button onclick="switchTab('programs')" class="tab-btn border-sun-yellow text-sun-ink border-b-2 py-4 px-1 text-sm font-bold" id="tab-programs">
+              Training Programs
+            </button>
+            <button onclick="switchTab('skills')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-skills">
+              My Skills
+            </button>
+            <button onclick="switchTab('certs')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-certs">
+              My Certifications
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab 1: Training Programs -->
+        <div id="content-programs" class="tab-content">
+          <div id="programsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Tab 2: My Skills -->
+        <div id="content-skills" class="tab-content hidden space-y-6">
+          <div class="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-zinc-100 bg-zinc-50/50 flex justify-between items-center">
+              <div>
+                 <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">My Skill Inventory</h2>
+                 <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Skills verified by HR after training completion</p>
+              </div>
+              <div class="bg-sun-yellow/10 border border-sun-yellow/20 px-4 py-2 rounded-xl">
+                 <span class="text-2xl font-black text-zinc-900" id="skillCountDisplay">0</span>
+                 <span class="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">verified</span>
+              </div>
+            </div>
+            <div class="p-6">
+               <div id="skillsContainer" class="flex flex-wrap gap-2 min-h-[60px]">
+                  <!-- Skills populated by JS -->
+               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: My Certifications -->
+        <div id="content-certs" class="tab-content hidden space-y-6">
+          <div id="certsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Enrollment Success Modal -->
+  <div id="successModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="max-w-sm w-full bg-white rounded-3xl p-10 shadow-2xl text-center border border-zinc-200 animate-modal-in">
+        <div class="mx-auto h-20 w-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-6 shadow-inner border border-green-100">
+           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3 class="text-2xl font-black uppercase text-zinc-900 mb-2 tracking-tighter">Enrolled Successfully!</h3>
+        <p class="text-sm text-zinc-500 mb-10 font-medium italic leading-relaxed">You've been enrolled in the training program.</p>
+        <button onclick="document.getElementById('successModal').classList.add('hidden')" class="w-full bg-zinc-900 py-4 text-sm font-bold text-white rounded-2xl hover:bg-zinc-800 transition shadow-xl uppercase tracking-widest italic">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Photo Modal -->
+  <div id="uploadPhotoModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="relative max-w-sm w-full rounded-2xl bg-white p-8 shadow-2xl border border-zinc-200 text-center animate-modal-in">
+        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">Update Profile Photo</h3>
+        <p class="text-[10px] text-zinc-400 mb-6 font-black uppercase tracking-[0.2em]">Personalize your profile</p>
+        <div class="mb-6 mx-auto h-32 w-32 rounded-full border-4 border-zinc-50 bg-zinc-100 flex items-center justify-center overflow-hidden shadow-inner">
+           <img id="previewImg" src="" class="hidden w-full h-full object-cover">
+           <svg id="previewPlaceholder" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-zinc-300"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handlePreview(event)">
+        <div class="flex flex-col gap-3">
+            <button onclick="document.getElementById('photoInput').click()" class="w-full border-2 border-dashed border-zinc-200 py-3 text-[10px] font-black uppercase text-zinc-400 rounded-xl hover:bg-zinc-50 hover:border-sun-yellow transition-all duration-300">Choose Files</button>
+            <button onclick="savePhoto()" class="w-full bg-sun-yellow py-4 text-sm font-bold text-zinc-900 rounded-xl shadow-lg uppercase tracking-widest hover:bg-sun-yellowLight transition-all active:scale-[0.98] border border-sun-yellowDark">Save Changes</button>
+            <button onclick="document.getElementById('uploadPhotoModal').classList.add('hidden')" class="w-full bg-white text-zinc-400 py-3 text-xs font-black uppercase tracking-widest hover:text-zinc-900 transition active:scale-95">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Photo Modal -->
+  <div id="successPhotoModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="relative max-w-sm w-full rounded-3xl bg-white p-10 shadow-3xl border border-zinc-200 text-center animate-modal-in">
+        <div class="relative mb-6 mx-auto h-24 w-24">
+            <div id="successPhotoPreview" class="h-full w-full rounded-full border-4 border-white shadow-lg overflow-hidden bg-zinc-100"></div>
+            <div class="absolute -bottom-1 -right-1 h-8 w-8 bg-green-500 text-white rounded-full flex items-center justify-center border-4 border-white shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+        </div>
+        <h3 class="text-2xl font-black text-zinc-900 uppercase tracking-tighter mb-2">Success!</h3>
+        <p class="text-sm text-zinc-500 mb-10 font-medium italic leading-relaxed">Your profile picture has been updated across the system.</p>
+        <button onclick="document.getElementById('successPhotoModal').classList.add('hidden')" class="w-full bg-zinc-900 py-4 text-sm font-bold text-white rounded-2xl hover:bg-zinc-800 transition shadow-xl uppercase tracking-widest italic">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout Modal -->
+  <div id="logoutModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="relative max-w-sm w-full rounded-2xl bg-white p-8 shadow-2xl border border-zinc-200 animate-modal-in">
+        <div class="h-12 w-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mb-6 mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+        </div>
+        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tight text-center mb-2">Signing Out?</h3>
+        <p class="text-sm text-zinc-500 mb-8 font-medium text-center leading-relaxed">Your progress is saved. See you next time!</p>
+        <div class="flex flex-col gap-3">
+            <button onclick="window.location.href='../index.html'" class="w-full bg-sun-yellow py-3 text-sm font-bold text-zinc-900 rounded-xl hover:bg-sun-yellowLight transition shadow-lg uppercase tracking-widest border border-sun-yellowDark">Yes, logout</button>
+            <button onclick="document.getElementById('logoutModal').classList.add('hidden')" class="w-full bg-white border border-zinc-200 py-3 text-sm font-bold text-zinc-400 rounded-xl hover:bg-zinc-100 transition uppercase tracking-widest">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../backend-database/supabase-config.js"></script>
+  <script src="../backend-database/supabase-client.js"></script>
+  <script src="../backend-database/supabase-employee-service.js"></script>
+  <script src="../backend-database/supabase-hr-service.js"></script>
+
+  <script>
+    const TRAINING_KEY = 'sunstar_trainings';
+    const EMPLOYEE_KEY = 'sunstar_employees';
+    const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
+
+    let activeUserId = null;
+    let activeUserName = '';
+
+    function safeParse(value, fallback) {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return fallback;
+      }
+    }
+
+    function getEmployees() {
+      return safeParse(localStorage.getItem(EMPLOYEE_KEY), []);
+    }
+
+    function setEmployees(employees) {
+      localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(employees));
+    }
+
+    function getTrainings() {
+      return safeParse(localStorage.getItem(TRAINING_KEY), []);
+    }
+
+    function setTrainings(trainings) {
+      localStorage.setItem(TRAINING_KEY, JSON.stringify(trainings));
+    }
+
+    function normalizeDataModels() {
+      let employeeChanged = false;
+      const employees = getEmployees().map(emp => {
+        const next = { ...emp };
+        if (!Array.isArray(next.skills)) {
+          next.skills = [];
+          employeeChanged = true;
+        }
+        if (!Array.isArray(next.certs)) {
+          next.certs = [];
+          employeeChanged = true;
+        }
+        return next;
+      });
+
+      if (employeeChanged) {
+        setEmployees(employees);
+      }
+
+      let trainingChanged = false;
+      const trainings = getTrainings().map(training => {
+        const next = { ...training };
+        if (!Array.isArray(next.enrollees)) {
+          next.enrollees = [];
+          trainingChanged = true;
+        }
+        return next;
+      });
+
+      if (trainingChanged) {
+        setTrainings(trainings);
+      }
+    }
+
+    function resolveActiveUser() {
+      const employees = getEmployees();
+      const sessionUserId = localStorage.getItem(SESSION_USER_KEY);
+
+      let me = null;
+      if (sessionUserId !== null) {
+        me = employees.find(emp => String(emp.id) === String(sessionUserId));
+      }
+
+      if (!me && employees.length > 0) {
+        me = employees[0];
+      }
+
+      if (me) {
+        activeUserId = me.id;
+        activeUserName = `${me.firstName || ''} ${me.lastName || ''}`.trim();
+        localStorage.setItem(SESSION_USER_KEY, String(me.id));
+
+        document.getElementById('userName').textContent = activeUserName;
+        document.getElementById('userRole').textContent = me.role || 'Staff Writer';
+      } else {
+        activeUserId = null;
+        activeUserName = '';
+        document.getElementById('userName').textContent = 'No Employee';
+        document.getElementById('userRole').textContent = 'N/A';
+      }
+    }
+
+    function getActiveEmployee() {
+      const employees = getEmployees();
+
+      if (activeUserId !== null) {
+        const meById = employees.find(emp => String(emp.id) === String(activeUserId));
+        if (meById) {
+          return meById;
+        }
+      }
+
+      if (!activeUserName) return null;
+      return employees.find(emp => `${emp.firstName || ''} ${emp.lastName || ''}`.trim().toLowerCase() === activeUserName.toLowerCase()) || null;
+    }
+
+    function isUserEnrolled(program) {
+      return Array.isArray(program.enrollees) && program.enrollees.some(id => String(id) === String(activeUserId));
+    }
+
+    async function syncEmployeesFromSupabase() {
+      if (!window.EmployeeDataService) return;
+      const remote = await window.EmployeeDataService.fetchEmployees();
+      if (Array.isArray(remote)) {
+        localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(remote));
+      }
+    }
+
+    async function syncTrainingsFromSupabase() {
+      if (!window.HRDataService) return;
+      const remote = await window.HRDataService.fetchTrainings();
+      if (Array.isArray(remote)) {
+        localStorage.setItem(TRAINING_KEY, JSON.stringify(remote));
+      }
+    }
+
+    async function initPage() {
+      await syncEmployeesFromSupabase();
+      await syncTrainingsFromSupabase();
+      normalizeDataModels();
+      resolveActiveUser();
+      renderPrograms();
+      renderSkills();
+      renderCerts();
+      refreshProfilePic();
+    }
+
+    function renderPrograms() {
+      const trainings = getTrainings();
+      const grid = document.getElementById('programsGrid');
+
+      if (trainings.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-20 bg-white rounded-3xl border border-zinc-100">
+            <div class="h-12 w-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-300"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+            </div>
+            <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No training programs available</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = '';
+      trainings.forEach(program => {
+        const enrolled = isUserEnrolled(program);
+        const dateObj = new Date(program.date);
+        const formattedDate = Number.isNaN(dateObj.getTime())
+          ? 'TBA'
+          : dateObj.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+        const statusColor = program.status === 'Active' ? 'bg-sun-yellow' : 'bg-zinc-100 text-zinc-500';
+        const enrolleeCount = Array.isArray(program.enrollees) ? program.enrollees.length : 0;
+
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden hover:border-sun-yellow transition duration-300 flex flex-col';
+        card.innerHTML = `
+          <div class="${statusColor} px-4 py-3 flex justify-between items-center">
+            <span class="text-[10px] font-black uppercase text-black bg-white/30 px-2 py-0.5 rounded tracking-tighter">${program.status || 'Upcoming'}</span>
+            <span class="text-xs font-bold italic opacity-80">${formattedDate}</span>
+          </div>
+          <div class="p-5 flex-1 flex flex-col">
+            <h3 class="text-lg font-black text-zinc-900 leading-tight">${program.name || 'Untitled Program'}</h3>
+            <p class="mt-2 text-sm text-zinc-500 line-clamp-2 flex-1">${program.desc || 'No description provided.'}</p>
+            <div class="mt-5 pb-1 flex items-center justify-between border-t border-zinc-50 pt-4">
+              <div class="flex flex-col">
+                <span class="text-[10px] font-black uppercase tracking-widest text-sun-yellowDark">${program.dept || 'General'}</span>
+                <span class="text-[11px] font-bold text-zinc-400 mt-0.5">${enrolleeCount} Enrolled</span>
+              </div>
+              <button onclick="${enrolled ? '' : `enroll(${program.id})`}" class="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all active:scale-[0.98] border ${enrolled ? 'bg-green-50 text-green-700 border-green-100 cursor-default ring-1 ring-inset ring-green-600/20' : 'bg-sun-yellow text-zinc-900 border-sun-yellowDark hover:bg-sun-yellowLight shadow-sm'}">
+                ${enrolled ? '✓ Enrolled' : 'Enroll Now'}
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function enroll(programId) {
+      if (activeUserId === null) {
+        alert('No employee profile found. Please ask admin to create your profile first.');
+        return;
+      }
+
+      const trainings = getTrainings();
+      const programIndex = trainings.findIndex(program => String(program.id) === String(programId));
+      if (programIndex === -1) {
+        return;
+      }
+
+      const targetProgram = trainings[programIndex];
+      if (!Array.isArray(targetProgram.enrollees)) {
+        targetProgram.enrollees = [];
+      }
+
+      if (!targetProgram.enrollees.some(id => String(id) === String(activeUserId))) {
+        targetProgram.enrollees.push(activeUserId);
+        setTrainings(trainings);
+        if (window.HRDataService) {
+          await window.HRDataService.upsertTraining(targetProgram);
+        }
+        renderPrograms();
+        setTimeout(() => {
+          document.getElementById('successModal').classList.remove('hidden');
+        }, 200);
+      }
+    }
+
+    function renderSkills() {
+      const me = getActiveEmployee() || { skills: [] };
+      const skills = Array.isArray(me.skills) ? me.skills : [];
+      const container = document.getElementById('skillsContainer');
+
+      document.getElementById('skillCountDisplay').textContent = skills.length;
+
+      if (skills.length === 0) {
+        container.innerHTML = `
+          <div class="w-full text-center py-10">
+            <div class="h-12 w-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-300"><path d="M12 2v8"/><path d="m4.93 4.93 5.66 5.66"/><path d="M2 12h8"/><path d="m4.93 19.07 5.66-5.66"/></svg>
+            </div>
+            <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No skills verified yet</p>
+            <p class="text-[10px] text-zinc-300 mt-1">Complete a training program to earn skill badges</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      skills.forEach(skill => {
+        const badge = document.createElement('span');
+        badge.className = 'bg-zinc-100 text-zinc-700 px-3 py-1.5 rounded-md border border-zinc-200 text-[10px] font-bold uppercase tracking-tighter';
+        badge.textContent = skill;
+        container.appendChild(badge);
+      });
+    }
+
+    function renderCerts() {
+      const me = getActiveEmployee() || { certs: [] };
+      const certs = Array.isArray(me.certs) ? me.certs : [];
+      const grid = document.getElementById('certsGrid');
+
+      if (certs.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-20 bg-white rounded-3xl border border-zinc-100">
+            <div class="h-12 w-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-300"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+            </div>
+            <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No certifications on file</p>
+            <p class="text-[10px] text-zinc-300 mt-1">Certifications added by HR will appear here</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = '';
+      certs.forEach(cert => {
+        const expiryDate = new Date(cert.expiry);
+        const isExpired = !Number.isNaN(expiryDate.getTime()) && expiryDate < new Date();
+        const card = document.createElement('div');
+        card.className = 'bg-white p-6 rounded-xl border border-zinc-200 shadow-sm flex items-start gap-4 hover:border-sun-yellow hover:shadow-lg transition-all duration-300';
+        card.innerHTML = `
+          <div class="h-12 w-12 rounded-xl bg-sun-yellow flex items-center justify-center text-black flex-shrink-0 border border-sun-yellowDark shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+          </div>
+          <div class="flex-1">
+            <div class="flex justify-between items-start">
+              <h3 class="font-black text-zinc-900 uppercase tracking-tight text-base">${cert.name || 'Certification'}</h3>
+              <span class="text-[10px] font-black ${isExpired ? 'bg-red-50 text-red-600 border-red-200' : 'bg-sun-yellow text-black border-sun-yellowDark'} border px-2 py-0.5 rounded tracking-tighter shadow-sm">${isExpired ? 'EXPIRED' : 'VERIFIED'}</span>
+            </div>
+            <div class="mt-4 pt-3 border-t border-zinc-50 flex items-center justify-between text-[10px] font-bold text-zinc-500 uppercase italic">
+              <span>By ${cert.issuer || 'Unknown Issuer'}</span>
+              <span class="${isExpired ? 'text-red-500' : ''}">Exp: ${cert.expiry || 'N/A'}</span>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(button => {
+        button.classList.remove('border-sun-yellow', 'text-sun-ink');
+        button.classList.add('border-transparent', 'text-zinc-500');
+      });
+
+      document.getElementById('content-' + tabId).classList.remove('hidden');
+      document.getElementById('tab-' + tabId).classList.add('border-sun-yellow', 'text-sun-ink');
+      document.getElementById('tab-' + tabId).classList.remove('border-transparent', 'text-zinc-500');
+
+      if (tabId === 'skills') {
+        renderSkills();
+      }
+      if (tabId === 'certs') {
+        renderCerts();
+      }
+    }
+
+    function refreshProfilePic() {
+      const me = getActiveEmployee();
+      const container = document.getElementById('userProfilePic');
+
+      if (!me) {
+        container.textContent = 'NA';
+        return;
+      }
+
+      if (me.profilePic) {
+        container.innerHTML = `<img src="${me.profilePic}" class="w-full h-full object-cover">`;
+      } else {
+        container.textContent = `${(me.firstName || 'N')[0]}${(me.lastName || 'A')[0]}`;
+      }
+    }
+
+    function handlePreview(e) {
+      const file = e.target.files[0];
+      if (!file) {
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const preview = document.getElementById('previewImg');
+        preview.src = event.target.result;
+        preview.classList.remove('hidden');
+        document.getElementById('previewPlaceholder').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function savePhoto() {
+      const preview = document.getElementById('previewImg');
+      if (!preview.src || preview.src === window.location.href || preview.src === '') {
+        alert('Please select an image first.');
+        return;
+      }
+
+      const employees = getEmployees();
+      let userIndex = -1;
+
+      if (activeUserId !== null) {
+        userIndex = employees.findIndex(emp => String(emp.id) === String(activeUserId));
+      }
+
+      if (userIndex === -1) {
+        userIndex = employees.findIndex(emp => `${emp.firstName || ''} ${emp.lastName || ''}`.trim().toLowerCase() === activeUserName.toLowerCase());
+      }
+
+      if (userIndex === -1) {
+        alert('No employee profile found to update photo.');
+        return;
+      }
+
+      employees[userIndex].profilePic = preview.src;
+      setEmployees(employees);
+      if (window.EmployeeDataService) {
+        await window.EmployeeDataService.upsertEmployee(employees[userIndex]);
+      }
+
+      ['userProfilePic', 'successPhotoPreview'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.innerHTML = `<img src="${preview.src}" class="w-full h-full object-cover">`;
+        }
+      });
+
+      refreshProfilePic();
+      document.getElementById('uploadPhotoModal').classList.add('hidden');
+      setTimeout(() => {
+        document.getElementById('successPhotoModal').classList.remove('hidden');
+      }, 300);
+    }
+
+    document.addEventListener('DOMContentLoaded', initPage);
+
+    window.addEventListener('storage', async function() {
+      await initPage();
+    });
+
+    window.addEventListener('focus', async function() {
+      await initPage();
+    });
+  </script>
+</body>
+</html>
