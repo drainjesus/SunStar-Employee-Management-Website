@@ -290,16 +290,97 @@
         console.warn('Leave page sync failed. Falling back to local data.', error);
       }
 
+      function parseDateInput(value) {
+        if (!value) return null;
+        const raw = String(value).trim();
+        if (!raw || raw === '---') return null;
+
+        if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+          const [year, month, day] = raw.split('-').map(Number);
+          return new Date(year, month - 1, day);
+        }
+
+        const parsed = new Date(raw);
+        if (Number.isNaN(parsed.getTime())) return null;
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+      }
+
       function formatReadableDate(dateStr) {
-        if(!dateStr || dateStr === '---') return '---';
-        const d = new Date(dateStr + 'T00:00:00Z');
+        const d = parseDateInput(dateStr);
+        if (!d) return '---';
         return d.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
       }
 
-      function formatDateTimeAccurate(dateStr, timeStr) {
-        if (!dateStr || dateStr === '---') return '---';
-        const timePart = timeStr || '08:30 AM';
-        return { date: dateStr, time: timePart };
+      function parseTimeInput(value) {
+        if (!value) return null;
+        const raw = String(value).trim();
+        if (!raw) return null;
+
+        const match12Hour = raw.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i);
+        if (match12Hour) {
+          let hours = Number(match12Hour[1]);
+          const minutes = Number(match12Hour[2]);
+          const meridiem = match12Hour[3].toUpperCase();
+
+          if (hours === 12) hours = 0;
+          if (meridiem === 'PM') hours += 12;
+
+          if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+            return { hours, minutes };
+          }
+        }
+
+        const match24Hour = raw.match(/^(\d{1,2}):(\d{2})(?::\d{2})?/);
+        if (match24Hour) {
+          const hours = Number(match24Hour[1]);
+          const minutes = Number(match24Hour[2]);
+          if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+            return { hours, minutes };
+          }
+        }
+
+        return null;
+      }
+
+      function formatFiledTime(timeStr, createdAt) {
+        const parsedTime = parseTimeInput(timeStr);
+        if (parsedTime) {
+          const timeDate = new Date(2000, 0, 1, parsedTime.hours, parsedTime.minutes, 0, 0);
+          return timeDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+
+        if (createdAt) {
+          const createdDate = new Date(createdAt);
+          if (!Number.isNaN(createdDate.getTime())) {
+            return createdDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+          }
+        }
+
+        return '--:--';
+      }
+
+      function getFiledSortValue(leave) {
+        const datePart = parseDateInput(leave.dateFiled);
+        let base = 0;
+
+        if (datePart) {
+          datePart.setHours(0, 0, 0, 0);
+          base = datePart.getTime();
+        }
+
+        const timePart = parseTimeInput(leave.timeFiled);
+        if (timePart) {
+          return base + (timePart.hours * 60 + timePart.minutes) * 60000;
+        }
+
+        if (leave.createdAt) {
+          const createdDate = new Date(leave.createdAt);
+          if (!Number.isNaN(createdDate.getTime())) {
+            return createdDate.getTime();
+          }
+        }
+
+        return base;
       }
 
       function updateOverviewCounts(leaves) {
@@ -317,8 +398,8 @@
         window.leaveDetailsStore = {};
         let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
         updateOverviewCounts(leaves);
-        // Sort by date filed, newest first
-        leaves.sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled));
+        // Sort by filed date + time, newest first
+        leaves.sort((a, b) => getFiledSortValue(b) - getFiledSortValue(a));
 
         const totalItems = leaves.length;
         const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
@@ -354,7 +435,8 @@
           const selectClasses = "rounded-md border border-zinc-200 py-1.5 pl-3 pr-8 text-xs font-bold text-zinc-700 bg-white shadow-sm focus:border-sun-yellow outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
 
           const remainingCredits = 15 - (l.status === 'Approve' ? l.days : 0);
-          const filedTime = l.timeFiled || "08:30 AM";
+          const filedDate = formatReadableDate(l.dateFiled);
+          const filedTime = formatFiledTime(l.timeFiled, l.createdAt);
           
           const storeKey = `leave_${l.id || index}`;
           window.leaveDetailsStore[storeKey] = {
@@ -370,7 +452,7 @@
             </td>
             <td class="px-6 py-4">
                <div class="flex flex-col">
-                  <span class="text-zinc-600 font-bold text-xs">${l.dateFiled}</span>
+                <span class="text-zinc-600 font-bold text-xs">${filedDate}</span>
                   <span class="text-[9px] text-zinc-400 font-black uppercase tracking-tighter">${filedTime}</span>
                </div>
             </td>

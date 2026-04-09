@@ -52,7 +52,8 @@
       note: row.note || "",
       days: Number(row.days || 1),
       status: row.status || "Pending",
-      timeFiled: row.time_filed || ""
+      timeFiled: row.time_filed || "",
+      createdAt: row.created_at || ""
     };
   }
 
@@ -119,7 +120,8 @@
     const { data, error } = await window.supabaseClient
       .from("leave_requests")
       .select("*")
-      .order("date_filed", { ascending: false });
+      .order("date_filed", { ascending: false })
+      .order("time_filed", { ascending: false });
 
     if (error) {
       console.error("fetchLeaves failed", error);

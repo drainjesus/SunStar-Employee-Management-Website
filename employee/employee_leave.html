@@ -441,11 +441,18 @@
 
     function initPage() {
       resolveActiveUser();
-      const today = new Date();
-      const filingDate = today.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
-      document.getElementById('dateFiled').value = filingDate;
+      const filedNow = getNowFiledValues();
+      document.getElementById('dateFiled').value = filedNow.dateDisplay;
       renderHistory();
       updateBalanceCards();
+    }
+
+    function getNowFiledValues() {
+      const now = new Date();
+      return {
+        dateDisplay: now.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }),
+        timeDisplay: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })
+      };
     }
 
     function updateBalanceCards() {
@@ -531,7 +538,7 @@
        const dateLeave = document.getElementById('dateOfLeave').value;
        const days = document.getElementById('days').value;
        const note = document.getElementById('note').value;
-       const dateFiled = document.getElementById('dateFiled').value;
+      const filedNow = getNowFiledValues();
 
        let leaves = getLeaves();
        
@@ -539,7 +546,8 @@
           id: Date.now(),
          empId: activeUser.id,
          name: getActiveUserName(),
-          dateFiled: dateFiled,
+         dateFiled: filedNow.dateDisplay,
+         timeFiled: filedNow.timeDisplay,
           dateOfLeave: dateLeave,
           reason: reason,
           note: note,
