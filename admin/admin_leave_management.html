@@ -226,56 +226,7 @@
     </div>
   </div>
 
-  <!-- View Leave Details Modal -->
-  <div id="viewLeaveDetailsModal" class="relative z-50 hidden">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-      <div class="max-w-lg w-full bg-white rounded-xl p-8 shadow-2xl border border-zinc-200">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-black uppercase text-zinc-900 tracking-tight">Leave Request Details</h3>
-          <button onclick="document.getElementById('viewLeaveDetailsModal').classList.add('hidden')" class="text-zinc-400 hover:text-zinc-600">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-          </button>
-        </div>
-
-        <div class="bg-zinc-50 rounded-lg p-5 border border-zinc-100 space-y-3">
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <p class="text-zinc-400 font-black uppercase tracking-widest">Employee</p>
-              <p id="leaveDetailEmployee" class="text-zinc-900 font-bold mt-1"></p>
-            </div>
-            <div>
-              <p class="text-zinc-400 font-black uppercase tracking-widest">Category</p>
-              <p id="leaveDetailCategory" class="text-zinc-900 font-bold mt-1"></p>
-            </div>
-            <div>
-              <p class="text-zinc-400 font-black uppercase tracking-widest">Date Filed</p>
-              <p id="leaveDetailDateFiled" class="text-zinc-900 font-bold mt-1"></p>
-            </div>
-            <div>
-              <p class="text-zinc-400 font-black uppercase tracking-widest">Effectivity</p>
-              <p id="leaveDetailEffectivity" class="text-zinc-900 font-bold mt-1"></p>
-            </div>
-            <div>
-              <p class="text-zinc-400 font-black uppercase tracking-widest">Duration</p>
-              <p id="leaveDetailDuration" class="text-zinc-900 font-bold mt-1"></p>
-            </div>
-            <div>
-              <p class="text-zinc-400 font-black uppercase tracking-widest">Status</p>
-              <p id="leaveDetailStatus" class="text-zinc-900 font-bold mt-1"></p>
-            </div>
-          </div>
-
-          <div class="pt-2 border-t border-zinc-200">
-            <p class="text-zinc-400 font-black uppercase tracking-widest text-[10px] mb-2">Brief Description</p>
-            <p id="leaveDetailDescription" class="text-sm text-zinc-600 leading-relaxed italic"></p>
-          </div>
-        </div>
-
-        <button onclick="document.getElementById('viewLeaveDetailsModal').classList.add('hidden')" class="mt-6 w-full bg-sun-yellow py-3 text-sm font-bold text-zinc-900 rounded-lg hover:bg-sun-yellowLight transition shadow-md border border-sun-yellowDark uppercase tracking-widest active:scale-95">Close Details</button>
-      </div>
-    </div>
-  </div>
+  <!-- View Leave Details Modal (REMOVED) -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../backend-database/supabase-config.js"></script>
@@ -283,9 +234,6 @@
   <script src="../backend-database/supabase-hr-service.js"></script>
 
   <script>
-    // Global store for leave details accessed by view details modal
-    window.leaveDetailsStore = {};
-
     document.addEventListener("DOMContentLoaded", async function () {
       const tbody = document.getElementById('leaveTableBody');
       const prevPageBtn = document.getElementById('prevPageBtn');
@@ -337,7 +285,6 @@
 
       function renderLeaveTable() {
         tbody.innerHTML = '';
-        window.leaveDetailsStore = {}; // Clear store for fresh render
         let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
         updateOverviewCounts(leaves);
         // Sort by date filed, newest first
@@ -378,19 +325,6 @@
 
           const remainingCredits = 15 - (l.status === 'Approve' ? l.days : 0);
           const filedTime = l.timeFiled || "08:30 AM";
-          
-          // Store leave details in global map using leave ID as stable key
-          const storeKey = `leave_${l.id || index}`;
-          window.leaveDetailsStore[storeKey] = {
-            employee: l.name || 'Unknown employee',
-            category: l.reason || 'Personal',
-            dateFiled: l.dateFiled || '---',
-            filedTime: filedTime,
-            effectivity: formatReadableDate(l.dateOfLeave),
-            duration: `${l.days || 1} ${(l.days || 1) > 1 ? 'Days' : 'Day'}`,
-            status: toDisplayStatus(l.status),
-            description: getLeaveDescription(l)
-          };
 
           tr.innerHTML = `
             <td class="px-6 py-4">
@@ -423,7 +357,6 @@
             <td class="px-6 py-4">${statusBadge}</td>
             <td class="px-6 py-4 text-right">
               <div class="flex flex-col items-end gap-2">
-                <button type="button" data-store-key="${storeKey}" onclick="window.showLeaveDetailsModal('${storeKey}')" class="view-leave-details-btn rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition cursor-pointer">View Details</button>
                 <select onchange="updateLeaveStatus(${l.id}, this.value)" class="${selectClasses}" ${isApproved ? 'disabled' : ''}>
                   <option value="Pending" ${l.status === 'Pending' ? 'selected' : ''}>Pending</option>
                   <option value="To verify" ${l.status === 'To verify' ? 'selected' : ''}>To verify</option>
@@ -447,67 +380,6 @@
         if (status === 'Decline') return 'Declined';
         return status || 'Pending';
       }
-
-      function getLeaveDescription(leave) {
-        if (!leave || typeof leave !== 'object') return 'No brief description provided.';
-        const candidates = [
-          leave.note,
-          leave.description,
-          leave.leaveDescription,
-          leave.remarks,
-          leave.comment,
-          leave.details
-        ];
-
-        const found = candidates.find(value => typeof value === 'string' && value.trim().length > 0);
-        return found ? found.trim() : 'No brief description provided.';
-      }
-
-      function getLeaveIdentityKey(leave) {
-        if (!leave || typeof leave !== 'object') return '';
-
-        const idValue = leave.id !== undefined && leave.id !== null ? String(leave.id).trim() : '';
-        if (idValue) {
-          return `id:${idValue}`;
-        }
-
-        const parts = [
-          String(leave.empId || '').trim(),
-          String(leave.name || '').trim().toLowerCase(),
-          String(leave.dateFiled || '').trim(),
-          String(leave.dateOfLeave || '').trim(),
-          String(leave.days || '').trim(),
-          String(leave.reason || '').trim().toLowerCase()
-        ];
-
-        return `composite:${parts.join('|')}`;
-      }
-
-      function findLeaveByIdentity(encodedIdentity) {
-        const leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
-        const decodedIdentity = decodeURIComponent(String(encodedIdentity || ''));
-        if (!decodedIdentity) return null;
-        return leaves.find(item => getLeaveIdentityKey(item) === decodedIdentity) || null;
-      }
-
-      window.showLeaveDetailsModal = function(storeKey) {
-        const details = window.leaveDetailsStore[storeKey];
-        if (!details) {
-          console.error('Leave details not found for key:', storeKey);
-          return;
-        }
-
-        document.getElementById('leaveDetailEmployee').textContent = details.employee || 'Unknown employee';
-        document.getElementById('leaveDetailCategory').textContent = details.category || 'Personal';
-        document.getElementById('leaveDetailDateFiled').textContent = `${details.dateFiled || '---'} ${details.filedTime || '--:--'}`;
-        document.getElementById('leaveDetailEffectivity').textContent = details.effectivity || '---';
-        document.getElementById('leaveDetailDuration').textContent = details.duration || '1 Day';
-        document.getElementById('leaveDetailStatus').textContent = details.status || 'Pending';
-        document.getElementById('leaveDetailDescription').textContent = details.description || 'No brief description provided.';
-        document.getElementById('viewLeaveDetailsModal').classList.remove('hidden');
-      };
-
-
 
       window.updateLeaveStatus = async function(id, newStatus) {
         let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
