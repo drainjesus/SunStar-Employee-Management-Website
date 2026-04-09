@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 
 <head>
@@ -35,57 +35,11 @@
     };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    .sun-admin-sidebar {
-      position: relative;
-      background:
-        radial-gradient(120% 60% at 0% 0%, rgba(244, 208, 0, 0.22) 0%, rgba(244, 208, 0, 0) 55%),
-        radial-gradient(120% 70% at 100% 100%, rgba(202, 138, 4, 0.16) 0%, rgba(202, 138, 4, 0) 58%),
-        linear-gradient(180deg, #fffdf2 0%, #ffffff 42%, #fffbea 100%);
-      border-right-color: #f3e7b3 !important;
-      box-shadow: 0 8px 24px rgba(202, 138, 4, 0.08);
-    }
-
-    .sun-admin-sidebar::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background: linear-gradient(180deg, #f4d000 0%, #eab308 55%, #ca8a04 100%);
-      opacity: 0.9;
-      pointer-events: none;
-    }
-
-    .sun-admin-sidebar nav a {
-      border: 1px solid transparent;
-      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
-    }
-
-    .sun-admin-sidebar nav a:hover {
-      border-color: #f4d000;
-      background: linear-gradient(90deg, rgba(244, 208, 0, 0.26) 0%, rgba(254, 240, 138, 0.52) 100%) !important;
-      color: #111827 !important;
-      transform: translateX(2px);
-    }
-
-    .sun-admin-sidebar nav a.bg-sun-yellowLight,
-    .sun-admin-sidebar nav a.text-zinc-900 {
-      border-color: #eab308;
-      background: linear-gradient(90deg, rgba(244, 208, 0, 0.42) 0%, rgba(254, 240, 138, 0.86) 100%) !important;
-      box-shadow: inset 0 0 0 1px rgba(202, 138, 4, 0.2);
-    }
-
-    .sun-admin-sidebar .border-t {
-      border-top-color: #f3e7b3 !important;
-    }
-  </style>
 </head>
 
 <body class="min-h-screen bg-white font-sans text-sun-ink">
   <div class="flex h-screen bg-white">
-    <aside class="sun-admin-sidebar hidden w-64 border-r border-zinc-200 bg-white lg:flex lg:flex-col shadow-sm">
+    <aside class="hidden w-64 border-r border-zinc-200 bg-white lg:flex lg:flex-col shadow-sm">
       <div class="mb-8 px-5 pt-8 pb-2">
         <p class="font-logo text-3xl font-black tracking-tight text-black">SunStar <span class="text-sun-yellow">Davao</span></p>
         <p class="mt-1 font-sans text-xs font-black uppercase tracking-[0.15em] text-zinc-500">Admin Portal</p>
@@ -714,6 +668,5 @@
   <script src="../backend-database/mobile-responsive.js"></script>
 </body>
 </html>
-
 
 
