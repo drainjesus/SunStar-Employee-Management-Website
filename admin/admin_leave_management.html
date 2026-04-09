@@ -369,6 +369,7 @@
 
           const remainingCredits = 15 - (l.status === 'Approve' ? l.days : 0);
           const filedTime = l.timeFiled || "08:30 AM";
+          const leaveIdentity = encodeURIComponent(getLeaveIdentityKey(l));
 
           tr.innerHTML = `
             <td class="px-6 py-4">
@@ -401,7 +402,7 @@
             <td class="px-6 py-4">${statusBadge}</td>
             <td class="px-6 py-4 text-right">
               <div class="flex flex-col items-end gap-2">
-                <button type="button" data-leave-id="${String(l.id)}" class="view-leave-details-btn rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition">View Details</button>
+                <button type="button" data-leave-identity="${leaveIdentity}" onclick="openLeaveDetailsModal(this.dataset.leaveIdentity)" class="view-leave-details-btn rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition">View Details</button>
                 <select onchange="updateLeaveStatus(${l.id}, this.value)" class="${selectClasses}" ${isApproved ? 'disabled' : ''}>
                   <option value="Pending" ${l.status === 'Pending' ? 'selected' : ''}>Pending</option>
                   <option value="To verify" ${l.status === 'To verify' ? 'selected' : ''}>To verify</option>
@@ -441,9 +442,35 @@
         return found ? found.trim() : 'No brief description provided.';
       }
 
-      window.openLeaveDetailsModal = function(id) {
+      function getLeaveIdentityKey(leave) {
+        if (!leave || typeof leave !== 'object') return '';
+
+        const idValue = leave.id !== undefined && leave.id !== null ? String(leave.id).trim() : '';
+        if (idValue) {
+          return `id:${idValue}`;
+        }
+
+        const parts = [
+          String(leave.empId || '').trim(),
+          String(leave.name || '').trim().toLowerCase(),
+          String(leave.dateFiled || '').trim(),
+          String(leave.dateOfLeave || '').trim(),
+          String(leave.days || '').trim(),
+          String(leave.reason || '').trim().toLowerCase()
+        ];
+
+        return `composite:${parts.join('|')}`;
+      }
+
+      function findLeaveByIdentity(encodedIdentity) {
         const leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
-        const l = leaves.find(item => String(item.id) === String(id));
+        const decodedIdentity = decodeURIComponent(String(encodedIdentity || ''));
+        if (!decodedIdentity) return null;
+        return leaves.find(item => getLeaveIdentityKey(item) === decodedIdentity) || null;
+      }
+
+      window.openLeaveDetailsModal = function(encodedIdentity) {
+        const l = findLeaveByIdentity(encodedIdentity);
         if (l) {
           const filedTime = l.timeFiled || '--:--';
           document.getElementById('leaveDetailEmployee').textContent = l.name || 'Unknown employee';
@@ -460,9 +487,9 @@
       tbody.addEventListener('click', function(event) {
         const button = event.target.closest('.view-leave-details-btn');
         if (!button) return;
-        const leaveId = button.getAttribute('data-leave-id');
-        if (!leaveId) return;
-        window.openLeaveDetailsModal(leaveId);
+        const leaveIdentity = button.getAttribute('data-leave-identity');
+        if (!leaveIdentity) return;
+        window.openLeaveDetailsModal(leaveIdentity);
       });
 
       window.updateLeaveStatus = async function(id, newStatus) {
