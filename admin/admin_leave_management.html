@@ -379,8 +379,8 @@
           const remainingCredits = 15 - (l.status === 'Approve' ? l.days : 0);
           const filedTime = l.timeFiled || "08:30 AM";
           
-          // Store leave details in global map for modal access
-          const storeKey = `leave_${Date.now()}_${index}`;
+          // Store leave details in global map using leave ID as stable key
+          const storeKey = `leave_${l.id || index}`;
           window.leaveDetailsStore[storeKey] = {
             employee: l.name || 'Unknown employee',
             category: l.reason || 'Personal',
@@ -423,7 +423,7 @@
             <td class="px-6 py-4">${statusBadge}</td>
             <td class="px-6 py-4 text-right">
               <div class="flex flex-col items-end gap-2">
-                <button type="button" data-store-key="${storeKey}" onclick="window.showLeaveDetailsModal(this.dataset.storeKey)" class="view-leave-details-btn rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition cursor-pointer">View Details</button>
+                <button type="button" data-store-key="${storeKey}" onclick="window.showLeaveDetailsModal('${storeKey}')" class="view-leave-details-btn rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition cursor-pointer">View Details</button>
                 <select onchange="updateLeaveStatus(${l.id}, this.value)" class="${selectClasses}" ${isApproved ? 'disabled' : ''}>
                   <option value="Pending" ${l.status === 'Pending' ? 'selected' : ''}>Pending</option>
                   <option value="To verify" ${l.status === 'To verify' ? 'selected' : ''}>To verify</option>
