@@ -226,22 +226,53 @@
     </div>
   </div>
 
-  <!-- View Note Modal -->
-  <div id="viewNoteModal" class="relative z-50 hidden">
+  <!-- View Leave Details Modal -->
+  <div id="viewLeaveDetailsModal" class="relative z-50 hidden">
     <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
     <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-      <div class="max-w-md w-full bg-white rounded-xl p-8 shadow-2xl border border-zinc-200">
+      <div class="max-w-lg w-full bg-white rounded-xl p-8 shadow-2xl border border-zinc-200">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-black uppercase text-zinc-900 tracking-tight">Leave Message</h3>
-          <button onclick="document.getElementById('viewNoteModal').classList.add('hidden')" class="text-zinc-400 hover:text-zinc-600">
+          <h3 class="text-lg font-black uppercase text-zinc-900 tracking-tight">Leave Request Details</h3>
+          <button onclick="document.getElementById('viewLeaveDetailsModal').classList.add('hidden')" class="text-zinc-400 hover:text-zinc-600">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </div>
-        <div class="bg-zinc-50 rounded-lg p-5 border border-zinc-100">
-          <p id="noteEmployeeName" class="text-[10px] font-black uppercase text-sun-yellowDark mb-2 tracking-widest"></p>
-          <p id="noteContent" class="text-sm text-zinc-600 leading-relaxed italic"></p>
+
+        <div class="bg-zinc-50 rounded-lg p-5 border border-zinc-100 space-y-3">
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <p class="text-zinc-400 font-black uppercase tracking-widest">Employee</p>
+              <p id="leaveDetailEmployee" class="text-zinc-900 font-bold mt-1"></p>
+            </div>
+            <div>
+              <p class="text-zinc-400 font-black uppercase tracking-widest">Category</p>
+              <p id="leaveDetailCategory" class="text-zinc-900 font-bold mt-1"></p>
+            </div>
+            <div>
+              <p class="text-zinc-400 font-black uppercase tracking-widest">Date Filed</p>
+              <p id="leaveDetailDateFiled" class="text-zinc-900 font-bold mt-1"></p>
+            </div>
+            <div>
+              <p class="text-zinc-400 font-black uppercase tracking-widest">Effectivity</p>
+              <p id="leaveDetailEffectivity" class="text-zinc-900 font-bold mt-1"></p>
+            </div>
+            <div>
+              <p class="text-zinc-400 font-black uppercase tracking-widest">Duration</p>
+              <p id="leaveDetailDuration" class="text-zinc-900 font-bold mt-1"></p>
+            </div>
+            <div>
+              <p class="text-zinc-400 font-black uppercase tracking-widest">Status</p>
+              <p id="leaveDetailStatus" class="text-zinc-900 font-bold mt-1"></p>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-zinc-200">
+            <p class="text-zinc-400 font-black uppercase tracking-widest text-[10px] mb-2">Brief Description</p>
+            <p id="leaveDetailDescription" class="text-sm text-zinc-600 leading-relaxed italic"></p>
+          </div>
         </div>
-        <button onclick="document.getElementById('viewNoteModal').classList.add('hidden')" class="mt-6 w-full bg-sun-yellow py-3 text-sm font-bold text-zinc-900 rounded-lg hover:bg-sun-yellowLight transition shadow-md border border-sun-yellowDark uppercase tracking-widest active:scale-95">Close Message</button>
+
+        <button onclick="document.getElementById('viewLeaveDetailsModal').classList.add('hidden')" class="mt-6 w-full bg-sun-yellow py-3 text-sm font-bold text-zinc-900 rounded-lg hover:bg-sun-yellowLight transition shadow-md border border-sun-yellowDark uppercase tracking-widest active:scale-95">Close Details</button>
       </div>
     </div>
   </div>
@@ -311,8 +342,8 @@
         const endIndex = startIndex + itemsPerPage;
         const currentData = leaves.slice(startIndex, endIndex);
 
-        if (!currentData.length) {
-           tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-sm text-zinc-400 italic">No leave requests found.</td></tr>`;
+          if (!currentData.length) {
+            tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-sm text-zinc-400 italic">No leave requests found.</td></tr>`;
            return;
         }
 
@@ -365,19 +396,19 @@
                </div>
             </td>
             <td class="px-6 py-4 text-center">
-              <div class="flex flex-col items-center">
-                 <span class="font-black text-zinc-900 text-xs">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</span>
-                 <button onclick="openNoteModal(${l.id})" class="text-[8px] font-black uppercase text-sun-yellowDark hover:text-zinc-900 transition-colors tracking-widest mt-0.5">View Notes</button>
-              </div>
+              <span class="font-black text-zinc-900 text-xs">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</span>
             </td>
             <td class="px-6 py-4">${statusBadge}</td>
             <td class="px-6 py-4 text-right">
-              <select onchange="updateLeaveStatus(${l.id}, this.value)" class="${selectClasses}" ${isApproved ? 'disabled' : ''}>
-                <option value="Pending" ${l.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                <option value="To verify" ${l.status === 'To verify' ? 'selected' : ''}>To verify</option>
-                <option value="Approve" ${l.status === 'Approve' ? 'selected' : ''}>Approve</option>
-                <option value="Decline" ${l.status === 'Decline' ? 'selected' : ''}>Decline</option>
-              </select>
+              <div class="flex flex-col items-end gap-2">
+                <button type="button" onclick="openLeaveDetailsModal('${l.id}')" class="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition">View Details</button>
+                <select onchange="updateLeaveStatus(${l.id}, this.value)" class="${selectClasses}" ${isApproved ? 'disabled' : ''}>
+                  <option value="Pending" ${l.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                  <option value="To verify" ${l.status === 'To verify' ? 'selected' : ''}>To verify</option>
+                  <option value="Approve" ${l.status === 'Approve' ? 'selected' : ''}>Approve</option>
+                  <option value="Decline" ${l.status === 'Decline' ? 'selected' : ''}>Decline</option>
+                </select>
+              </div>
             </td>
           `;
           tbody.appendChild(tr);
@@ -389,13 +420,25 @@
         nextPageBtn.disabled = currentPage === totalPages;
       }
 
-      window.openNoteModal = function(id) {
+      function toDisplayStatus(status) {
+        if (status === 'Approve') return 'Approved';
+        if (status === 'Decline') return 'Declined';
+        return status || 'Pending';
+      }
+
+      window.openLeaveDetailsModal = function(id) {
         const leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
-        const l = leaves.find(item => item.id === id);
+        const l = leaves.find(item => String(item.id) === String(id));
         if (l) {
-          document.getElementById('noteEmployeeName').textContent = l.name;
-          document.getElementById('noteContent').textContent = `"${l.note || 'No additional message provided.'}"`;
-          document.getElementById('viewNoteModal').classList.remove('hidden');
+          const filedTime = l.timeFiled || '--:--';
+          document.getElementById('leaveDetailEmployee').textContent = l.name || 'Unknown employee';
+          document.getElementById('leaveDetailCategory').textContent = l.reason || 'Personal';
+          document.getElementById('leaveDetailDateFiled').textContent = `${l.dateFiled || '---'} ${filedTime}`;
+          document.getElementById('leaveDetailEffectivity').textContent = formatReadableDate(l.dateOfLeave);
+          document.getElementById('leaveDetailDuration').textContent = `${l.days || 1} ${(l.days || 1) > 1 ? 'Days' : 'Day'}`;
+          document.getElementById('leaveDetailStatus').textContent = toDisplayStatus(l.status);
+          document.getElementById('leaveDetailDescription').textContent = l.note || 'No brief description provided.';
+          document.getElementById('viewLeaveDetailsModal').classList.remove('hidden');
         }
       };
 
