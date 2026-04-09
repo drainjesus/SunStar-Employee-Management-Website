@@ -10,7 +10,6 @@
       const style = document.createElement("style");
       style.id = "admin-sidebar-routing-fix-style";
       style.textContent = [
-        ".hidden { display: none !important; }",
         "aside { position: relative; z-index: 40; }",
         "aside nav a { pointer-events: auto; cursor: pointer; }"
       ].join("\n");
