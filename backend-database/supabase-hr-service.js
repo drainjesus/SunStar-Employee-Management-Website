@@ -2,6 +2,7 @@
   const TRAINING_KEY = "sunstar_trainings";
   const LEAVE_KEY = "sunstar_leaves";
   const ATTENDANCE_KEY = "sunstar_attendance";
+  const ATTENDANCE_EXTENDED_COLUMNS = ["is_verified", "verified_by", "verified_at", "status_source"];
 
   function hasClient() {
     return !!window.supabaseClient;
@@ -84,8 +85,79 @@
       name: row.employee_name || "",
       clockIn: row.clock_in || "--",
       clockOut: row.clock_out || "--",
-      status: row.status || "Absent"
+      status: row.status || "Absent",
+      isVerified: !!row.is_verified,
+      verifiedBy: row.verified_by || "",
+      verifiedAt: row.verified_at || "",
+      statusSource: row.status_source || "system"
     };
+  }
+
+  function hasExtendedAttendanceColumns(rows) {
+    return rows.length === 0 || ATTENDANCE_EXTENDED_COLUMNS.every((column) =>
+      Object.prototype.hasOwnProperty.call(rows[0], column)
+    );
+  }
+
+  function mergeAttendanceMetaFromCache(grouped) {
+    let cachedGrouped = {};
+
+    try {
+      const raw = localStorage.getItem(ATTENDANCE_KEY);
+      cachedGrouped = raw ? JSON.parse(raw) : {};
+    } catch {
+      cachedGrouped = {};
+    }
+
+    const merged = {};
+    Object.keys(grouped).forEach((dateKey) => {
+      const remoteRecords = Array.isArray(grouped[dateKey]) ? grouped[dateKey] : [];
+      const cachedRecords = Array.isArray(cachedGrouped[dateKey]) ? cachedGrouped[dateKey] : [];
+
+      merged[dateKey] = remoteRecords.map((remoteRecord) => {
+        const match = cachedRecords.find((cachedRecord) => {
+          if (remoteRecord.empId !== undefined && remoteRecord.empId !== null && remoteRecord.empId !== "") {
+            return String(cachedRecord.empId) === String(remoteRecord.empId);
+          }
+
+          return String(cachedRecord.name || "").trim().toLowerCase() === String(remoteRecord.name || "").trim().toLowerCase();
+        });
+
+        if (!match) return remoteRecord;
+
+        return {
+          ...remoteRecord,
+          isVerified: remoteRecord.isVerified || !!match.isVerified,
+          verifiedBy: remoteRecord.verifiedBy || match.verifiedBy || "",
+          verifiedAt: remoteRecord.verifiedAt || match.verifiedAt || "",
+          statusSource: remoteRecord.statusSource || match.statusSource || "system"
+        };
+      });
+    });
+
+    return merged;
+  }
+
+  function buildAttendancePayload(workDate, record, options = {}) {
+    const includeExtendedFields = options.includeExtendedFields !== false;
+
+    const payload = {
+      work_date: safeDateString(workDate),
+      employee_id: Number(record.empId),
+      employee_name: record.name || "Unknown Employee",
+      clock_in: record.clockIn && record.clockIn !== "--" ? record.clockIn : null,
+      clock_out: record.clockOut && record.clockOut !== "--" ? record.clockOut : null,
+      status: record.status || "Absent"
+    };
+
+    if (includeExtendedFields) {
+      payload.is_verified = !!record.isVerified;
+      payload.verified_by = record.verifiedBy || null;
+      payload.verified_at = record.verifiedAt || null;
+      payload.status_source = record.statusSource || "system";
+    }
+
+    return payload;
   }
 
   async function fetchTrainings() {
@@ -166,12 +238,17 @@
       return null;
     }
 
+    const rows = data || [];
     const grouped = {};
-    (data || []).forEach(row => {
+    rows.forEach(row => {
       const key = row.work_date;
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(mapAttendanceDbToLocal(row));
     });
+
+    if (!hasExtendedAttendanceColumns(rows)) {
+      return mergeAttendanceMetaFromCache(grouped);
+    }
 
     return grouped;
   }
@@ -182,18 +259,29 @@
       return false;
     }
 
-    const payload = {
-      work_date: safeDateString(workDate),
-      employee_id: Number(record.empId),
-      employee_name: record.name || "Unknown Employee",
-      clock_in: record.clockIn && record.clockIn !== "--" ? record.clockIn : null,
-      clock_out: record.clockOut && record.clockOut !== "--" ? record.clockOut : null,
-      status: record.status || "Absent"
-    };
+    const payload = buildAttendancePayload(workDate, record);
 
-    const { error } = await window.supabaseClient
+    let { error } = await window.supabaseClient
       .from("attendance_records")
       .upsert(payload, { onConflict: "work_date,employee_id" });
+
+    if (error) {
+      const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
+      const hasMissingExtendedColumn = /(is_verified|verified_by|verified_at|status_source)/i.test(errorText);
+
+      if (hasMissingExtendedColumn) {
+        const fallbackPayload = buildAttendancePayload(workDate, record, { includeExtendedFields: false });
+        const fallback = await window.supabaseClient
+          .from("attendance_records")
+          .upsert(fallbackPayload, { onConflict: "work_date,employee_id" });
+
+        if (!fallback.error) {
+          return true;
+        }
+
+        error = fallback.error;
+      }
+    }
 
     if (error) {
       console.error("upsertAttendanceRecord failed", error);

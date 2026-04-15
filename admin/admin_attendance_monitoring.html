@@ -122,6 +122,7 @@
             <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Today's Attendance Log</h2>
             <div class="flex items-center gap-2">
               <span class="text-xs font-black uppercase text-zinc-400 mr-2 tracking-widest">Select Date</span>
+              <span class="rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-500">PST (UTC+8)</span>
               <button id="prevDateBtn" class="flex items-center justify-center h-9 w-9 rounded-md border border-zinc-200 text-zinc-500 hover:bg-zinc-50 transition-colors bg-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
@@ -156,7 +157,7 @@
         <section>
           <div class="mb-4">
             <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Manual Attendance Control</h2>
-            <p class="text-xs text-zinc-500 font-medium mt-1">Select employees to manually log absences for the current date.</p>
+            <p class="text-xs text-zinc-500 font-medium mt-1">Select employees to manually verify records and apply Late or Absent overrides for the selected date.</p>
           </div>
 
           <div class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
@@ -236,6 +237,8 @@
   <script>
     let pendingAbsentName = '';
     let pendingAbsentEmployeeId = null;
+    const SESSION_ADMIN_EMAIL_KEY = 'sunstar_logged_in_admin_email';
+    const MANILA_TIME_ZONE = 'Asia/Manila';
 
     document.addEventListener("DOMContentLoaded", async function () {
       const dateInput = document.getElementById('attendanceDate');
@@ -243,6 +246,123 @@
       const nextDateBtn = document.getElementById('nextDateBtn');
       const tbody = document.getElementById('attendanceTableBody');
       const controlBody = document.getElementById('employeeControlBody');
+
+      function safeParse(value, fallback) {
+        try {
+          return JSON.parse(value);
+        } catch {
+          return fallback;
+        }
+      }
+
+      function getManilaParts(referenceDate = new Date()) {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: MANILA_TIME_ZONE,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).formatToParts(referenceDate);
+
+        const map = {};
+        parts.forEach(part => {
+          if (part.type !== 'literal') {
+            map[part.type] = part.value;
+          }
+        });
+
+        return {
+          year: Number(map.year),
+          month: Number(map.month),
+          day: Number(map.day),
+          hour: Number(map.hour),
+          minute: Number(map.minute)
+        };
+      }
+
+      function getManilaIsoDate(referenceDate = new Date()) {
+        const p = getManilaParts(referenceDate);
+        const month = String(p.month).padStart(2, '0');
+        const day = String(p.day).padStart(2, '0');
+        return `${p.year}-${month}-${day}`;
+      }
+
+      function parseIsoDate(dateIso) {
+        if (!dateIso) return null;
+        const [year, month, day] = String(dateIso).split('-').map(Number);
+        if (!year || !month || !day) return null;
+        return { year, month, day };
+      }
+
+      function shiftIsoDate(dateIso, offsetDays) {
+        const parsed = parseIsoDate(dateIso);
+        if (!parsed) return dateIso;
+
+        const dt = new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day));
+        dt.setUTCDate(dt.getUTCDate() + offsetDays);
+
+        const y = dt.getUTCFullYear();
+        const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+        const d = String(dt.getUTCDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function formatReadableDate(dateStr) {
+        const parsed = parseIsoDate(dateStr);
+        if (!parsed) return '---';
+
+        const asUtcNoon = new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day, 12, 0, 0));
+        return asUtcNoon.toLocaleDateString('en-US', {
+          timeZone: MANILA_TIME_ZONE,
+          month: 'long',
+          day: '2-digit',
+          year: 'numeric'
+        });
+      }
+
+      function getVerifierName() {
+        return localStorage.getItem(SESSION_ADMIN_EMAIL_KEY) || 'Admin';
+      }
+
+      function getManilaTimestampIso(referenceDate = new Date()) {
+        return referenceDate.toISOString();
+      }
+
+      function formatVerifiedAtLabel(value) {
+        if (!value) return '';
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return String(value);
+
+        return `${parsed.toLocaleString('en-US', {
+          timeZone: MANILA_TIME_ZONE,
+          month: 'short',
+          day: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        })} PST`;
+      }
+
+      function markRecordVerified(record) {
+        record.isVerified = true;
+        record.verifiedBy = getVerifierName();
+        record.verifiedAt = getManilaTimestampIso();
+        record.statusSource = 'admin';
+      }
+
+      function findRecordByEmployee(records, employeeId, name) {
+        const normalizedName = String(name || '').trim().toLowerCase();
+        return records.find(entry => {
+          if (employeeId !== null && employeeId !== undefined && employeeId !== '') {
+            return String(entry.empId) === String(employeeId);
+          }
+          return String(entry.name || '').trim().toLowerCase() === normalizedName;
+        });
+      }
 
       async function syncAttendanceFromSupabase() {
         if (!window.HRDataService) return;
@@ -264,18 +384,11 @@
       await syncAttendanceFromSupabase();
 
       function getAttendances() {
-        return JSON.parse(localStorage.getItem('sunstar_attendance')) || {};
+        return safeParse(localStorage.getItem('sunstar_attendance'), {});
       }
 
       function getEmployees() {
-        return JSON.parse(localStorage.getItem('sunstar_employees')) || [];
-      }
-
-      function formatReadableDate(dateStr) {
-        if(!dateStr) return '---';
-        const d = new Date(dateStr);
-        d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
-        return d.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+        return safeParse(localStorage.getItem('sunstar_employees'), []);
       }
 
       // Render the main Today log
@@ -285,15 +398,15 @@
          const records = attendances[dateIso] || [];
          
          if (records.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-sm text-zinc-400 italic">No attendance records found for this date.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-sm text-zinc-400 italic">No attendance records found for this date.</td></tr>`;
             return;
          }
          
-         records.forEach(rec => {
+         records.forEach((rec, idx) => {
             const tr = document.createElement('tr');
             tr.className = "hover:bg-zinc-50 transition duration-150";
             
-            let statusBtn = '';
+            let statusBtn = '<span class="inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset bg-zinc-50 text-zinc-600 ring-zinc-300/40">Unknown</span>';
             const tagClasses = "inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset";
 
             if (rec.status === 'Present') {
@@ -303,13 +416,23 @@
             } else if (rec.status === 'Absent') {
               statusBtn = `<span class="${tagClasses} bg-red-50 text-red-700 ring-red-600/20 font-black">Absent</span>`;
             }
+
+            const verifier = rec.verifiedBy ? ` by ${rec.verifiedBy}` : '';
+            const verifiedInfo = rec.isVerified
+              ? `<span class="text-[9px] font-black uppercase tracking-widest text-emerald-600">Verified${verifier}</span>${rec.verifiedAt ? `<span class="text-[9px] font-bold text-zinc-400">${formatVerifiedAtLabel(rec.verifiedAt)}</span>` : ''}`
+              : '<span class="text-[9px] font-black uppercase tracking-widest text-amber-600">Unverified</span>';
+
             const shiftTime = rec.shift || "08:00 AM - 05:00 PM";
             const inColor = rec.clockIn === '--' || rec.clockIn.includes('--') ? 'text-zinc-300 italic' : (rec.status === 'Present' ? 'text-green-600' : 'text-yellow-600');
             const outColor = rec.clockOut === '--' || rec.clockOut.includes('--') ? 'text-zinc-300 italic' : 'text-zinc-700';
 
-            const actionBtn = rec.status === 'Absent' 
-               ? `<button onclick="issueSanction('${rec.name}')" class="text-[10px] font-black uppercase text-red-600 hover:bg-red-50 px-2 py-1 rounded-md border border-red-200 transition-colors">Issue Sanction</button>`
-               : `<span class="text-[10px] font-bold text-zinc-400">On Track</span>`;
+            const actionBtn = `
+              <div class="inline-flex flex-wrap justify-end gap-1">
+                <button onclick="verifyAttendanceRecord('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-emerald-700 border border-emerald-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-emerald-50 transition-colors">Verify</button>
+                <button onclick="overrideAttendanceStatus('${dateIso}', ${idx}, 'Late')" class="text-[10px] font-black uppercase text-yellow-700 border border-yellow-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-yellow-50 transition-colors">Late</button>
+                <button onclick="overrideAttendanceStatus('${dateIso}', ${idx}, 'Absent')" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Absent</button>
+              </div>
+            `;
 
             const otVal = rec.ot || "0.0";
             const specialVal = rec.isHoliday ? "Holiday" : "Reg";
@@ -330,7 +453,12 @@
                     <span class="text-[8px] font-bold uppercase text-zinc-400 tracking-tighter">${specialVal}</span>
                  </div>
               </td>
-              <td class="px-6 py-4">${statusBtn}</td>
+                <td class="px-6 py-4">
+                 <div class="flex flex-col gap-1">
+                  ${statusBtn}
+                  ${verifiedInfo}
+                 </div>
+                </td>
               <td class="px-6 py-4 text-right">${actionBtn}</td>
             `;
             tbody.appendChild(tr);
@@ -342,6 +470,84 @@
          document.getElementById('successMessage').textContent = `Policy sanction issued for ${name} due to unapproved absence. Record updated in personnel file.`;
          document.getElementById('successModal').classList.remove('hidden');
       };
+
+      window.verifyAttendanceRecord = async function(dateIso, recordIndex) {
+        const attendance = getAttendances();
+        const records = attendance[dateIso] || [];
+        const record = records[recordIndex];
+        if (!record) return;
+
+        markRecordVerified(record);
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+
+        if (window.HRDataService) {
+          await window.HRDataService.upsertAttendanceRecord(dateIso, record);
+        }
+
+        renderTable(dateIso);
+        document.getElementById('successMessage').textContent = `${record.name} has been verified by admin.`;
+        document.getElementById('successModal').classList.remove('hidden');
+      };
+
+      window.overrideAttendanceStatus = async function(dateIso, recordIndex, nextStatus) {
+        const attendance = getAttendances();
+        const records = attendance[dateIso] || [];
+        const record = records[recordIndex];
+        if (!record) return;
+
+        record.status = nextStatus;
+        if (nextStatus === 'Absent') {
+          record.clockIn = '--';
+          record.clockOut = '--';
+        }
+        markRecordVerified(record);
+
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+        if (window.HRDataService) {
+          await window.HRDataService.upsertAttendanceRecord(dateIso, record);
+        }
+
+        renderTable(dateIso);
+        document.getElementById('successMessage').textContent = `${record.name} was updated to ${nextStatus} and verified by admin.`;
+        document.getElementById('successModal').classList.remove('hidden');
+      };
+
+      async function upsertManualStatus(name, employeeId, dateIso, nextStatus) {
+        const attendance = getAttendances();
+        if (!attendance[dateIso]) attendance[dateIso] = [];
+
+        const existing = findRecordByEmployee(attendance[dateIso], employeeId, name);
+        let targetRecord = existing;
+
+        if (!targetRecord) {
+          targetRecord = {
+            empId: employeeId,
+            name,
+            clockIn: '--',
+            clockOut: '--',
+            status: nextStatus
+          };
+          attendance[dateIso].push(targetRecord);
+        } else {
+          targetRecord.status = nextStatus;
+        }
+
+        if (nextStatus === 'Absent') {
+          targetRecord.clockIn = '--';
+          targetRecord.clockOut = '--';
+        }
+
+        markRecordVerified(targetRecord);
+
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+        if (window.HRDataService) {
+          await window.HRDataService.upsertAttendanceRecord(dateIso, targetRecord);
+        }
+
+        renderTable(dateIso);
+        document.getElementById('successMessage').textContent = `${name} has been set to ${nextStatus} and verified by admin.`;
+        document.getElementById('successModal').classList.remove('hidden');
+      }
 
       // Render the Control Table (All Employees)
       function renderControl() {
@@ -360,14 +566,20 @@
             <td class="px-6 py-4 font-black text-zinc-900">${name}</td>
             <td class="px-6 py-4 text-[10px] font-black uppercase text-zinc-400 tracking-widest">${emp.role || 'Staff'}</td>
             <td class="px-6 py-4 text-right">
-              <button onclick="markAbsent('${name}', ${emp.id})" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-3 py-2 rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition duration-200 shadow-sm whitespace-nowrap">
-                Mark Absent
-              </button>
+              <div class="inline-flex flex-wrap justify-end gap-2">
+                <button onclick="markLate(${JSON.stringify(name)}, ${emp.id})" class="text-[10px] font-black uppercase text-yellow-700 border border-yellow-200 bg-white px-3 py-2 rounded-lg hover:bg-yellow-50 transition duration-200 shadow-sm whitespace-nowrap">Mark Late</button>
+                <button onclick="markAbsent(${JSON.stringify(name)}, ${emp.id})" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-3 py-2 rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition duration-200 shadow-sm whitespace-nowrap">Mark Absent</button>
+              </div>
             </td>
           `;
           controlBody.appendChild(tr);
         });
       }
+
+      window.markLate = async function(name, employeeId) {
+        const dateIso = dateInput.value;
+        await upsertManualStatus(name, employeeId, dateIso, 'Late');
+      };
 
       window.markAbsent = function(name, employeeId) {
         pendingAbsentName = name;
@@ -382,42 +594,13 @@
         const name = pendingAbsentName;
         const empId = pendingAbsentEmployeeId;
         const dateIso = dateInput.value;
-        let attendance = getAttendances();
-        
-        if (!attendance[dateIso]) attendance[dateIso] = [];
-        
-        if (attendance[dateIso].some(r => String(r.empId) === String(empId) || r.name === name)) {
-          alert(`${name} already has an attendance record for this date.`);
-          document.getElementById('confirmAbsentModal').classList.add('hidden');
-          return;
-        }
-
-        const newRecord = {
-          empId,
-          name: name,
-          clockIn: '--',
-          clockOut: '--',
-          status: 'Absent',
-          color: 'red'
-        };
-
-        attendance[dateIso].push(newRecord);
-
-        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
-        if (window.HRDataService) {
-          await window.HRDataService.upsertAttendanceRecord(dateIso, newRecord);
-        }
-        renderTable(dateIso);
+        await upsertManualStatus(name, empId, dateIso, 'Absent');
         document.getElementById('confirmAbsentModal').classList.add('hidden');
-        document.getElementById('successMessage').textContent = `${name} has been successfully recorded as Absent.`;
-        document.getElementById('successModal').classList.remove('hidden');
       };
 
       function updateDateObj(offset) {
          const currentIso = dateInput.value;
-         const d = new Date(currentIso);
-         d.setDate(d.getDate() + offset);
-         const newIso = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+         const newIso = shiftIsoDate(currentIso, offset);
          dateInput.value = newIso;
          renderTable(newIso);
       }
@@ -427,10 +610,9 @@
       dateInput.addEventListener('change', (e) => renderTable(e.target.value));
 
       // Init logic
-      const today = new Date();
-      const localISOTime = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
-      dateInput.value = localISOTime;
-      renderTable(localISOTime);
+      const todayIso = getManilaIsoDate();
+      dateInput.value = todayIso;
+      renderTable(todayIso);
       renderControl();
     });
   </script>

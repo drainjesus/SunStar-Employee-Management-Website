@@ -201,7 +201,7 @@
               <!-- Quick Info Card -->
               <div class="rounded-2xl border border-dashed border-zinc-200 p-6 bg-white/50">
                  <p class="text-xs text-zinc-500 font-medium italic leading-relaxed">
-                   Reliability and punctuality are core values at <span class="text-zinc-900 font-bold">SunStar Davao</span>. Please ensure you clock in before <span class="text-sun-yellowDark font-black underline decoration-sun-yellow underline-offset-4">08:00 AM</span> to maintain a perfect score.
+                   Reliability and punctuality are core values at <span class="text-zinc-900 font-bold">SunStar Davao</span>. Clock in is allowed only between <span class="text-sun-yellowDark font-black underline decoration-sun-yellow underline-offset-4">08:00 AM and 05:00 PM (PST)</span>.
                  </p>
               </div>
            </div>
@@ -330,8 +330,79 @@
       const STORAGE_KEY = 'sunstar_attendance';
       const EMPLOYEE_KEY = 'sunstar_employees';
       const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
+      const MANILA_TIME_ZONE = 'Asia/Manila';
+      const CLOCK_IN_START_MINUTES = 8 * 60;
+      const CLOCK_IN_END_MINUTES = 17 * 60;
       let currentActionType = '';
       let activeUser = null;
+
+      function getManilaParts(referenceDate = new Date()) {
+         const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: MANILA_TIME_ZONE,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+         }).formatToParts(referenceDate);
+
+         const map = {};
+         parts.forEach(part => {
+            if (part.type !== 'literal') {
+               map[part.type] = part.value;
+            }
+         });
+
+         return {
+            year: Number(map.year),
+            month: Number(map.month),
+            day: Number(map.day),
+            hour: Number(map.hour),
+            minute: Number(map.minute),
+            second: Number(map.second)
+         };
+      }
+
+      function getManilaIsoDate(referenceDate = new Date()) {
+         const parts = getManilaParts(referenceDate);
+         const month = String(parts.month).padStart(2, '0');
+         const day = String(parts.day).padStart(2, '0');
+         return `${parts.year}-${month}-${day}`;
+      }
+
+      function getManilaMinutesNow() {
+         const parts = getManilaParts();
+         return (parts.hour * 60) + parts.minute;
+      }
+
+      function isClockInWindowOpen() {
+         const minutes = getManilaMinutesNow();
+         return minutes >= CLOCK_IN_START_MINUTES && minutes <= CLOCK_IN_END_MINUTES;
+      }
+
+      function formatManilaTime(referenceDate = new Date(), includeSeconds = true) {
+         return referenceDate.toLocaleTimeString('en-US', {
+            timeZone: MANILA_TIME_ZONE,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: includeSeconds ? '2-digit' : undefined,
+            hour12: true
+         });
+      }
+
+      function formatIsoDateInManila(isoDate, options) {
+         if (!isoDate) return '--';
+         const parts = String(isoDate).split('-').map(Number);
+         if (parts.length !== 3 || parts.some(Number.isNaN)) return isoDate;
+
+         const asUtcNoon = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 12, 0, 0));
+         return asUtcNoon.toLocaleDateString('en-US', {
+            timeZone: MANILA_TIME_ZONE,
+            ...options
+         });
+      }
 
       function safeParse(value, fallback) {
          try {
@@ -396,14 +467,19 @@
 
       function updateDateTime() {
          const now = new Date();
-         document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-         document.getElementById('liveDate').textContent = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+         document.getElementById('liveClock').textContent = formatManilaTime(now, true);
+         document.getElementById('liveDate').textContent = `${now.toLocaleDateString('en-US', {
+            timeZone: MANILA_TIME_ZONE,
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+         })} (PST)`;
       }
 
       function initAttendance() {
          resolveActiveUser();
 
-         const todayIso = new Date().toISOString().split('T')[0];
+         const todayIso = getManilaIsoDate();
          const data = getAttendances();
          const todayRecords = data[todayIso] || [];
          const userName = getActiveUserName().toLowerCase();
@@ -417,6 +493,7 @@
          const statusText = document.getElementById('currentStatusText');
 
          inBtn.classList.remove('opacity-50', 'pointer-events-none');
+         outBtn.classList.remove('opacity-50', 'pointer-events-none');
          inBtn.innerHTML = 'Clock In';
          outBtn.innerHTML = 'Clock Out';
 
@@ -444,9 +521,17 @@
                outBtn.disabled = false;
             }
          } else {
-            inBtn.disabled = false;
+            const canClockInNow = isClockInWindowOpen();
+            inBtn.disabled = !canClockInNow;
+            if (!canClockInNow) {
+               inBtn.classList.add('opacity-50', 'pointer-events-none');
+               inBtn.innerHTML = 'Clock In (PST Window Closed)';
+               indicator.classList.remove('hidden');
+               statusText.textContent = 'Clock in is allowed only from 08:00 AM to 05:00 PM (PST).';
+            } else {
+               indicator.classList.add('hidden');
+            }
             outBtn.disabled = true;
-            indicator.classList.add('hidden');
          }
 
          renderHistory();
@@ -470,7 +555,7 @@
             });
          });
 
-         allRecords.sort((a, b) => new Date(b.dateIso) - new Date(a.dateIso));
+         allRecords.sort((a, b) => String(b.dateIso || '').localeCompare(String(a.dateIso || '')));
 
          if (allRecords.length === 0) {
             noData.classList.remove('hidden');
@@ -491,10 +576,8 @@
                statusClasses += ' bg-red-50 text-red-700 ring-red-600/20';
             }
 
-            const d = new Date(rec.dateIso);
-            d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
-            const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
-            const dateName = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+            const dayName = formatIsoDateInManila(rec.dateIso, { weekday: 'short' });
+            const dateName = formatIsoDateInManila(rec.dateIso, { month: 'short', day: '2-digit' });
 
             tr.innerHTML = `
                   <td class="px-6 py-5">
@@ -515,6 +598,11 @@
             return;
          }
 
+         if (type === 'in' && !isClockInWindowOpen()) {
+            alert('Clock in is only allowed between 08:00 AM and 05:00 PM (Philippine Standard Time).');
+            return;
+         }
+
          currentActionType = type;
          const title = type === 'in' ? 'Clock In' : 'Clock Out';
          const desc = type === 'in' ? 'Ready to start your work day?' : 'Finishing your shift? This will log your exit time.';
@@ -527,8 +615,8 @@
       async function executeClockAction() {
          if (!activeUser) return;
 
-         const todayIso = new Date().toISOString().split('T')[0];
-         const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+         const todayIso = getManilaIsoDate();
+         const nowTime = formatManilaTime(new Date(), false);
          let data = getAttendances();
 
          if (!data[todayIso]) data[todayIso] = [];
@@ -536,17 +624,32 @@
          let myRecord = todayRecords.find(r => String(r.empId) === String(activeUser.id) || String(r.name || '').trim().toLowerCase() === getActiveUserName().toLowerCase());
 
          if (currentActionType === 'in') {
-            const now = new Date();
-            const target = new Date();
-            target.setHours(8, 0, 0);
-            const status = now > target ? 'Late' : 'Present';
+            if (!isClockInWindowOpen()) {
+               alert('Clock in is only allowed between 08:00 AM and 05:00 PM (Philippine Standard Time).');
+               document.getElementById('confirmModal').classList.add('hidden');
+               initAttendance();
+               return;
+            }
+
+            if (myRecord) {
+               alert('You already have a clock-in record for today.');
+               document.getElementById('confirmModal').classList.add('hidden');
+               initAttendance();
+               return;
+            }
+
+            const status = getManilaMinutesNow() > CLOCK_IN_START_MINUTES ? 'Late' : 'Present';
 
             myRecord = {
                empId: activeUser.id,
                name: getActiveUserName(),
                clockIn: nowTime,
                clockOut: '--',
-               status
+               status,
+               isVerified: false,
+               verifiedBy: '',
+               verifiedAt: '',
+               statusSource: 'employee'
             };
             data[todayIso].push(myRecord);
          } else if (myRecord) {
