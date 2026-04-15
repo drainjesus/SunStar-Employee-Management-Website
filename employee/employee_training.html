@@ -281,6 +281,7 @@
   <script>
     const TRAINING_KEY = 'sunstar_trainings';
     const EMPLOYEE_KEY = 'sunstar_employees';
+    const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
     const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
 
     let activeUserId = null;
@@ -304,6 +305,16 @@
 
     function getTrainings() {
       return safeParse(localStorage.getItem(TRAINING_KEY), []);
+    }
+
+    function redirectToLogin() {
+      window.location.replace('../index.html');
+    }
+
+    function hasEmployeeSession() {
+      const role = localStorage.getItem(SESSION_ROLE_KEY);
+      const sessionUserId = localStorage.getItem(SESSION_USER_KEY);
+      return role === 'employee' && !!sessionUserId;
     }
 
     function setTrainings(trainings) {
@@ -345,6 +356,13 @@
     }
 
     function resolveActiveUser() {
+      if (!hasEmployeeSession()) {
+        activeUserId = null;
+        activeUserName = '';
+        redirectToLogin();
+        return;
+      }
+
       const employees = getEmployees();
       const sessionUserId = localStorage.getItem(SESSION_USER_KEY);
 
@@ -353,14 +371,16 @@
         me = employees.find(emp => String(emp.id) === String(sessionUserId));
       }
 
-      if (!me && employees.length > 0) {
-        me = employees[0];
+      if (!me) {
+        activeUserId = null;
+        activeUserName = '';
+        redirectToLogin();
+        return;
       }
 
       if (me) {
         activeUserId = me.id;
         activeUserName = `${me.firstName || ''} ${me.lastName || ''}`.trim();
-        localStorage.setItem(SESSION_USER_KEY, String(me.id));
 
         document.getElementById('userName').textContent = activeUserName;
         document.getElementById('userRole').textContent = me.role || 'Staff Writer';

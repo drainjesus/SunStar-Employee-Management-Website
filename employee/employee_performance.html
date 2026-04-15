@@ -372,6 +372,7 @@
       const EMPLOYEE_KEY = 'sunstar_employees';
       const PERFORMANCE_KEY = 'sunstar_performances';
       const PEER_REVIEW_KEY = 'sunstar_peer_reviews';
+      const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
       const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
 
       let activeUserId = null;
@@ -405,6 +406,16 @@
          localStorage.setItem(PEER_REVIEW_KEY, JSON.stringify(reviews));
       }
 
+      function redirectToLogin() {
+         window.location.replace('../index.html');
+      }
+
+      function hasEmployeeSession() {
+         const role = localStorage.getItem(SESSION_ROLE_KEY);
+         const sessionUserId = localStorage.getItem(SESSION_USER_KEY);
+         return role === 'employee' && !!sessionUserId;
+      }
+
       async function syncFromSupabase() {
          if (!window.PerformanceDataService) return;
 
@@ -422,6 +433,13 @@
       }
 
       function resolveActiveUser() {
+         if (!hasEmployeeSession()) {
+            activeUserId = null;
+            activeUserName = '';
+            redirectToLogin();
+            return;
+         }
+
          const employees = getEmployees();
          const sessionUserId = localStorage.getItem(SESSION_USER_KEY);
          let me = null;
@@ -430,14 +448,16 @@
             me = employees.find(emp => String(emp.id) === String(sessionUserId));
          }
 
-         if (!me && employees.length > 0) {
-            me = employees[0];
+         if (!me) {
+            activeUserId = null;
+            activeUserName = '';
+            redirectToLogin();
+            return;
          }
 
          if (me) {
             activeUserId = me.id;
             activeUserName = `${me.firstName || ''} ${me.lastName || ''}`.trim();
-            localStorage.setItem(SESSION_USER_KEY, String(me.id));
 
             const sidebarName = document.getElementById('sidebarUserName');
             const sidebarRole = document.getElementById('sidebarUserRole');

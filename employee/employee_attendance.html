@@ -329,6 +329,7 @@
    <script>
       const STORAGE_KEY = 'sunstar_attendance';
       const EMPLOYEE_KEY = 'sunstar_employees';
+      const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
       const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
       const MANILA_TIME_ZONE = 'Asia/Manila';
       const CLOCK_IN_START_MINUTES = 8 * 60;
@@ -420,6 +421,16 @@
          return safeParse(localStorage.getItem(STORAGE_KEY), {});
       }
 
+      function redirectToLogin() {
+         window.location.replace('../index.html');
+      }
+
+      function hasEmployeeSession() {
+         const role = localStorage.getItem(SESSION_ROLE_KEY);
+         const sessionUserId = localStorage.getItem(SESSION_USER_KEY);
+         return role === 'employee' && !!sessionUserId;
+      }
+
       function getActiveUserName() {
          if (!activeUser) return '';
          return `${activeUser.firstName || ''} ${activeUser.lastName || ''}`.trim();
@@ -442,6 +453,12 @@
       }
 
       function resolveActiveUser() {
+         if (!hasEmployeeSession()) {
+            activeUser = null;
+            redirectToLogin();
+            return;
+         }
+
          const employees = getEmployees();
          const sessionUserId = localStorage.getItem(SESSION_USER_KEY);
          let me = null;
@@ -450,14 +467,13 @@
             me = employees.find(emp => String(emp.id) === String(sessionUserId));
          }
 
-         if (!me && employees.length > 0) {
-            me = employees[0];
+         if (!me) {
+            activeUser = null;
+            redirectToLogin();
+            return;
          }
 
          activeUser = me;
-         if (activeUser) {
-            localStorage.setItem(SESSION_USER_KEY, String(activeUser.id));
-         }
 
          const sidebarName = document.getElementById('sidebarUserName');
          const sidebarRole = document.getElementById('sidebarUserRole');
