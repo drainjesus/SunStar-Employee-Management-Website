@@ -200,6 +200,27 @@
     </div>
   </div>
 
+  <!-- Sanction Modal -->
+  <div id="sanctionModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="max-w-lg w-full bg-white rounded-xl p-8 shadow-2xl border border-zinc-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-fuchsia-100 mb-6 text-fuchsia-700 mx-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        </div>
+        <h3 class="text-lg font-black uppercase text-zinc-900 mb-2 text-center tracking-tight">Issue Attendance Sanction</h3>
+        <p class="text-sm text-zinc-500 mb-4 text-center font-medium">Employee: <span id="sanctionEmployeeName" class="font-black text-zinc-900">---</span></p>
+        <p class="text-xs text-zinc-500 mb-5 text-center">Date: <span id="sanctionDateLabel" class="font-bold text-zinc-700">---</span></p>
+        <label for="sanctionMessageInput" class="block text-xs font-black uppercase tracking-widest text-zinc-500 mb-2">Short Message</label>
+        <textarea id="sanctionMessageInput" rows="3" maxlength="240" placeholder="Write a short sanction message for the employee..." class="w-full rounded-md border border-zinc-200 px-3 py-2 text-sm text-zinc-700 focus:border-fuchsia-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-100"></textarea>
+        <div class="mt-6 flex gap-3">
+          <button onclick="confirmIssueSanction()" class="flex-1 bg-fuchsia-600 py-3 text-sm font-bold text-white rounded-md hover:bg-fuchsia-700 transition shadow-md shadow-fuchsia-600/20">Send Sanction</button>
+          <button onclick="document.getElementById('sanctionModal').classList.add('hidden')" class="flex-1 bg-white border border-zinc-200 py-3 text-sm font-bold text-zinc-500 rounded-md hover:bg-zinc-50 transition">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Success Modal -->
   <div id="successModal" class="relative z-50 hidden">
     <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
@@ -237,6 +258,8 @@
   <script>
     let pendingAbsentName = '';
     let pendingAbsentEmployeeId = null;
+    let pendingSanctionDate = '';
+    let pendingSanctionRecordIndex = -1;
     const SESSION_ADMIN_EMAIL_KEY = 'sunstar_logged_in_admin_email';
     const MANILA_TIME_ZONE = 'Asia/Manila';
 
@@ -253,6 +276,15 @@
         } catch {
           return fallback;
         }
+      }
+
+      function escapeHtml(value) {
+        return String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
       }
 
       function getManilaParts(referenceDate = new Date()) {
@@ -347,6 +379,22 @@
         })} PST`;
       }
 
+      function formatSanctionAtLabel(value) {
+        if (!value) return '';
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return String(value);
+
+        return `${parsed.toLocaleString('en-US', {
+          timeZone: MANILA_TIME_ZONE,
+          month: 'short',
+          day: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        })} PST`;
+      }
+
       function markRecordVerified(record) {
         record.isVerified = true;
         record.verifiedBy = getVerifierName();
@@ -422,6 +470,10 @@
               ? `<span class="text-[9px] font-black uppercase tracking-widest text-emerald-600">Verified${verifier}</span>${rec.verifiedAt ? `<span class="text-[9px] font-bold text-zinc-400">${formatVerifiedAtLabel(rec.verifiedAt)}</span>` : ''}`
               : '<span class="text-[9px] font-black uppercase tracking-widest text-amber-600">Unverified</span>';
 
+            const sanctionInfo = rec.sanctionMessage
+              ? `<span class="text-[9px] font-bold text-red-600">Sanction: ${escapeHtml(rec.sanctionMessage)}</span><span class="text-[9px] font-bold text-zinc-400">${rec.sanctionAt ? formatSanctionAtLabel(rec.sanctionAt) : ''}${rec.sanctionBy ? ` by ${escapeHtml(rec.sanctionBy)}` : ''}</span>`
+              : '';
+
             const shiftTime = rec.shift || "08:00 AM - 05:00 PM";
             const inColor = rec.clockIn === '--' || rec.clockIn.includes('--') ? 'text-zinc-300 italic' : (rec.status === 'Present' ? 'text-green-600' : 'text-yellow-600');
             const outColor = rec.clockOut === '--' || rec.clockOut.includes('--') ? 'text-zinc-300 italic' : 'text-zinc-700';
@@ -431,6 +483,7 @@
                 <button onclick="verifyAttendanceRecord('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-emerald-700 border border-emerald-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-emerald-50 transition-colors">Verify</button>
                 <button onclick="overrideAttendanceStatus('${dateIso}', ${idx}, 'Late')" class="text-[10px] font-black uppercase text-yellow-700 border border-yellow-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-yellow-50 transition-colors">Late</button>
                 <button onclick="overrideAttendanceStatus('${dateIso}', ${idx}, 'Absent')" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Absent</button>
+                <button onclick="openSanctionModal('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-fuchsia-700 border border-fuchsia-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-fuchsia-50 transition-colors">Sanction</button>
               </div>
             `;
 
@@ -457,6 +510,7 @@
                  <div class="flex flex-col gap-1">
                   ${statusBtn}
                   ${verifiedInfo}
+                  ${sanctionInfo}
                  </div>
                 </td>
               <td class="px-6 py-4 text-right">${actionBtn}</td>
@@ -465,10 +519,54 @@
          });
       }
 
-      window.issueSanction = function(name) {
-         pendingAbsentName = name;
-         document.getElementById('successMessage').textContent = `Policy sanction issued for ${name} due to unapproved absence. Record updated in personnel file.`;
-         document.getElementById('successModal').classList.remove('hidden');
+      window.openSanctionModal = function(dateIso, recordIndex) {
+        const attendance = getAttendances();
+        const records = attendance[dateIso] || [];
+        const record = records[recordIndex];
+        if (!record) return;
+
+        pendingSanctionDate = dateIso;
+        pendingSanctionRecordIndex = recordIndex;
+
+        document.getElementById('sanctionEmployeeName').textContent = record.name || 'Employee';
+        document.getElementById('sanctionDateLabel').textContent = formatReadableDate(dateIso);
+        document.getElementById('sanctionMessageInput').value = record.sanctionMessage || '';
+        document.getElementById('sanctionModal').classList.remove('hidden');
+      };
+
+      window.confirmIssueSanction = async function() {
+        const message = String(document.getElementById('sanctionMessageInput').value || '').trim();
+        if (!message) {
+          alert('Please enter a short sanction message.');
+          return;
+        }
+
+        const dateIso = pendingSanctionDate;
+        const recordIndex = pendingSanctionRecordIndex;
+        const attendance = getAttendances();
+        const records = attendance[dateIso] || [];
+        const record = records[recordIndex];
+        if (!record) {
+          document.getElementById('sanctionModal').classList.add('hidden');
+          return;
+        }
+
+        record.sanctionMessage = message;
+        record.sanctionBy = getVerifierName();
+        record.sanctionAt = getManilaTimestampIso();
+
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+        if (window.HRDataService) {
+          await window.HRDataService.upsertAttendanceRecord(dateIso, record);
+        }
+
+        pendingSanctionDate = '';
+        pendingSanctionRecordIndex = -1;
+        document.getElementById('sanctionMessageInput').value = '';
+        document.getElementById('sanctionModal').classList.add('hidden');
+        renderTable(dateIso);
+        document.getElementById('successMessage').textContent = `Sanction sent to ${record.name}. Employee will now see the message in Attendance.`;
+        document.getElementById('successModal').classList.remove('hidden');
       };
 
       window.verifyAttendanceRecord = async function(dateIso, recordIndex) {

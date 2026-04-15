@@ -2,7 +2,7 @@
   const TRAINING_KEY = "sunstar_trainings";
   const LEAVE_KEY = "sunstar_leaves";
   const ATTENDANCE_KEY = "sunstar_attendance";
-  const ATTENDANCE_EXTENDED_COLUMNS = ["is_verified", "verified_by", "verified_at", "status_source"];
+  const ATTENDANCE_EXTENDED_COLUMNS = ["is_verified", "verified_by", "verified_at", "status_source", "sanction_message", "sanction_by", "sanction_at"];
 
   function hasClient() {
     return !!window.supabaseClient;
@@ -89,7 +89,10 @@
       isVerified: !!row.is_verified,
       verifiedBy: row.verified_by || "",
       verifiedAt: row.verified_at || "",
-      statusSource: row.status_source || "system"
+      statusSource: row.status_source || "system",
+      sanctionMessage: row.sanction_message || "",
+      sanctionBy: row.sanction_by || "",
+      sanctionAt: row.sanction_at || ""
     };
   }
 
@@ -130,7 +133,10 @@
           isVerified: remoteRecord.isVerified || !!match.isVerified,
           verifiedBy: remoteRecord.verifiedBy || match.verifiedBy || "",
           verifiedAt: remoteRecord.verifiedAt || match.verifiedAt || "",
-          statusSource: remoteRecord.statusSource || match.statusSource || "system"
+          statusSource: remoteRecord.statusSource || match.statusSource || "system",
+          sanctionMessage: remoteRecord.sanctionMessage || match.sanctionMessage || "",
+          sanctionBy: remoteRecord.sanctionBy || match.sanctionBy || "",
+          sanctionAt: remoteRecord.sanctionAt || match.sanctionAt || ""
         };
       });
     });
@@ -155,6 +161,9 @@
       payload.verified_by = record.verifiedBy || null;
       payload.verified_at = record.verifiedAt || null;
       payload.status_source = record.statusSource || "system";
+      payload.sanction_message = record.sanctionMessage || null;
+      payload.sanction_by = record.sanctionBy || null;
+      payload.sanction_at = record.sanctionAt || null;
     }
 
     return payload;
@@ -267,7 +276,7 @@
 
     if (error) {
       const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
-      const hasMissingExtendedColumn = /(is_verified|verified_by|verified_at|status_source)/i.test(errorText);
+      const hasMissingExtendedColumn = /(is_verified|verified_by|verified_at|status_source|sanction_message|sanction_by|sanction_at)/i.test(errorText);
 
       if (hasMissingExtendedColumn) {
         const fallbackPayload = buildAttendancePayload(workDate, record, { includeExtendedFields: false });
