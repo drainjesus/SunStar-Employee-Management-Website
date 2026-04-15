@@ -192,35 +192,15 @@
               <p class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Newsroom Bulletin</p>
               <h2 class="mt-1 text-lg font-black uppercase tracking-tight text-zinc-900">Memos & Announcements</h2>
             </div>
-            <span class="rounded-full bg-sun-yellowLight px-3 py-1 text-[10px] font-black uppercase tracking-widest text-sun-yellowDark">Internal</span>
+            <div class="flex items-center gap-2">
+              <button onclick="openAnnouncementModal()" class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-100 transition">Add Post</button>
+              <span class="rounded-full bg-sun-yellowLight px-3 py-1 text-[10px] font-black uppercase tracking-widest text-sun-yellowDark">Internal</span>
+            </div>
           </div>
-          <div class="grid gap-4 p-6 sm:grid-cols-3 sm:px-8">
-            <article class="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Editorial Ops</span>
-                <span class="text-[10px] font-black uppercase tracking-widest text-red-600">High Priority</span>
-              </div>
-              <p class="mt-2 text-sm font-bold text-zinc-900 leading-snug">Desk rosters for City, Business, and Digital teams must be finalized by 4:00 PM every Friday.</p>
-              <p class="mt-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Posted by Managing Editor • Dummy Data</p>
-            </article>
-
-            <article class="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Breaking Desk</span>
-                <span class="text-[10px] font-black uppercase tracking-widest text-amber-700">Advisory</span>
-              </div>
-              <p class="mt-2 text-sm font-bold text-zinc-900 leading-snug">All breaking alerts require editor verification before homepage push and social distribution.</p>
-              <p class="mt-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Posted by News Director • Dummy Data</p>
-            </article>
-
-            <article class="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Field Coverage</span>
-                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-700">Reminder</span>
-              </div>
-              <p class="mt-2 text-sm font-bold text-zinc-900 leading-snug">Reporters assigned to storm and traffic beats should submit safety check-ins every 2 hours.</p>
-              <p class="mt-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Posted by Assignment Desk • Dummy Data</p>
-            </article>
+          <div id="adminAnnouncementsGrid" class="grid gap-4 p-6 sm:grid-cols-3 sm:px-8">
+          </div>
+          <div id="adminAnnouncementsEmpty" class="hidden px-6 pb-6 text-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 sm:px-8">
+            No posts yet. Add a memo, news update, or post for your newsroom team.
           </div>
         </section>
 
@@ -272,15 +252,279 @@
       </div>
 
       <script>
+        const ANNOUNCEMENTS_KEY = 'sunstar_announcements';
+        const SESSION_ADMIN_EMAIL_KEY = 'sunstar_logged_in_admin_email';
+        const DEFAULT_ANNOUNCEMENTS = [
+          {
+            id: 'announcement-default-1',
+            type: 'Memo',
+            category: 'Editorial Ops',
+            priority: 'High Priority',
+            title: 'Weekly Desk Roster Deadline',
+            message: 'Desk rosters for City, Business, and Digital teams must be finalized by 4:00 PM every Friday.',
+            author: 'Managing Editor',
+            createdAt: '2026-04-15T08:00:00+08:00',
+            updatedAt: '2026-04-15T08:00:00+08:00'
+          },
+          {
+            id: 'announcement-default-2',
+            type: 'News',
+            category: 'Breaking Desk',
+            priority: 'Advisory',
+            title: 'Breaking Alert Verification Rule',
+            message: 'All breaking alerts require editor verification before homepage push and social distribution.',
+            author: 'News Director',
+            createdAt: '2026-04-15T08:10:00+08:00',
+            updatedAt: '2026-04-15T08:10:00+08:00'
+          },
+          {
+            id: 'announcement-default-3',
+            type: 'Post',
+            category: 'Field Coverage',
+            priority: 'Reminder',
+            title: 'Beat Safety Check-in Reminder',
+            message: 'Reporters assigned to storm and traffic beats should submit safety check-ins every 2 hours.',
+            author: 'Assignment Desk',
+            createdAt: '2026-04-15T08:20:00+08:00',
+            updatedAt: '2026-04-15T08:20:00+08:00'
+          }
+        ];
+
+        let editingAnnouncementId = '';
+
         document.addEventListener('DOMContentLoaded', () => {
            loadStats();
+           renderAnnouncements();
         });
 
+        function safeParse(value, fallback) {
+          try {
+            return JSON.parse(value);
+          } catch {
+            return fallback;
+          }
+        }
+
+        function escapeHtml(value) {
+          return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function getAdminDisplayName() {
+          return localStorage.getItem(SESSION_ADMIN_EMAIL_KEY) || 'Admin Desk';
+        }
+
+        function normalizeAnnouncement(item, index) {
+          const generatedId = `announcement-${Date.now()}-${index}`;
+
+          return {
+            id: String(item?.id || generatedId),
+            type: ['Post', 'News', 'Memo'].includes(String(item?.type || '')) ? String(item.type) : 'Memo',
+            category: String(item?.category || 'General Desk'),
+            priority: String(item?.priority || 'Advisory'),
+            title: String(item?.title || 'Untitled Announcement'),
+            message: String(item?.message || ''),
+            author: String(item?.author || 'Admin Desk'),
+            createdAt: item?.createdAt || new Date().toISOString(),
+            updatedAt: item?.updatedAt || item?.createdAt || new Date().toISOString()
+          };
+        }
+
+        function getAnnouncements() {
+          const stored = safeParse(localStorage.getItem(ANNOUNCEMENTS_KEY), null);
+
+          if (Array.isArray(stored) && stored.length > 0) {
+            const normalized = stored.map((item, index) => normalizeAnnouncement(item, index));
+            localStorage.setItem(ANNOUNCEMENTS_KEY, JSON.stringify(normalized));
+            return normalized;
+          }
+
+          const seeded = DEFAULT_ANNOUNCEMENTS.map((item, index) => normalizeAnnouncement(item, index));
+          localStorage.setItem(ANNOUNCEMENTS_KEY, JSON.stringify(seeded));
+          return seeded;
+        }
+
+        function saveAnnouncements(items) {
+          localStorage.setItem(ANNOUNCEMENTS_KEY, JSON.stringify(items));
+        }
+
+        function getPriorityClass(priority) {
+          if (priority === 'High Priority' || priority === 'Important') {
+            return 'text-red-600';
+          }
+          if (priority === 'Advisory' || priority === 'New') {
+            return 'text-amber-700';
+          }
+          if (priority === 'Reminder') {
+            return 'text-emerald-700';
+          }
+          return 'text-zinc-500';
+        }
+
+        function formatPostedAt(value) {
+          if (!value) return 'Recently';
+          const parsed = new Date(value);
+          if (Number.isNaN(parsed.getTime())) return 'Recently';
+
+          return parsed.toLocaleString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          });
+        }
+
+        function renderAnnouncements() {
+          const grid = document.getElementById('adminAnnouncementsGrid');
+          const emptyState = document.getElementById('adminAnnouncementsEmpty');
+          if (!grid || !emptyState) return;
+
+          const announcements = getAnnouncements().slice().sort((a, b) => {
+            const bTime = String(b.updatedAt || b.createdAt || '');
+            const aTime = String(a.updatedAt || a.createdAt || '');
+            return bTime.localeCompare(aTime);
+          });
+
+          grid.innerHTML = '';
+
+          if (announcements.length === 0) {
+            emptyState.classList.remove('hidden');
+            return;
+          }
+
+          emptyState.classList.add('hidden');
+
+          announcements.forEach(post => {
+            const article = document.createElement('article');
+            article.className = 'rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4';
+
+            article.innerHTML = `
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">${escapeHtml(post.type)} • ${escapeHtml(post.category)}</span>
+                <span class="text-[10px] font-black uppercase tracking-widest ${getPriorityClass(post.priority)}">${escapeHtml(post.priority)}</span>
+              </div>
+              <p class="mt-2 text-sm font-bold text-zinc-900 leading-snug">${escapeHtml(post.title)}</p>
+              <p class="mt-2 text-xs font-medium text-zinc-600 leading-relaxed whitespace-pre-line">${escapeHtml(post.message)}</p>
+              <div class="mt-3 flex items-center justify-between gap-3">
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Posted by ${escapeHtml(post.author)} • ${formatPostedAt(post.updatedAt || post.createdAt)}</p>
+                <button type="button" data-edit-id="${escapeHtml(post.id)}" class="rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-100 transition">Edit</button>
+              </div>
+            `;
+
+            const editBtn = article.querySelector('[data-edit-id]');
+            if (editBtn) {
+              editBtn.addEventListener('click', function() {
+                openAnnouncementModal(post.id);
+              });
+            }
+
+            grid.appendChild(article);
+          });
+        }
+
+        window.openAnnouncementModal = function(announcementId) {
+          const modal = document.getElementById('announcementModal');
+          const heading = document.getElementById('announcementModalHeading');
+          const saveButton = document.getElementById('announcementSaveBtn');
+          const typeInput = document.getElementById('announcementType');
+          const categoryInput = document.getElementById('announcementCategory');
+          const priorityInput = document.getElementById('announcementPriority');
+          const titleInput = document.getElementById('announcementTitle');
+          const messageInput = document.getElementById('announcementMessage');
+          const authorInput = document.getElementById('announcementAuthor');
+
+          editingAnnouncementId = '';
+          heading.textContent = 'Create Post';
+          saveButton.textContent = 'Publish';
+          typeInput.value = 'Post';
+          categoryInput.value = 'General Desk';
+          priorityInput.value = 'Advisory';
+          titleInput.value = '';
+          messageInput.value = '';
+          authorInput.value = getAdminDisplayName();
+
+          if (announcementId) {
+            const existing = getAnnouncements().find(item => String(item.id) === String(announcementId));
+            if (existing) {
+              editingAnnouncementId = existing.id;
+              heading.textContent = 'Edit Post';
+              saveButton.textContent = 'Save Changes';
+              typeInput.value = existing.type || 'Post';
+              categoryInput.value = existing.category || 'General Desk';
+              priorityInput.value = existing.priority || 'Advisory';
+              titleInput.value = existing.title || '';
+              messageInput.value = existing.message || '';
+              authorInput.value = existing.author || getAdminDisplayName();
+            }
+          }
+
+          modal.classList.remove('hidden');
+        };
+
+        window.closeAnnouncementModal = function() {
+          document.getElementById('announcementModal').classList.add('hidden');
+        };
+
+        window.saveAnnouncement = function() {
+          const type = String(document.getElementById('announcementType').value || 'Post').trim();
+          const category = String(document.getElementById('announcementCategory').value || 'General Desk').trim();
+          const priority = String(document.getElementById('announcementPriority').value || 'Advisory').trim();
+          const title = String(document.getElementById('announcementTitle').value || '').trim();
+          const message = String(document.getElementById('announcementMessage').value || '').trim();
+          const author = String(document.getElementById('announcementAuthor').value || '').trim() || getAdminDisplayName();
+
+          if (!title || !message) {
+            alert('Please provide both a title and message.');
+            return;
+          }
+
+          const nowIso = new Date().toISOString();
+          const announcements = getAnnouncements();
+
+          if (editingAnnouncementId) {
+            const idx = announcements.findIndex(item => String(item.id) === String(editingAnnouncementId));
+            if (idx !== -1) {
+              announcements[idx] = {
+                ...announcements[idx],
+                type,
+                category,
+                priority,
+                title,
+                message,
+                author,
+                updatedAt: nowIso
+              };
+            }
+          } else {
+            announcements.push({
+              id: `announcement-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+              type,
+              category,
+              priority,
+              title,
+              message,
+              author,
+              createdAt: nowIso,
+              updatedAt: nowIso
+            });
+          }
+
+          saveAnnouncements(announcements);
+          renderAnnouncements();
+          closeAnnouncementModal();
+        };
+
         function loadStats() {
-           const employees = JSON.parse(localStorage.getItem('sunstar_employees')) || [];
-           const attendance = JSON.parse(localStorage.getItem('sunstar_attendance')) || {};
-           const leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
-           const trainings = JSON.parse(localStorage.getItem('sunstar_trainings')) || [];
+           const employees = safeParse(localStorage.getItem('sunstar_employees'), []);
+           const attendance = safeParse(localStorage.getItem('sunstar_attendance'), {});
+           const leaves = safeParse(localStorage.getItem('sunstar_leaves'), []);
+           const trainings = safeParse(localStorage.getItem('sunstar_trainings'), []);
 
            document.getElementById('statEmployees').textContent = employees.length;
            
@@ -295,8 +539,70 @@
 
            document.getElementById('statTrainings').textContent = trainings.length;
         }
+
+        window.addEventListener('storage', function(event) {
+          if (event.key === ANNOUNCEMENTS_KEY) {
+            renderAnnouncements();
+          }
+        });
       </script>
     </main>
+  </div>
+  <div id="announcementModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="w-full max-w-xl rounded-2xl border border-zinc-200 bg-white p-7 shadow-2xl">
+        <h3 id="announcementModalHeading" class="text-lg font-black uppercase tracking-tight text-zinc-900">Create Post</h3>
+        <p class="mt-1 text-xs font-medium text-zinc-500">Add a newsroom memo, news update, or internal post.</p>
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-2">
+          <div>
+            <label for="announcementType" class="block text-[10px] font-black uppercase tracking-widest text-zinc-500">Type</label>
+            <select id="announcementType" class="mt-1 h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-sun-yellow">
+              <option value="Post">Post</option>
+              <option value="News">News</option>
+              <option value="Memo">Memo</option>
+            </select>
+          </div>
+          <div>
+            <label for="announcementPriority" class="block text-[10px] font-black uppercase tracking-widest text-zinc-500">Priority</label>
+            <select id="announcementPriority" class="mt-1 h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-sun-yellow">
+              <option value="High Priority">High Priority</option>
+              <option value="Advisory">Advisory</option>
+              <option value="Reminder">Reminder</option>
+              <option value="Important">Important</option>
+              <option value="New">New</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <label for="announcementCategory" class="block text-[10px] font-black uppercase tracking-widest text-zinc-500">Desk / Category</label>
+            <input id="announcementCategory" type="text" maxlength="50" class="mt-1 h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-sun-yellow" placeholder="Editorial Ops">
+          </div>
+          <div>
+            <label for="announcementAuthor" class="block text-[10px] font-black uppercase tracking-widest text-zinc-500">Posted By</label>
+            <input id="announcementAuthor" type="text" maxlength="60" class="mt-1 h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-sun-yellow" placeholder="Admin Desk">
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label for="announcementTitle" class="block text-[10px] font-black uppercase tracking-widest text-zinc-500">Title</label>
+          <input id="announcementTitle" type="text" maxlength="120" class="mt-1 h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-sun-yellow" placeholder="Write a short headline">
+        </div>
+
+        <div class="mt-3">
+          <label for="announcementMessage" class="block text-[10px] font-black uppercase tracking-widest text-zinc-500">Message</label>
+          <textarea id="announcementMessage" rows="4" maxlength="500" class="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-sun-yellow" placeholder="Write the announcement details"></textarea>
+        </div>
+
+        <div class="mt-6 flex gap-3">
+          <button id="announcementSaveBtn" onclick="saveAnnouncement()" class="flex-1 rounded-lg border border-sun-yellowDark bg-sun-yellow py-3 text-sm font-black uppercase tracking-widest text-zinc-900 hover:bg-sun-yellowLight transition">Publish</button>
+          <button onclick="closeAnnouncementModal()" class="flex-1 rounded-lg border border-zinc-200 bg-white py-3 text-sm font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-50 transition">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
   <!-- Logout Confirmation Modal -->
   <div id="logoutModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
