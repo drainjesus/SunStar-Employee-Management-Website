@@ -216,13 +216,21 @@
               <div class="space-y-4">
                 <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-200 pb-2">Personal Info</h4>
                 <div class="grid grid-cols-2 gap-4">
-                  <div>
+                  <div class="col-span-2">
                     <label class="block text-xs font-semibold text-zinc-700">First Name</label>
                     <input type="text" id="firstName" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
                   </div>
                   <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Middle Name</label>
+                    <input type="text" id="middleName" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div>
                     <label class="block text-xs font-semibold text-zinc-700">Last Name</label>
                     <input type="text" id="lastName" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Birth Date</label>
+                    <input type="date" id="birthDate" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-zinc-700">Age</label>
@@ -237,9 +245,35 @@
                       <option value="Other">Other</option>
                     </select>
                   </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Marital Status</label>
+                    <select id="maritalStatus" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                      <option value="">Select...</option>
+                      <option value="Single">Single</option>
+                      <option value="Married">Married</option>
+                      <option value="Separated">Separated</option>
+                      <option value="Divorced">Divorced</option>
+                      <option value="Widowed">Widowed</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Employment Status</label>
+                    <select id="employmentStatus" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                      <option value="">Select...</option>
+                      <option value="Active">Active</option>
+                      <option value="Probationary">Probationary</option>
+                      <option value="Contractual">Contractual</option>
+                      <option value="On Leave">On Leave</option>
+                      <option value="Resigned">Resigned</option>
+                    </select>
+                  </div>
                   <div class="col-span-2">
                     <label class="block text-xs font-semibold text-zinc-700">Contact Number</label>
                     <input type="tel" id="contactNumber" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div class="col-span-2">
+                    <label class="block text-xs font-semibold text-zinc-700">Address</label>
+                    <textarea id="address" rows="2" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20" placeholder="Street, barangay, city"></textarea>
                   </div>
                 </div>
               </div>
@@ -623,10 +657,15 @@
       if(!emp) return;
 
       document.getElementById('firstName').value = emp.firstName || '';
+      document.getElementById('middleName').value = emp.middleName || '';
       document.getElementById('lastName').value = emp.lastName || '';
+      document.getElementById('birthDate').value = emp.birthDate || '';
       document.getElementById('age').value = emp.age || '';
       document.getElementById('gender').value = emp.gender || '';
+      document.getElementById('maritalStatus').value = emp.maritalStatus || '';
+      document.getElementById('employmentStatus').value = emp.employmentStatus || '';
       document.getElementById('contactNumber').value = emp.contact || '';
+      document.getElementById('address').value = emp.address || '';
       document.getElementById('lastTitle').value = emp.lastTitle || '';
       document.getElementById('dateStarted').value = emp.ds || '';
       document.getElementById('dateEnded').value = emp.de || '';
@@ -649,10 +688,15 @@
       
       const data = {
         firstName: document.getElementById('firstName').value,
+        middleName: document.getElementById('middleName').value,
         lastName: document.getElementById('lastName').value,
+        birthDate: document.getElementById('birthDate').value,
         age: document.getElementById('age').value,
         gender: document.getElementById('gender').value,
+        maritalStatus: document.getElementById('maritalStatus').value,
+        employmentStatus: document.getElementById('employmentStatus').value,
         contact: document.getElementById('contactNumber').value,
+        address: document.getElementById('address').value,
         lastTitle: document.getElementById('lastTitle').value,
         ds: document.getElementById('dateStarted').value,
         de: document.getElementById('dateEnded').value,

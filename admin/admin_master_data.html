@@ -240,6 +240,14 @@
                     <span class="block mt-0.5 text-base font-bold text-zinc-900" id="detFullName">-</span>
                   </div>
                   <div>
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Middle Name</span>
+                    <span class="block mt-0.5 font-bold text-zinc-900" id="detMiddleName">-</span>
+                  </div>
+                  <div>
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Birth Date</span>
+                    <span class="block mt-0.5 font-bold text-zinc-900" id="detBirthDate">-</span>
+                  </div>
+                  <div>
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Age</span>
                     <span class="block mt-0.5 font-bold text-zinc-900" id="detAge">-</span>
                   </div>
@@ -247,9 +255,17 @@
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Gender</span>
                     <span class="block mt-0.5 font-bold text-zinc-900" id="detGender">-</span>
                   </div>
+                  <div>
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Marital Status</span>
+                    <span class="block mt-0.5 font-bold text-zinc-900" id="detMaritalStatus">-</span>
+                  </div>
                   <div class="col-span-2">
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Contact Number</span>
                     <span class="block mt-0.5 font-bold text-zinc-900" id="detContact">-</span>
+                  </div>
+                  <div class="col-span-2">
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Address</span>
+                    <span class="block mt-0.5 font-bold text-zinc-900" id="detAddress">-</span>
                   </div>
                 </div>
               </div>
@@ -284,6 +300,10 @@
                   <div>
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Salary</span>
                     <span class="block mt-1 text-base font-black text-green-600" id="detSalary">₱0.00</span>
+                  </div>
+                  <div class="col-span-2">
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Employment Status</span>
+                    <span class="block mt-0.5 font-bold text-zinc-900" id="detEmploymentStatus">-</span>
                   </div>
                 </div>
               </div>
@@ -461,6 +481,17 @@
 
     window.addEventListener('focus', init);
 
+    function formatProfileDate(value) {
+      if (!value) return '-';
+      const parsed = new Date(`${value}T00:00:00`);
+      if (Number.isNaN(parsed.getTime())) return value;
+      return parsed.toLocaleDateString('en-PH', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
     function showDetails(id) {
       const emp = employees.find(e => e.id === id);
       if(!emp) return;
@@ -474,14 +505,19 @@
       }
 
       document.getElementById('detFullName').textContent = `${emp.firstName} ${emp.lastName}`;
+        document.getElementById('detMiddleName').textContent = emp.middleName || '-';
+        document.getElementById('detBirthDate').textContent = formatProfileDate(emp.birthDate);
       document.getElementById('detAge').textContent = emp.age || '-';
       document.getElementById('detGender').textContent = emp.gender || '-';
+        document.getElementById('detMaritalStatus').textContent = emp.maritalStatus || '-';
       document.getElementById('detContact').textContent = emp.contact || '-';
+        document.getElementById('detAddress').textContent = emp.address || '-';
       document.getElementById('detLastTitle').textContent = emp.lastTitle || '-';
       document.getElementById('detDateStarted').textContent = emp.ds || '-';
       document.getElementById('detDateEnded').textContent = (emp.de && emp.de !== 'Present') ? emp.de : 'Present';
       document.getElementById('detJobRole').textContent = emp.role || '-';
       document.getElementById('detSalary').textContent = emp.salary ? '₱' + parseFloat(emp.salary).toLocaleString() : '-';
+        document.getElementById('detEmploymentStatus').textContent = emp.employmentStatus || '-';
       document.getElementById('detEmergencyName').textContent = emp.eName || '-';
       document.getElementById('detEmergencyContact').textContent = emp.eContact || '-';
       document.getElementById('detEmergencyRelation').textContent = emp.eRel || '-';
