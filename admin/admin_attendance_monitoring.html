@@ -262,6 +262,7 @@
     let pendingSanctionRecordIndex = -1;
     const SESSION_ADMIN_EMAIL_KEY = 'sunstar_logged_in_admin_email';
     const MANILA_TIME_ZONE = 'Asia/Manila';
+    const DEFAULT_SHIFT_SCHEDULE = 'Newsroom Day Shift (08:00 AM - 05:00 PM)';
 
     document.addEventListener("DOMContentLoaded", async function () {
       const dateInput = document.getElementById('attendanceDate');
@@ -402,6 +403,17 @@
         record.statusSource = 'admin';
       }
 
+      function normalizeAttendanceRecordFields(record) {
+        if (!record) return;
+
+        record.shift = record.shift || DEFAULT_SHIFT_SCHEDULE;
+
+        const otParsed = Number.parseFloat(record.ot);
+        record.ot = Number.isFinite(otParsed) && otParsed > 0 ? otParsed.toFixed(1) : '0.0';
+
+        record.isHoliday = !!record.isHoliday;
+      }
+
       function findRecordByEmployee(records, employeeId, name) {
         const normalizedName = String(name || '').trim().toLowerCase();
         return records.find(entry => {
@@ -451,6 +463,8 @@
          }
          
          records.forEach((rec, idx) => {
+          normalizeAttendanceRecordFields(rec);
+
             const tr = document.createElement('tr');
             tr.className = "hover:bg-zinc-50 transition duration-150";
             
@@ -474,7 +488,7 @@
               ? `<span class="text-[9px] font-bold text-red-600">Sanction: ${escapeHtml(rec.sanctionMessage)}</span><span class="text-[9px] font-bold text-zinc-400">${rec.sanctionAt ? formatSanctionAtLabel(rec.sanctionAt) : ''}${rec.sanctionBy ? ` by ${escapeHtml(rec.sanctionBy)}` : ''}</span>`
               : '';
 
-            const shiftTime = rec.shift || "08:00 AM - 05:00 PM";
+            const shiftTime = rec.shift || DEFAULT_SHIFT_SCHEDULE;
             const inColor = rec.clockIn === '--' || rec.clockIn.includes('--') ? 'text-zinc-300 italic' : (rec.status === 'Present' ? 'text-green-600' : 'text-yellow-600');
             const outColor = rec.clockOut === '--' || rec.clockOut.includes('--') ? 'text-zinc-300 italic' : 'text-zinc-700';
 
@@ -488,7 +502,7 @@
             `;
 
             const otVal = rec.ot || "0.0";
-            const specialVal = rec.isHoliday ? "Holiday" : "Reg";
+            const specialVal = rec.isHoliday ? "Holiday Work" : "Regular Day";
             
             tr.innerHTML = `
               <td class="px-6 py-4 font-medium tracking-tight text-zinc-900">${rec.name}</td>
@@ -554,6 +568,7 @@
         record.sanctionMessage = message;
         record.sanctionBy = getVerifierName();
         record.sanctionAt = getManilaTimestampIso();
+        normalizeAttendanceRecordFields(record);
 
         localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
         if (window.HRDataService) {
@@ -575,6 +590,7 @@
         const record = records[recordIndex];
         if (!record) return;
 
+        normalizeAttendanceRecordFields(record);
         markRecordVerified(record);
         localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
 
@@ -593,10 +609,12 @@
         const record = records[recordIndex];
         if (!record) return;
 
+        normalizeAttendanceRecordFields(record);
         record.status = nextStatus;
         if (nextStatus === 'Absent') {
           record.clockIn = '--';
           record.clockOut = '--';
+          record.ot = '0.0';
         }
         markRecordVerified(record);
 
@@ -623,16 +641,21 @@
             name,
             clockIn: '--',
             clockOut: '--',
-            status: nextStatus
+            status: nextStatus,
+            shift: DEFAULT_SHIFT_SCHEDULE,
+            ot: '0.0',
+            isHoliday: false
           };
           attendance[dateIso].push(targetRecord);
         } else {
+          normalizeAttendanceRecordFields(targetRecord);
           targetRecord.status = nextStatus;
         }
 
         if (nextStatus === 'Absent') {
           targetRecord.clockIn = '--';
           targetRecord.clockOut = '--';
+          targetRecord.ot = '0.0';
         }
 
         markRecordVerified(targetRecord);

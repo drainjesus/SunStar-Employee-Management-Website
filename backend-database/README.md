@@ -13,6 +13,10 @@ This folder bootstraps Supabase for the current HR portal.
 - Run `02_supabase_policies_dev.sql` for development browser access.
 - Run `03_supabase_subsystem_tables.sql` to create extended subsystem tables (admin, settings, skills/certs, reports/analytics, audit).
 - Run `04_supabase_policies_dev_extended.sql` to enable development policies for those new tables.
+- Run `05_supabase_employee_profile_fields.sql` for additional employee profile fields.
+- Run `06_supabase_attendance_verification_fields.sql` for admin attendance verification metadata.
+- Run `07_supabase_attendance_sanction_fields.sql` for attendance sanction messaging.
+- Run `08_supabase_attendance_shift_ot_holiday_fields.sql` for shift schedule, overtime, and holiday-work tracking.
 
 ## 3. Configure Frontend Keys
 - Copy `supabase-config.example.js` to `supabase-config.js`.

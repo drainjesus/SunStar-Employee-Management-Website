@@ -2,7 +2,25 @@
   const TRAINING_KEY = "sunstar_trainings";
   const LEAVE_KEY = "sunstar_leaves";
   const ATTENDANCE_KEY = "sunstar_attendance";
-  const ATTENDANCE_EXTENDED_COLUMNS = ["is_verified", "verified_by", "verified_at", "status_source", "sanction_message", "sanction_by", "sanction_at"];
+  const DEFAULT_SHIFT_SCHEDULE = "Newsroom Day Shift (08:00 AM - 05:00 PM)";
+  const ATTENDANCE_EXTENDED_COLUMNS = [
+    "is_verified",
+    "verified_by",
+    "verified_at",
+    "status_source",
+    "sanction_message",
+    "sanction_by",
+    "sanction_at",
+    "shift_schedule",
+    "overtime_hours",
+    "is_holiday_work"
+  ];
+
+  function formatOvertimeHours(value) {
+    const parsed = Number.parseFloat(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) return "0.0";
+    return parsed.toFixed(1);
+  }
 
   function hasClient() {
     return !!window.supabaseClient;
@@ -86,6 +104,9 @@
       clockIn: row.clock_in || "--",
       clockOut: row.clock_out || "--",
       status: row.status || "Absent",
+      shift: row.shift_schedule || DEFAULT_SHIFT_SCHEDULE,
+      ot: formatOvertimeHours(row.overtime_hours),
+      isHoliday: !!row.is_holiday_work,
       isVerified: !!row.is_verified,
       verifiedBy: row.verified_by || "",
       verifiedAt: row.verified_at || "",
@@ -130,6 +151,9 @@
 
         return {
           ...remoteRecord,
+          shift: remoteRecord.shift || match.shift || DEFAULT_SHIFT_SCHEDULE,
+          ot: formatOvertimeHours(remoteRecord.ot || match.ot),
+          isHoliday: !!(remoteRecord.isHoliday || match.isHoliday),
           isVerified: remoteRecord.isVerified || !!match.isVerified,
           verifiedBy: remoteRecord.verifiedBy || match.verifiedBy || "",
           verifiedAt: remoteRecord.verifiedAt || match.verifiedAt || "",
@@ -157,6 +181,9 @@
     };
 
     if (includeExtendedFields) {
+      payload.shift_schedule = record.shift || DEFAULT_SHIFT_SCHEDULE;
+      payload.overtime_hours = Number.parseFloat(record.ot || 0) || 0;
+      payload.is_holiday_work = !!record.isHoliday;
       payload.is_verified = !!record.isVerified;
       payload.verified_by = record.verifiedBy || null;
       payload.verified_at = record.verifiedAt || null;
@@ -276,7 +303,7 @@
 
     if (error) {
       const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
-      const hasMissingExtendedColumn = /(is_verified|verified_by|verified_at|status_source|sanction_message|sanction_by|sanction_at)/i.test(errorText);
+      const hasMissingExtendedColumn = /(is_verified|verified_by|verified_at|status_source|sanction_message|sanction_by|sanction_at|shift_schedule|overtime_hours|is_holiday_work)/i.test(errorText);
 
       if (hasMissingExtendedColumn) {
         const fallbackPayload = buildAttendancePayload(workDate, record, { includeExtendedFields: false });

@@ -203,10 +203,27 @@
                  <div class="absolute top-0 right-0 h-32 w-32 bg-sun-yellow/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
               </div>
 
+              <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+                 <p class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em]">Shift Setup</p>
+                 <label for="shiftScheduleSelect" class="mt-4 block text-[10px] font-black uppercase tracking-widest text-zinc-500">Shift Schedule</label>
+                 <select id="shiftScheduleSelect" class="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-black text-zinc-700 outline-none focus:border-sun-yellow">
+                    <option value="Newsroom Day Shift (08:00 AM - 05:00 PM)">Newsroom Day Shift (08:00 AM - 05:00 PM)</option>
+                    <option value="Field Reporting Shift (08:00 AM - 05:00 PM)">Field Reporting Shift (08:00 AM - 05:00 PM)</option>
+                    <option value="Digital Desk Shift (08:00 AM - 05:00 PM)">Digital Desk Shift (08:00 AM - 05:00 PM)</option>
+                 </select>
+
+                 <label class="mt-4 flex items-start gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3">
+                    <input id="holidayWorkCheckbox" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-zinc-300 text-sun-yellow focus:ring-sun-yellow">
+                    <span class="text-xs font-bold text-zinc-700">Special Work on Holiday</span>
+                 </label>
+
+                 <p class="mt-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">Overtime is auto-tracked on clock out after shift end.</p>
+              </div>
+
               <!-- Quick Info Card -->
               <div class="rounded-2xl border border-dashed border-zinc-200 p-6 bg-white/50">
                  <p class="text-xs text-zinc-500 font-medium italic leading-relaxed">
-                   Reliability and punctuality are core values at <span class="text-zinc-900 font-bold">SunStar Davao</span>. Clock in is allowed only between <span class="text-sun-yellowDark font-black underline decoration-sun-yellow underline-offset-4">08:00 AM and 05:00 PM (PST)</span>.
+                   Reliability and punctuality are core values at <span class="text-zinc-900 font-bold">SunStar Davao</span>. Clock in is allowed only between <span class="text-sun-yellowDark font-black underline decoration-sun-yellow underline-offset-4">08:00 AM and 05:00 PM (PST)</span>, and overtime is tracked once you clock out.
                  </p>
               </div>
            </div>
@@ -224,8 +241,10 @@
                     <thead>
                        <tr class="border-b border-zinc-100 bg-zinc-50/50">
                           <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Date Logged</th>
+                          <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Shift Details</th>
                           <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] text-center border-r border-zinc-100/50">Entry Time</th>
                           <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] text-center border-r border-zinc-100/50">Exit Time</th>
+                          <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">OT/Special</th>
                           <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] text-right">Verdict</th>
                        </tr>
                     </thead>
@@ -357,6 +376,7 @@
       const MANILA_TIME_ZONE = 'Asia/Manila';
       const CLOCK_IN_START_MINUTES = 8 * 60;
       const CLOCK_IN_END_MINUTES = 17 * 60;
+      const DEFAULT_SHIFT_SCHEDULE = 'Newsroom Day Shift (08:00 AM - 05:00 PM)';
       let currentActionType = '';
       let activeUser = null;
 
@@ -425,6 +445,52 @@
       function getManilaMinutesNow() {
          const parts = getManilaParts();
          return (parts.hour * 60) + parts.minute;
+      }
+
+      function parseClockTimeToMinutes(timeValue) {
+         if (!timeValue || String(timeValue).includes('--')) return null;
+         const match = String(timeValue).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+         if (!match) return null;
+
+         let hour = Number(match[1]);
+         const minute = Number(match[2]);
+         const period = String(match[3] || '').toUpperCase();
+         if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
+
+         if (period === 'PM' && hour !== 12) hour += 12;
+         if (period === 'AM' && hour === 12) hour = 0;
+         return (hour * 60) + minute;
+      }
+
+      function getShiftEndMinutes(shiftLabel) {
+         const match = String(shiftLabel || '').match(/-\s*(\d{1,2}:\d{2}\s*[AP]M)\s*\)/i);
+         if (!match) return CLOCK_IN_END_MINUTES;
+
+         const parsed = parseClockTimeToMinutes(match[1]);
+         return parsed === null ? CLOCK_IN_END_MINUTES : parsed;
+      }
+
+      function formatOvertimeHours(value) {
+         const parsed = Number.parseFloat(value);
+         if (!Number.isFinite(parsed) || parsed <= 0) return '0.0';
+         return parsed.toFixed(1);
+      }
+
+      function calculateOvertimeHours(clockOutValue, shiftLabel) {
+         const clockOutMinutes = parseClockTimeToMinutes(clockOutValue);
+         if (clockOutMinutes === null) return '0.0';
+
+         const shiftEndMinutes = getShiftEndMinutes(shiftLabel || DEFAULT_SHIFT_SCHEDULE);
+         if (clockOutMinutes <= shiftEndMinutes) return '0.0';
+
+         const overtimeHours = (clockOutMinutes - shiftEndMinutes) / 60;
+         return overtimeHours.toFixed(1);
+      }
+
+      function getSelectedShiftSchedule() {
+         const shiftSelect = document.getElementById('shiftScheduleSelect');
+         if (!shiftSelect || !shiftSelect.value) return DEFAULT_SHIFT_SCHEDULE;
+         return shiftSelect.value;
       }
 
       function isClockInWindowOpen() {
@@ -568,6 +634,8 @@
          const sanctionPreview = document.getElementById('sanctionPreview');
          const sanctionPreviewText = document.getElementById('sanctionPreviewText');
          const sanctionViewBtn = document.getElementById('sanctionViewBtn');
+         const shiftSelect = document.getElementById('shiftScheduleSelect');
+         const holidayCheckbox = document.getElementById('holidayWorkCheckbox');
 
          inBtn.classList.remove('opacity-50', 'pointer-events-none');
          outBtn.classList.remove('opacity-50', 'pointer-events-none');
@@ -576,9 +644,15 @@
          sanctionPreview.classList.add('hidden');
          sanctionViewBtn.onclick = null;
 
+         if (shiftSelect && !shiftSelect.value) {
+            shiftSelect.value = DEFAULT_SHIFT_SCHEDULE;
+         }
+
          if (!activeUser) {
             inBtn.disabled = true;
             outBtn.disabled = true;
+            if (shiftSelect) shiftSelect.disabled = true;
+            if (holidayCheckbox) holidayCheckbox.disabled = true;
             indicator.classList.remove('hidden');
             statusText.textContent = 'No employee profile found. Ask admin to create your account.';
             renderHistory();
@@ -586,12 +660,30 @@
          }
 
          if (myRecord) {
+            myRecord.shift = myRecord.shift || DEFAULT_SHIFT_SCHEDULE;
+            myRecord.ot = formatOvertimeHours(myRecord.ot);
+            if (typeof myRecord.isHoliday !== 'boolean') {
+               myRecord.isHoliday = false;
+            }
+
+            if (shiftSelect) {
+               shiftSelect.value = myRecord.shift;
+               shiftSelect.disabled = true;
+            }
+
+            if (holidayCheckbox) {
+               holidayCheckbox.checked = !!myRecord.isHoliday;
+               holidayCheckbox.disabled = true;
+            }
+
             inBtn.disabled = true;
             inBtn.classList.add('opacity-50', 'pointer-events-none');
             inBtn.innerHTML = `✓ Clocked In at ${myRecord.clockIn}`;
 
             indicator.classList.remove('hidden');
-            statusText.textContent = myRecord.status + (myRecord.clockOut !== '--' ? ` (Clocked Out: ${myRecord.clockOut})` : '');
+            const overtimeLabel = Number.parseFloat(myRecord.ot) > 0 ? ` • OT ${myRecord.ot}h` : '';
+            const specialLabel = myRecord.isHoliday ? ' • Holiday Work' : '';
+            statusText.textContent = `${myRecord.status} • ${myRecord.shift}${myRecord.clockOut !== '--' ? ` (Clocked Out: ${myRecord.clockOut})` : ''}${overtimeLabel}${specialLabel}`;
 
             if (myRecord.sanctionMessage) {
                sanctionPreview.classList.remove('hidden');
@@ -611,6 +703,16 @@
                outBtn.disabled = false;
             }
          } else {
+            if (shiftSelect) {
+               shiftSelect.disabled = false;
+               shiftSelect.value = shiftSelect.value || DEFAULT_SHIFT_SCHEDULE;
+            }
+
+            if (holidayCheckbox) {
+               holidayCheckbox.disabled = false;
+               holidayCheckbox.checked = false;
+            }
+
             const canClockInNow = isClockInWindowOpen();
             inBtn.disabled = !canClockInNow;
             if (!canClockInNow) {
@@ -668,6 +770,9 @@
 
             const dayName = formatIsoDateInManila(rec.dateIso, { weekday: 'short' });
             const dateName = formatIsoDateInManila(rec.dateIso, { month: 'short', day: '2-digit' });
+            const shiftLabel = rec.shift || DEFAULT_SHIFT_SCHEDULE;
+            const overtimeLabel = formatOvertimeHours(rec.ot);
+            const specialLabel = rec.isHoliday ? 'Holiday Work' : 'Regular Day';
             const sanctionButton = rec.sanctionMessage
                ? `<button type="button" onclick='showSanctionNote(${JSON.stringify(rec.sanctionMessage || '')}, ${JSON.stringify(rec.sanctionBy || '')}, ${JSON.stringify(rec.sanctionAt || '')}, ${JSON.stringify(rec.dateIso || '')})' class="mt-1 text-[10px] font-black uppercase tracking-widest text-red-700 underline underline-offset-2">View Sanction</button>`
                : '';
@@ -680,9 +785,17 @@
                       <p class="font-black text-zinc-900">${dayName}</p>
                       <p class="text-[10px] font-black uppercase text-zinc-400 tracking-tight">${dateName}</p>
                   </td>
+                 <td class="px-6 py-5">
+                    <p class="text-xs font-black text-zinc-700">${escapeHtml(shiftLabel)}</p>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Scheduled Shift</p>
+                 </td>
                   <td class="px-6 py-5 text-center font-bold text-sm text-zinc-600">${rec.clockIn || '--'}</td>
                   <td class="px-6 py-5 text-center font-bold text-sm text-zinc-600">${rec.clockOut || '--'}</td>
-                  <td class="px-6 py-5 text-right"><span class="${statusClasses}">${rec.status || 'Absent'}</span>${sanctionRow}</td>
+                 <td class="px-6 py-5">
+                    <p class="text-xs font-black text-zinc-700">${overtimeLabel}h OT</p>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">${specialLabel}</p>
+                 </td>
+                 <td class="px-6 py-5 text-right"><span class="${statusClasses}">${rec.status || 'Absent'}</span>${sanctionRow}</td>
              `;
             tbody.appendChild(tr);
          });
@@ -713,11 +826,21 @@
 
          const todayIso = getManilaIsoDate();
          const nowTime = formatManilaTime(new Date(), false);
+         const selectedShift = getSelectedShiftSchedule();
+         const holidayWork = !!document.getElementById('holidayWorkCheckbox')?.checked;
          let data = getAttendances();
 
          if (!data[todayIso]) data[todayIso] = [];
          let todayRecords = data[todayIso];
          let myRecord = todayRecords.find(r => String(r.empId) === String(activeUser.id) || String(r.name || '').trim().toLowerCase() === getActiveUserName().toLowerCase());
+
+         if (myRecord) {
+            myRecord.shift = myRecord.shift || selectedShift;
+            myRecord.ot = formatOvertimeHours(myRecord.ot);
+            if (typeof myRecord.isHoliday !== 'boolean') {
+               myRecord.isHoliday = false;
+            }
+         }
 
          if (currentActionType === 'in') {
             if (!isClockInWindowOpen()) {
@@ -742,6 +865,9 @@
                clockIn: nowTime,
                clockOut: '--',
                status,
+               shift: selectedShift,
+               ot: '0.0',
+               isHoliday: holidayWork,
                isVerified: false,
                verifiedBy: '',
                verifiedAt: '',
@@ -750,6 +876,11 @@
             data[todayIso].push(myRecord);
          } else if (myRecord) {
             myRecord.clockOut = nowTime;
+            myRecord.shift = myRecord.shift || selectedShift;
+            myRecord.ot = calculateOvertimeHours(nowTime, myRecord.shift);
+            if (typeof myRecord.isHoliday !== 'boolean') {
+               myRecord.isHoliday = holidayWork;
+            }
          }
 
          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
