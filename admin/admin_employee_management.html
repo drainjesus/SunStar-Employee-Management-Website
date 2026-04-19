@@ -256,14 +256,6 @@
                       <option value="Widowed">Widowed</option>
                     </select>
                   </div>
-                  <div>
-                    <label class="block text-xs font-semibold text-zinc-700">Date Hired</label>
-                    <input type="date" id="dateHired" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
-                  </div>
-                  <div>
-                    <label class="block text-xs font-semibold text-zinc-700">Date Terminated</label>
-                    <input type="date" id="dateTerminated" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
-                  </div>
                   <div class="md:col-span-2">
                     <label class="block text-xs font-semibold text-zinc-700">Contact Number</label>
                     <input type="tel" id="contactNumber" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
@@ -295,6 +287,16 @@
                     <button type="button" onclick="addRoleHistoryRow()" class="inline-flex items-center gap-2 rounded-md bg-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-200 transition-colors">
                       <span>+ Add Entry</span>
                     </button>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
+                    <div>
+                      <label class="block text-[11px] font-semibold text-zinc-600">Date Hired</label>
+                      <input type="date" id="dateHired" class="mt-1 w-full rounded border border-zinc-300 px-2 py-1.5 text-xs focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                    </div>
+                    <div>
+                      <label class="block text-[11px] font-semibold text-zinc-600">Date Terminated</label>
+                      <input type="date" id="dateTerminated" class="mt-1 w-full rounded border border-zinc-300 px-2 py-1.5 text-xs focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                    </div>
                   </div>
                   <div id="roleHistoryBody" class="space-y-3">
                   </div>

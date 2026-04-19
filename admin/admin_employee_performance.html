@@ -602,6 +602,12 @@
          }
       });
 
+      window.addEventListener('storage', async function(event) {
+        if (event.key && event.key !== 'sunstar_performances' && event.key !== 'sunstar_peer_reviews' && event.key !== 'sunstar_employees') return;
+        await syncFromSupabase();
+        renderAppraisals();
+      });
+
       renderAppraisals();
       syncFromSupabase();
     });

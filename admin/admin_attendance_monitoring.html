@@ -730,6 +730,15 @@
       nextDateBtn.addEventListener('click', () => updateDateObj(1));
       dateInput.addEventListener('change', (e) => renderTable(e.target.value));
 
+      window.addEventListener('storage', async function(event) {
+        if (event.key && event.key !== 'sunstar_attendance' && event.key !== 'sunstar_employees') return;
+        await syncEmployeesFromSupabase();
+        await syncAttendanceFromSupabase();
+        const activeDate = dateInput.value || getManilaIsoDate();
+        renderTable(activeDate);
+        renderControl();
+      });
+
       // Init logic
       const todayIso = getManilaIsoDate();
       dateInput.value = todayIso;

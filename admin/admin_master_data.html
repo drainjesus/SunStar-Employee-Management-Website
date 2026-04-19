@@ -507,6 +507,11 @@
 
     window.addEventListener('DOMContentLoaded', init);
 
+    window.addEventListener('storage', async (event) => {
+      if (event.key && event.key !== 'sunstar_employees') return;
+      await init();
+    });
+
     window.addEventListener('focus', init);
 
     function formatProfileDate(value) {

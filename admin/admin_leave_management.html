@@ -596,6 +596,13 @@
          if(currentPage < Math.ceil(leaves.length / itemsPerPage)) { currentPage++; renderLeaveTable(); }
       });
 
+      window.addEventListener('storage', async function(event) {
+        if (event.key && event.key !== 'sunstar_leaves' && event.key !== 'sunstar_attendance' && event.key !== 'sunstar_employees') return;
+        await syncLeavesFromSupabase();
+        await syncAttendanceFromSupabase();
+        renderLeaveTable();
+      });
+
       renderLeaveTable();
     });
   </script>

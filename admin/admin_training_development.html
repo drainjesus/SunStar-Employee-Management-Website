@@ -664,6 +664,16 @@
       if (tabId === 'skills') renderSkills();
       if (tabId === 'certs') renderCerts();
     }
+
+    window.addEventListener('storage', async function(event) {
+      if (event.key && event.key !== 'sunstar_employees' && event.key !== 'sunstar_trainings') return;
+      await syncEmployeesFromSupabase();
+      await syncTrainingsFromSupabase();
+      syncEmployeeFields();
+      renderPrograms();
+      renderSkills();
+      renderCerts();
+    });
   </script>
 </body>
 </html>

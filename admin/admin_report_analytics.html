@@ -339,6 +339,11 @@
       initStaffingChart(employees);
     });
 
+    window.addEventListener('storage', function(event) {
+      if (event.key && event.key !== 'sunstar_employees' && event.key !== 'sunstar_leaves' && event.key !== 'sunstar_performances' && event.key !== 'sunstar_attendance') return;
+      window.location.reload();
+    });
+
      const chartColors = {
        yellow: '#f59e0b',
        yellowSoft: '#fde68a',
