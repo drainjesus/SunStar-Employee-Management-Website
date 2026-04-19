@@ -691,12 +691,16 @@
     function collectEmploymentHistory() {
       const rows = document.querySelectorAll('#empHistoryBody .empHistoryRow');
       return Array.from(rows).map(row => {
-        const inputs = row.querySelectorAll('input');
+        const tds = row.querySelectorAll('td');
+        const dateFromInput = tds[0].querySelector('input');
+        const dateToInput = tds[1].querySelector('input');
+        const companyInput = tds[2].querySelector('input');
+        const jobInput = tds[3].querySelector('input');
         return {
-          ds: inputs[0].value,
-          de: inputs[1].value,
-          company: inputs[2].value,
-          job: inputs[3].value
+          ds: dateFromInput ? dateFromInput.value : '',
+          de: dateToInput ? dateToInput.value : '',
+          company: companyInput ? companyInput.value : '',
+          job: jobInput ? jobInput.value : ''
         };
       }).filter(row => row.ds || row.de || row.company || row.job);
     }
@@ -704,12 +708,16 @@
     function collectRoleHistory() {
       const rows = document.querySelectorAll('#roleHistoryBody .roleHistoryRow');
       return Array.from(rows).map(row => {
-        const inputs = row.querySelectorAll('input, select');
+        const tds = row.querySelectorAll('td');
+        const dateFromInput = tds[0].querySelector('input');
+        const dateToInput = tds[1].querySelector('input');
+        const roleSelect = tds[2].querySelector('select');
+        const salaryInput = tds[3].querySelector('input');
         return {
-          ds: inputs[0].value,
-          de: inputs[1].value,
-          role: inputs[2].value,
-          salary: inputs[3].value
+          ds: dateFromInput ? dateFromInput.value : '',
+          de: dateToInput ? dateToInput.value : '',
+          role: roleSelect ? roleSelect.value : '',
+          salary: salaryInput ? salaryInput.value : ''
         };
       }).filter(row => row.ds || row.de || row.role || row.salary);
     }

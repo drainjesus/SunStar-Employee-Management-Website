@@ -37,6 +37,8 @@
       lastTitle: row.last_title || "",
       ds: row.date_started || "",
       de: row.date_ended || "",
+      dateHired: row.date_hired || "",
+      dateTerminated: row.date_terminated || "",
       role: row.role || "",
       salary: row.salary || "",
       eName: row.emergency_name || "",
@@ -45,6 +47,8 @@
       email: row.email || "",
       password: row.password || "",
       profilePic: row.profile_pic || "",
+      employmentHistory: Array.isArray(row.employment_history) ? row.employment_history : [],
+      roleHistory: Array.isArray(row.role_history) ? row.role_history : [],
       skills: Array.isArray(row.skills) ? row.skills : [],
       certs: Array.isArray(row.certs) ? row.certs : []
     };
@@ -112,7 +116,11 @@
         birthDate: emp.birthDate || cachedEmp.birthDate || "",
         maritalStatus: emp.maritalStatus || cachedEmp.maritalStatus || "",
         employmentStatus: emp.employmentStatus || cachedEmp.employmentStatus || "",
-        address: emp.address || cachedEmp.address || ""
+        address: emp.address || cachedEmp.address || "",
+        dateHired: emp.dateHired || cachedEmp.dateHired || "",
+        dateTerminated: emp.dateTerminated || cachedEmp.dateTerminated || "",
+        employmentHistory: Array.isArray(cachedEmp.employmentHistory) ? cachedEmp.employmentHistory : [],
+        roleHistory: Array.isArray(cachedEmp.roleHistory) ? cachedEmp.roleHistory : []
       };
     });
   }
