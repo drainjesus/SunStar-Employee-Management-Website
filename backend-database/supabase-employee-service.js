@@ -119,8 +119,12 @@
         address: emp.address || cachedEmp.address || "",
         dateHired: emp.dateHired || cachedEmp.dateHired || "",
         dateTerminated: emp.dateTerminated || cachedEmp.dateTerminated || "",
-        employmentHistory: Array.isArray(cachedEmp.employmentHistory) ? cachedEmp.employmentHistory : [],
-        roleHistory: Array.isArray(cachedEmp.roleHistory) ? cachedEmp.roleHistory : []
+        employmentHistory: (Array.isArray(emp.employmentHistory) && emp.employmentHistory.length > 0)
+          ? emp.employmentHistory
+          : (Array.isArray(cachedEmp.employmentHistory) ? cachedEmp.employmentHistory : []),
+        roleHistory: (Array.isArray(emp.roleHistory) && emp.roleHistory.length > 0)
+          ? emp.roleHistory
+          : (Array.isArray(cachedEmp.roleHistory) ? cachedEmp.roleHistory : [])
       };
     });
   }
@@ -141,17 +145,11 @@
     const rows = data || [];
     const mappedRows = rows.map(mapDbToLocal);
 
-    const hasExtendedProfileColumns =
-      rows.length === 0 ||
-      ["middle_name", "birth_date", "marital_status", "employment_status", "address"].every((column) =>
-        Object.prototype.hasOwnProperty.call(rows[0], column)
-      );
-
-    if (!hasExtendedProfileColumns) {
-      return mergeExtendedProfileFromCache(mappedRows);
-    }
-
-    return mappedRows;
+    // Always merge cached extended/profile arrays (like employmentHistory, roleHistory)
+    // so that UI edits persisted in localStorage remain available even if the DB
+    // schema does not yet store these JSON arrays. The merge function preserves
+    // server-side values when they already exist and falls back to cached values.
+    return mergeExtendedProfileFromCache(mappedRows);
   }
 
   async function upsertEmployee(employee) {
