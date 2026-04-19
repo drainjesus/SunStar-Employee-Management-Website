@@ -494,7 +494,7 @@
     const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
     const SESSION_ADMIN_EMAIL_KEY = 'sunstar_logged_in_admin_email';
 
-    let employees = JSON.parse(localStorage.getItem('sunstar_employees')) || [];
+    let employees = [];
     let adminEmails = [];
     let editingId = null;
     let currentPage = 1;
@@ -520,12 +520,14 @@
     }
 
     async function syncEmployeesFromSupabase() {
-      if (!window.EmployeeDataService) return;
+      if (!window.EmployeeDataService) return false;
       const remote = await window.EmployeeDataService.fetchEmployees();
       if (Array.isArray(remote)) {
         employees = remote;
-        localStorage.setItem('sunstar_employees', JSON.stringify(remote));
+        return true;
       }
+
+      return false;
     }
 
     function updateTable() {
@@ -632,9 +634,9 @@
       updateTable();
     });
 
-    window.addEventListener('storage', (event) => {
+    window.addEventListener('storage', async (event) => {
       if (event.key === 'sunstar_employees') {
-        employees = JSON.parse(localStorage.getItem('sunstar_employees')) || [];
+        await syncEmployeesFromSupabase();
         updateTable();
       }
     });
@@ -876,16 +878,11 @@
         return;
       }
 
-      if (editingId) {
-        const index = employees.findIndex(emp => emp.id === editingId);
-        if (index !== -1) employees[index] = data;
-      } else {
-        employees.push(data);
+      const synced = await syncEmployeesFromSupabase();
+      if (!synced) {
+        alert('Employee was saved to Supabase, but the latest list could not be reloaded. Please refresh the page.');
       }
-
-      // Keep local cache aligned only after successful remote save.
-      localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-      renderTable(); // Update frontend interface automatically
+      updateTable();
 
       document.getElementById('addEmployeeForm').reset();
       document.getElementById('addEmployeeModal').classList.add('hidden');
@@ -914,9 +911,11 @@
           return;
         }
 
-        employees = employees.filter(e => e.id !== deleteTargetId);
-        localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-        renderTable();
+        const synced = await syncEmployeesFromSupabase();
+        if (!synced) {
+          alert('Employee was deleted from Supabase, but the latest list could not be reloaded. Please refresh the page.');
+        }
+        updateTable();
         document.getElementById('deleteConfirmModal').classList.add('hidden');
         showSuccessModal("Employee successfully deleted from Supabase.");
         deleteTargetId = null;

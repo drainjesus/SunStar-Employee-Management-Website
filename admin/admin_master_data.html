@@ -476,18 +476,20 @@
     }
 
     async function syncEmployeesFromSupabase() {
-      if (!window.EmployeeDataService) return;
+      if (!window.EmployeeDataService) return false;
       const remote = await window.EmployeeDataService.fetchEmployees();
       if (Array.isArray(remote)) {
-        localStorage.setItem('sunstar_employees', JSON.stringify(remote));
+        employees = remote;
+        return true;
       }
+
+      return false;
     }
 
     async function init() {
-      await syncEmployeesFromSupabase();
-      const stored = localStorage.getItem('sunstar_employees');
-      if (stored) {
-        employees = JSON.parse(stored);
+      const synced = await syncEmployeesFromSupabase();
+      if (!synced && employees.length === 0) {
+        console.warn('Unable to load employees from Supabase.');
       }
       filteredData = [...employees];
       renderMasterTable();
