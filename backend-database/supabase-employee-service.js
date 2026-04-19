@@ -56,6 +56,7 @@
 
   function mapLocalToDb(emp, options = {}) {
     const includeExtendedProfile = options.includeExtendedProfile !== false;
+    const includeHistory = options.includeHistory !== false;
 
     const mapped = {
       id: emp.id,
@@ -67,12 +68,8 @@
       last_title: emp.lastTitle || null,
       date_started: normalizeDate(emp.ds),
       date_ended: normalizeDate(emp.de),
-      date_hired: normalizeDate(emp.dateHired),
-      date_terminated: normalizeDate(emp.dateTerminated),
       role: emp.role || null,
       salary: emp.salary === "" ? null : Number(emp.salary) || null,
-      employment_history: Array.isArray(emp.employmentHistory) ? emp.employmentHistory : [],
-      role_history: Array.isArray(emp.roleHistory) ? emp.roleHistory : [],
       emergency_name: emp.eName || null,
       emergency_contact: emp.eContact || null,
       emergency_relation: emp.eRel || null,
@@ -82,6 +79,13 @@
       skills: Array.isArray(emp.skills) ? emp.skills : [],
       certs: Array.isArray(emp.certs) ? emp.certs : []
     };
+
+    if (includeHistory) {
+      mapped.date_hired = normalizeDate(emp.dateHired);
+      mapped.date_terminated = normalizeDate(emp.dateTerminated);
+      mapped.employment_history = Array.isArray(emp.employmentHistory) ? emp.employmentHistory : [];
+      mapped.role_history = Array.isArray(emp.roleHistory) ? emp.roleHistory : [];
+    }
 
     if (includeExtendedProfile) {
       mapped.middle_name = emp.middleName || null;
