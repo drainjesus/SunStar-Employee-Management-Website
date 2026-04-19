@@ -874,7 +874,10 @@
 
       const savedToSupabase = await window.EmployeeDataService.upsertEmployee(data);
       if (!savedToSupabase) {
-        alert('Unable to save employee account to Supabase. No changes were applied.');
+        const detail = window.EmployeeDataService.getLastError
+          ? window.EmployeeDataService.getLastError()
+          : '';
+        alert(detail || 'Unable to save employee account to Supabase. No changes were applied.');
         return;
       }
 
@@ -907,7 +910,10 @@
 
         const deletedFromSupabase = await window.EmployeeDataService.deleteEmployeeById(deletedId);
         if (!deletedFromSupabase) {
-          alert('Unable to delete employee from Supabase. No changes were applied.');
+          const detail = window.EmployeeDataService.getLastError
+            ? window.EmployeeDataService.getLastError()
+            : '';
+          alert(detail || 'Unable to delete employee from Supabase. No changes were applied.');
           return;
         }
 

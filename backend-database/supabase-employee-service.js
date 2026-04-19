@@ -1,5 +1,19 @@
 (function () {
   const STORAGE_KEY = "sunstar_employees";
+  const REQUIRED_PROFILE_COLUMNS_PATTERN = /(middle_name|birth_date|marital_status|employment_status|address|date_hired|date_terminated|employment_history|role_history)/i;
+  let lastErrorMessage = "";
+
+  function setLastError(message) {
+    lastErrorMessage = String(message || "").trim();
+  }
+
+  function clearLastError() {
+    lastErrorMessage = "";
+  }
+
+  function getLastError() {
+    return lastErrorMessage;
+  }
 
   function hasClient() {
     return !!window.supabaseClient;
@@ -98,47 +112,11 @@
     return mapped;
   }
 
-  function mergeExtendedProfileFromCache(rows) {
-    let cached = [];
-
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      cached = raw ? JSON.parse(raw) : [];
-    } catch (error) {
-      cached = [];
-    }
-
-    const cacheById = new Map(
-      (Array.isArray(cached) ? cached : [])
-        .filter((emp) => emp && emp.id != null)
-        .map((emp) => [String(emp.id), emp])
-    );
-
-    return rows.map((emp) => {
-      const cachedEmp = cacheById.get(String(emp.id));
-      if (!cachedEmp) return emp;
-
-      return {
-        ...emp,
-        middleName: emp.middleName || cachedEmp.middleName || "",
-        birthDate: emp.birthDate || cachedEmp.birthDate || "",
-        maritalStatus: emp.maritalStatus || cachedEmp.maritalStatus || "",
-        employmentStatus: emp.employmentStatus || cachedEmp.employmentStatus || "",
-        address: emp.address || cachedEmp.address || "",
-        dateHired: emp.dateHired || cachedEmp.dateHired || "",
-        dateTerminated: emp.dateTerminated || cachedEmp.dateTerminated || "",
-        employmentHistory: (Array.isArray(emp.employmentHistory) && emp.employmentHistory.length > 0)
-          ? emp.employmentHistory
-          : (Array.isArray(cachedEmp.employmentHistory) ? cachedEmp.employmentHistory : []),
-        roleHistory: (Array.isArray(emp.roleHistory) && emp.roleHistory.length > 0)
-          ? emp.roleHistory
-          : (Array.isArray(cachedEmp.roleHistory) ? cachedEmp.roleHistory : [])
-      };
-    });
-  }
-
   async function fetchEmployees() {
-    if (!hasClient()) return null;
+    if (!hasClient()) {
+      setLastError("Supabase client is not available.");
+      return null;
+    }
 
     const { data, error } = await window.supabaseClient
       .from("employees")
@@ -147,55 +125,45 @@
 
     if (error) {
       console.error("fetchEmployees failed", error);
+      setLastError(error.message || "Unable to fetch employees from Supabase.");
       return null;
     }
 
-    const rows = data || [];
-    const mappedRows = rows.map(mapDbToLocal);
-
-    // Always merge cached extended/profile arrays (like employmentHistory, roleHistory)
-    // so that UI edits persisted in localStorage remain available even if the DB
-    // schema does not yet store these JSON arrays. The merge function preserves
-    // server-side values when they already exist and falls back to cached values.
-    return mergeExtendedProfileFromCache(mappedRows);
+    clearLastError();
+    return (data || []).map(mapDbToLocal);
   }
 
   async function upsertEmployee(employee) {
-    if (!hasClient()) return false;
+    if (!hasClient()) {
+      setLastError("Supabase client is not available.");
+      return false;
+    }
 
     const payload = mapLocalToDb(employee);
-    let { error } = await window.supabaseClient
+    const { error } = await window.supabaseClient
       .from("employees")
       .upsert(payload, { onConflict: "id" });
 
     if (error) {
       const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
-      const isMissingExtendedColumn = /(middle_name|birth_date|marital_status|employment_status|address|date_hired|date_terminated|employment_history|role_history)/i.test(errorText);
-
-      if (isMissingExtendedColumn) {
-        const fallbackPayload = mapLocalToDb(employee, { includeExtendedProfile: false, includeHistory: false });
-        const fallback = await window.supabaseClient
-          .from("employees")
-          .upsert(fallbackPayload, { onConflict: "id" });
-
-        if (!fallback.error) {
-          return true;
-        }
-
-        error = fallback.error;
+      if (REQUIRED_PROFILE_COLUMNS_PATTERN.test(errorText)) {
+        setLastError("Supabase schema is missing employee profile/history columns. Run 05_supabase_employee_profile_fields.sql and 09_add_history_fields.sql, then save again.");
+      } else {
+        setLastError(error.message || "Unable to save employee to Supabase.");
       }
-    }
-
-    if (error) {
       console.error("upsertEmployee failed", error);
       return false;
     }
 
+    clearLastError();
     return true;
   }
 
   async function deleteEmployeeById(id) {
-    if (!hasClient()) return false;
+    if (!hasClient()) {
+      setLastError("Supabase client is not available.");
+      return false;
+    }
 
     const { error } = await window.supabaseClient
       .from("employees")
@@ -204,14 +172,19 @@
 
     if (error) {
       console.error("deleteEmployeeById failed", error);
+      setLastError(error.message || "Unable to delete employee from Supabase.");
       return false;
     }
 
+    clearLastError();
     return true;
   }
 
   async function authenticateEmployee(email, password) {
-    if (!hasClient()) return null;
+    if (!hasClient()) {
+      setLastError("Supabase client is not available.");
+      return null;
+    }
 
     const { data, error } = await window.supabaseClient
       .from("employees")
@@ -222,6 +195,7 @@
 
     if (error) {
       console.error("authenticateEmployee failed", error);
+      setLastError(error.message || "Unable to authenticate employee.");
       return null;
     }
 
@@ -232,6 +206,7 @@
       return null;
     }
 
+    clearLastError();
     return mapped;
   }
 
@@ -249,6 +224,7 @@
     authenticateEmployee,
     syncLocalFromRemote,
     mapDbToLocal,
-    mapLocalToDb
+    mapLocalToDb,
+    getLastError
   };
 })();
