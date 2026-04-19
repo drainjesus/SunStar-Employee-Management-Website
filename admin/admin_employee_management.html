@@ -651,6 +651,10 @@
       document.getElementById('addEmployeeModal').classList.remove('hidden');
     }
 
+    function generateEmployeeId() {
+      return Date.now();
+    }
+
     function openEditModal(id) {
       editingId = id;
       const emp = employees.find(e => e.id === id);
@@ -728,7 +732,7 @@
       if (editingId) {
         data.id = editingId;
       } else {
-        data.id = Date.now(); // assign unique ID
+        data.id = generateEmployeeId();
       }
 
       if (!window.EmployeeDataService) {

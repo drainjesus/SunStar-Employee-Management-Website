@@ -239,6 +239,10 @@
                     <span class="block text-xs font-semibold text-zinc-500">Full Name</span>
                     <span class="block mt-0.5 text-base font-bold text-zinc-900" id="detFullName">-</span>
                   </div>
+                  <div class="col-span-2 shadow-sm rounded-lg border border-zinc-100 p-3 bg-zinc-50/50">
+                    <span class="block text-xs font-semibold text-zinc-500">Employee ID</span>
+                    <span class="block mt-0.5 text-base font-bold text-zinc-900" id="detEmployeeId">-</span>
+                  </div>
                   <div>
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Middle Name</span>
                     <span class="block mt-0.5 font-bold text-zinc-900" id="detMiddleName">-</span>
@@ -412,6 +416,7 @@
                 ${avatarHtml}
                  <div class="flex flex-col">
                    <span class="font-medium tracking-tight text-zinc-900 group-hover:text-amber-600 transition-colors break-words">${emp.firstName} ${emp.lastName}</span>
+                   <span class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">ID: ${emp.id}</span>
                    <span class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">${emp.email || '-'}</span>
                  </div>
              </div>
@@ -505,6 +510,7 @@
       }
 
       document.getElementById('detFullName').textContent = `${emp.firstName} ${emp.lastName}`;
+      document.getElementById('detEmployeeId').textContent = emp.id || '-';
         document.getElementById('detMiddleName').textContent = emp.middleName || '-';
         document.getElementById('detBirthDate').textContent = formatProfileDate(emp.birthDate);
       document.getElementById('detAge').textContent = emp.age || '-';
