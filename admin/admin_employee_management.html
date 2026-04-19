@@ -714,9 +714,9 @@
       }).filter(row => row.ds || row.de || row.role || row.salary);
     }
 
-    function getEmploymentStatus(ds, de) {
-      const hasStart = String(ds || '').trim() !== '';
-      const hasEnd = String(de || '').trim() !== '';
+    function getEmploymentStatus(dateHired, dateTerminated) {
+      const hasStart = String(dateHired || '').trim() !== '';
+      const hasEnd = String(dateTerminated || '').trim() !== '';
       if (hasEnd) return 'Inactive';
       if (hasStart) return 'Active';
       return 'Not encoded';

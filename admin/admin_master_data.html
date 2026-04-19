@@ -509,7 +509,7 @@
     }
 
     function renderEmploymentHistory(emp) {
-      const rows = Array.isArray(emp.employmentHistory)
+      const rows = Array.isArray(emp.employmentHistory) && emp.employmentHistory.length > 0
         ? emp.employmentHistory
         : [{ ds: emp.ds, de: emp.de, company: emp.company, job: emp.lastTitle }];
       const tbody = document.getElementById('detEmploymentHistoryBody');
@@ -536,7 +536,7 @@
     }
 
     function renderRoleHistory(emp) {
-      const rows = Array.isArray(emp.roleHistory)
+      const rows = Array.isArray(emp.roleHistory) && emp.roleHistory.length > 0
         ? emp.roleHistory
         : [{ ds: emp.ds, de: emp.de, role: emp.role, salary: emp.salary }];
       const tbody = document.getElementById('detRoleHistoryBody');
