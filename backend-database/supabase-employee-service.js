@@ -67,8 +67,12 @@
       last_title: emp.lastTitle || null,
       date_started: normalizeDate(emp.ds),
       date_ended: normalizeDate(emp.de),
+      date_hired: normalizeDate(emp.dateHired),
+      date_terminated: normalizeDate(emp.dateTerminated),
       role: emp.role || null,
       salary: emp.salary === "" ? null : Number(emp.salary) || null,
+      employment_history: Array.isArray(emp.employmentHistory) ? emp.employmentHistory : [],
+      role_history: Array.isArray(emp.roleHistory) ? emp.roleHistory : [],
       emergency_name: emp.eName || null,
       emergency_contact: emp.eContact || null,
       emergency_relation: emp.eRel || null,
@@ -162,7 +166,7 @@
 
     if (error) {
       const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
-      const isMissingExtendedColumn = /(middle_name|birth_date|marital_status|employment_status|address)/i.test(errorText);
+      const isMissingExtendedColumn = /(middle_name|birth_date|marital_status|employment_status|address|date_hired|date_terminated|employment_history|role_history)/i.test(errorText);
 
       if (isMissingExtendedColumn) {
         const fallbackPayload = mapLocalToDb(employee, { includeExtendedProfile: false });
