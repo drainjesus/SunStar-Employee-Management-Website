@@ -277,37 +277,48 @@
               <!-- Employment History -->
               <div class="space-y-4">
                 <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-200 pb-2">Employment History</h4>
-                <div class="grid grid-cols-2 gap-y-4 gap-x-6 text-sm">
-                  <div class="col-span-2">
-                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Last Employment Title</span>
-                    <span class="block mt-0.5 font-bold text-zinc-900" id="detLastTitle">-</span>
-                  </div>
-                  <div>
-                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Date Started</span>
-                    <span class="block mt-0.5 font-bold text-zinc-900" id="detDateStarted">-</span>
-                  </div>
-                  <div>
-                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Date Ended</span>
-                    <span class="block mt-0.5 text-zinc-900" id="detDateEnded">-</span>
-                  </div>
+                <div class="overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-50 shadow-sm">
+                  <table class="min-w-full text-left text-sm text-zinc-600">
+                    <thead class="bg-zinc-100 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                      <tr>
+                        <th class="px-4 py-3">Date from</th>
+                        <th class="px-4 py-3">Date to</th>
+                        <th class="px-4 py-3">Company Name</th>
+                        <th class="px-4 py-3">Job</th>
+                      </tr>
+                    </thead>
+                    <tbody id="detEmploymentHistoryBody" class="divide-y divide-zinc-100 bg-white">
+                      <tr>
+                        <td colspan="4" class="px-4 py-4 text-xs text-zinc-500">No employment history recorded.</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
               <!-- Job Role & Compensation -->
               <div class="space-y-4">
                 <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-200 pb-2">Job & Compensation</h4>
-                <div class="grid grid-cols-2 gap-y-4 gap-x-6 text-sm">
-                  <div>
-                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Job Role</span>
-                    <span class="block mt-1 font-bold text-zinc-900"><span class="inline-flex items-center rounded-md bg-zinc-100 px-2.5 py-1 text-xs font-bold text-zinc-700 ring-1 ring-inset ring-zinc-500/20" id="detJobRole">-</span></span>
-                  </div>
-                  <div>
-                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Salary</span>
-                    <span class="block mt-1 text-base font-black text-green-600" id="detSalary">₱0.00</span>
-                  </div>
-                  <div class="col-span-2">
-                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Employment Status</span>
-                    <span class="block mt-0.5 font-bold text-zinc-900" id="detEmploymentStatus">-</span>
+                <div class="overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-50 shadow-sm">
+                  <table class="min-w-full text-left text-sm text-zinc-600">
+                    <thead class="bg-zinc-100 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                      <tr>
+                        <th class="px-4 py-3">Date from</th>
+                        <th class="px-4 py-3">Date to</th>
+                        <th class="px-4 py-3">Job Role</th>
+                        <th class="px-4 py-3">Monthly Compensation</th>
+                      </tr>
+                    </thead>
+                    <tbody id="detRoleHistoryBody" class="divide-y divide-zinc-100 bg-white">
+                      <tr>
+                        <td colspan="4" class="px-4 py-4 text-xs text-zinc-500">No job role history recorded.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Employment Status</span>
+                  <span class="block mt-0.5 font-bold text-zinc-900" id="detEmploymentStatus">-</span>
                   </div>
                 </div>
               </div>
@@ -497,6 +508,68 @@
       });
     }
 
+    function renderEmploymentHistory(emp) {
+      const rows = Array.isArray(emp.employmentHistory)
+        ? emp.employmentHistory
+        : [{ ds: emp.ds, de: emp.de, company: emp.company, job: emp.lastTitle }];
+      const tbody = document.getElementById('detEmploymentHistoryBody');
+      tbody.innerHTML = '';
+      const validRows = rows.filter(row => row && (row.ds || row.de || row.company || row.job));
+      if (validRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-xs text-zinc-500">No employment history recorded.</td></tr>`;
+        return;
+      }
+      validRows.forEach(row => {
+        const from = row.ds ? formatProfileDate(row.ds) : '-';
+        const to = row.de ? formatProfileDate(row.de) : '-';
+        const company = row.company || '-';
+        const job = row.job || '-';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-zinc-700">${from}</td>
+          <td class="px-4 py-3 text-zinc-700">${to}</td>
+          <td class="px-4 py-3 text-zinc-700">${company}</td>
+          <td class="px-4 py-3 text-zinc-700">${job}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderRoleHistory(emp) {
+      const rows = Array.isArray(emp.roleHistory)
+        ? emp.roleHistory
+        : [{ ds: emp.ds, de: emp.de, role: emp.role, salary: emp.salary }];
+      const tbody = document.getElementById('detRoleHistoryBody');
+      tbody.innerHTML = '';
+      const validRows = rows.filter(row => row && (row.ds || row.de || row.role || row.salary));
+      if (validRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-xs text-zinc-500">No job role history recorded.</td></tr>`;
+        return;
+      }
+      validRows.forEach(row => {
+        const from = row.ds ? formatProfileDate(row.ds) : '-';
+        const to = row.de ? formatProfileDate(row.de) : '-';
+        const role = row.role || '-';
+        const salary = row.salary ? '₱' + parseFloat(row.salary).toLocaleString() : '-';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-zinc-700">${from}</td>
+          <td class="px-4 py-3 text-zinc-700">${to}</td>
+          <td class="px-4 py-3 text-zinc-700">${role}</td>
+          <td class="px-4 py-3 text-zinc-700">${salary}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function getEmploymentStatus(emp) {
+      const hasStart = String(emp.ds || '').trim() !== '';
+      const hasEnd = String(emp.de || '').trim() !== '' && emp.de !== 'Present';
+      if (hasEnd) return 'Inactive';
+      if (hasStart) return 'Active';
+      return 'Not encoded';
+    }
+
     function showDetails(id) {
       const emp = employees.find(e => e.id === id);
       if(!emp) return;
@@ -518,12 +591,9 @@
         document.getElementById('detMaritalStatus').textContent = emp.maritalStatus || '-';
       document.getElementById('detContact').textContent = emp.contact || '-';
         document.getElementById('detAddress').textContent = emp.address || '-';
-      document.getElementById('detLastTitle').textContent = emp.lastTitle || '-';
-      document.getElementById('detDateStarted').textContent = emp.ds || '-';
-      document.getElementById('detDateEnded').textContent = (emp.de && emp.de !== 'Present') ? emp.de : 'Present';
-      document.getElementById('detJobRole').textContent = emp.role || '-';
-      document.getElementById('detSalary').textContent = emp.salary ? '₱' + parseFloat(emp.salary).toLocaleString() : '-';
-        document.getElementById('detEmploymentStatus').textContent = emp.employmentStatus || '-';
+      renderEmploymentHistory(emp);
+      renderRoleHistory(emp);
+        document.getElementById('detEmploymentStatus').textContent = getEmploymentStatus(emp);
       document.getElementById('detEmergencyName').textContent = emp.eName || '-';
       document.getElementById('detEmergencyContact').textContent = emp.eContact || '-';
       document.getElementById('detEmergencyRelation').textContent = emp.eRel || '-';
