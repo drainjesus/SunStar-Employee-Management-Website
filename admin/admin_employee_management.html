@@ -494,7 +494,7 @@
     const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
     const SESSION_ADMIN_EMAIL_KEY = 'sunstar_logged_in_admin_email';
 
-    let employees = [];
+    let employees = JSON.parse(localStorage.getItem('sunstar_employees')) || [];
     let adminEmails = [];
     let editingId = null;
     let currentPage = 1;
@@ -520,14 +520,12 @@
     }
 
     async function syncEmployeesFromSupabase() {
-      if (!window.EmployeeDataService) return false;
+      if (!window.EmployeeDataService) return;
       const remote = await window.EmployeeDataService.fetchEmployees();
       if (Array.isArray(remote)) {
         employees = remote;
-        return true;
+        localStorage.setItem('sunstar_employees', JSON.stringify(remote));
       }
-
-      return false;
     }
 
     function updateTable() {
@@ -634,9 +632,9 @@
       updateTable();
     });
 
-    window.addEventListener('storage', async (event) => {
+    window.addEventListener('storage', (event) => {
       if (event.key === 'sunstar_employees') {
-        await syncEmployeesFromSupabase();
+        employees = JSON.parse(localStorage.getItem('sunstar_employees')) || [];
         updateTable();
       }
     });
@@ -874,32 +872,20 @@
 
       const savedToSupabase = await window.EmployeeDataService.upsertEmployee(data);
       if (!savedToSupabase) {
-        const detail = window.EmployeeDataService.getLastError
-          ? window.EmployeeDataService.getLastError()
-          : '';
-        alert(detail || 'Unable to save employee account to Supabase. No changes were applied.');
+        alert('Unable to save employee account to Supabase. No changes were applied.');
         return;
       }
 
-      if (window.EmployeeDataService.fetchEmployeeById) {
-        const persisted = await window.EmployeeDataService.fetchEmployeeById(data.id);
-        if (persisted) {
-          const expectedHistory = (Array.isArray(data.employmentHistory) ? data.employmentHistory : [])
-            .filter(row => row && (row.ds || row.de || row.company || row.job));
-          const persistedHistory = (Array.isArray(persisted.employmentHistory) ? persisted.employmentHistory : [])
-            .filter(row => row && (row.ds || row.de || row.company || row.job));
-
-          if (expectedHistory.length > 0 && persistedHistory.length < expectedHistory.length) {
-            alert('Employee saved, but Employment History rows are incomplete in Supabase. Run 09_add_history_fields.sql and save again.');
-          }
-        }
+      if (editingId) {
+        const index = employees.findIndex(emp => emp.id === editingId);
+        if (index !== -1) employees[index] = data;
+      } else {
+        employees.push(data);
       }
 
-      const synced = await syncEmployeesFromSupabase();
-      if (!synced) {
-        alert('Employee was saved to Supabase, but the latest list could not be reloaded. Please refresh the page.');
-      }
-      updateTable();
+      // Keep local cache aligned only after successful remote save.
+      localStorage.setItem('sunstar_employees', JSON.stringify(employees));
+      renderTable(); // Update frontend interface automatically
 
       document.getElementById('addEmployeeForm').reset();
       document.getElementById('addEmployeeModal').classList.add('hidden');
@@ -924,18 +910,13 @@
 
         const deletedFromSupabase = await window.EmployeeDataService.deleteEmployeeById(deletedId);
         if (!deletedFromSupabase) {
-          const detail = window.EmployeeDataService.getLastError
-            ? window.EmployeeDataService.getLastError()
-            : '';
-          alert(detail || 'Unable to delete employee from Supabase. No changes were applied.');
+          alert('Unable to delete employee from Supabase. No changes were applied.');
           return;
         }
 
-        const synced = await syncEmployeesFromSupabase();
-        if (!synced) {
-          alert('Employee was deleted from Supabase, but the latest list could not be reloaded. Please refresh the page.');
-        }
-        updateTable();
+        employees = employees.filter(e => e.id !== deleteTargetId);
+        localStorage.setItem('sunstar_employees', JSON.stringify(employees));
+        renderTable();
         document.getElementById('deleteConfirmModal').classList.add('hidden');
         showSuccessModal("Employee successfully deleted from Supabase.");
         deleteTargetId = null;
