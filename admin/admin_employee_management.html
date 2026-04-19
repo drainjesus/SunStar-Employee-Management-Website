@@ -237,6 +237,14 @@
                     <input type="number" id="age" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
                   </div>
                   <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Date Hired</label>
+                    <input type="date" id="dateHired" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700">Date Terminated</label>
+                    <input type="date" id="dateTerminated" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div>
                     <label class="block text-xs font-semibold text-zinc-700">Gender</label>
                     <select id="gender" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
                       <option value="">Select...</option>
@@ -735,6 +743,8 @@
       document.getElementById('lastName').value = emp.lastName || '';
       document.getElementById('birthDate').value = emp.birthDate || '';
       document.getElementById('age').value = emp.age || '';
+      document.getElementById('dateHired').value = emp.dateHired || '';
+      document.getElementById('dateTerminated').value = emp.dateTerminated || '';
       document.getElementById('gender').value = emp.gender || '';
       document.getElementById('maritalStatus').value = emp.maritalStatus || '';
       document.getElementById('contactNumber').value = emp.contact || '';
@@ -794,6 +804,9 @@
       const firstEmpEntry = empHistory[0] || {};
       const firstRoleEntry = roleHistory[0] || {};
 
+      const dateHired = document.getElementById('dateHired').value;
+      const dateTerminated = document.getElementById('dateTerminated').value;
+
       const data = {
         firstName: document.getElementById('firstName').value,
         middleName: document.getElementById('middleName').value,
@@ -802,7 +815,9 @@
         age: document.getElementById('age').value,
         gender: document.getElementById('gender').value,
         maritalStatus: document.getElementById('maritalStatus').value,
-        employmentStatus: getEmploymentStatus(firstEmpEntry.ds, firstEmpEntry.de),
+        dateHired: dateHired,
+        dateTerminated: dateTerminated,
+        employmentStatus: getEmploymentStatus(dateHired, dateTerminated),
         contact: document.getElementById('contactNumber').value,
         address: document.getElementById('address').value,
         lastTitle: firstEmpEntry.job || '',

@@ -563,6 +563,15 @@
     }
 
     function getEmploymentStatus(emp) {
+      // Use new dateHired and dateTerminated fields if available
+      if (emp.dateHired || emp.dateTerminated) {
+        const hasStart = String(emp.dateHired || '').trim() !== '';
+        const hasEnd = String(emp.dateTerminated || '').trim() !== '';
+        if (hasEnd) return 'Inactive';
+        if (hasStart) return 'Active';
+        return 'Not encoded';
+      }
+      // Fallback to old ds/de logic
       const hasStart = String(emp.ds || '').trim() !== '';
       const hasEnd = String(emp.de || '').trim() !== '' && emp.de !== 'Present';
       if (hasEnd) return 'Inactive';
