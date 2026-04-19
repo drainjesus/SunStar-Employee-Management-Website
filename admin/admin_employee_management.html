@@ -256,17 +256,6 @@
                       <option value="Widowed">Widowed</option>
                     </select>
                   </div>
-                  <div>
-                    <label class="block text-xs font-semibold text-zinc-700">Employment Status</label>
-                    <select id="employmentStatus" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
-                      <option value="">Select...</option>
-                      <option value="Active">Active</option>
-                      <option value="Probationary">Probationary</option>
-                      <option value="Contractual">Contractual</option>
-                      <option value="On Leave">On Leave</option>
-                      <option value="Resigned">Resigned</option>
-                    </select>
-                  </div>
                   <div class="col-span-2">
                     <label class="block text-xs font-semibold text-zinc-700">Contact Number</label>
                     <input type="tel" id="contactNumber" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
@@ -281,45 +270,52 @@
               <!-- Employment History -->
               <div class="space-y-4">
                 <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-200 pb-2">Employment History</h4>
-                <div>
-                  <label class="block text-xs font-semibold text-zinc-700">Last Employment Title</label>
-                  <input type="text" id="lastTitle" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                <div class="overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 shadow-sm">
+                  <table class="min-w-full text-left text-xs text-zinc-600">
+                    <thead class="bg-zinc-100 font-semibold uppercase tracking-wider text-zinc-500">
+                      <tr>
+                        <th class="px-3 py-2">Date from</th>
+                        <th class="px-3 py-2">Date to</th>
+                        <th class="px-3 py-2">Company</th>
+                        <th class="px-3 py-2">Job Title</th>
+                        <th class="px-3 py-2 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="empHistoryBody" class="divide-y divide-zinc-100 bg-white">
+                    </tbody>
+                  </table>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-xs font-semibold text-zinc-700">Date Started</label>
-                    <input type="month" id="dateStarted" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
-                  </div>
-                  <div>
-                    <label class="block text-xs font-semibold text-zinc-700">Date Ended</label>
-                    <input type="month" id="dateEnded" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
-                  </div>
-                </div>
+                <button type="button" onclick="addEmploymentHistoryRow()" class="inline-flex items-center gap-2 rounded-md bg-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-200 transition-colors">
+                  <span>+ Add Entry</span>
+                </button>
               </div>
 
               <!-- Job Role & Compensation -->
               <div class="space-y-4">
                 <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-200 pb-2">Job & Compensation</h4>
-                <div>
-                  <label class="block text-xs font-semibold text-zinc-700">Job Role</label>
-                  <select id="jobRole" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
-                    <option value="">Select Role...</option>
-                    <option value="Editor">Editor</option>
-                    <option value="Writer">Writer</option>
-                    <option value="Photographer">Photographer</option>
-                    <option value="Manager">Manager</option>
-                  </select>
+                <div class="overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 shadow-sm">
+                  <table class="min-w-full text-left text-xs text-zinc-600">
+                    <thead class="bg-zinc-100 font-semibold uppercase tracking-wider text-zinc-500">
+                      <tr>
+                        <th class="px-3 py-2">Date from</th>
+                        <th class="px-3 py-2">Date to</th>
+                        <th class="px-3 py-2">Job Role</th>
+                        <th class="px-3 py-2">Monthly Comp</th>
+                        <th class="px-3 py-2 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="roleHistoryBody" class="divide-y divide-zinc-100 bg-white">
+                    </tbody>
+                  </table>
                 </div>
-                <div>
-                  <label class="block text-xs font-semibold text-zinc-700">Salary</label>
-                  <div class="mt-1.5 relative rounded-md shadow-sm">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <span class="text-zinc-500 sm:text-sm font-semibold">₱</span>
-                    </div>
-                    <input type="number" id="salary" placeholder="0.00" class="block w-full rounded-md border border-zinc-300 pl-8 pr-12 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
-                  </div>
-                </div>
+                <button type="button" onclick="addRoleHistoryRow()" class="inline-flex items-center gap-2 rounded-md bg-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-200 transition-colors">
+                  <span>+ Add Entry</span>
+                </button>
               </div>
+
+              <!-- Hidden data containers -->
+              <input type="hidden" id="employmentHistoryData" value="[]">
+              <input type="hidden" id="roleHistoryData" value="[]">
 
               <!-- Emergency Contacts -->
               <div class="space-y-4">
@@ -655,6 +651,80 @@
       return Date.now();
     }
 
+    function addEmploymentHistoryRow() {
+      const tbody = document.getElementById('empHistoryBody');
+      const rowCount = tbody.children.length + 1;
+      const tr = document.createElement('tr');
+      tr.className = 'empHistoryRow';
+      tr.innerHTML = `
+        <td class="px-3 py-2"><input type="month" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" placeholder="YYYY-MM"></td>
+        <td class="px-3 py-2"><input type="month" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" placeholder="YYYY-MM"></td>
+        <td class="px-3 py-2"><input type="text" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" placeholder="Company"></td>
+        <td class="px-3 py-2"><input type="text" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" placeholder="Job Title"></td>
+        <td class="px-3 py-2 text-right"><button type="button" onclick="this.closest('tr').remove()" class="text-xs text-red-600 hover:text-red-700 font-semibold">Remove</button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function addRoleHistoryRow() {
+      const tbody = document.getElementById('roleHistoryBody');
+      const tr = document.createElement('tr');
+      tr.className = 'roleHistoryRow';
+      tr.innerHTML = `
+        <td class="px-3 py-2"><input type="month" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" placeholder="YYYY-MM"></td>
+        <td class="px-3 py-2"><input type="month" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" placeholder="YYYY-MM"></td>
+        <td class="px-3 py-2"><select class="w-full rounded border border-zinc-300 px-2 py-1 text-xs"><option value="">Select...</option><option value="Editor">Editor</option><option value="Writer">Writer</option><option value="Photographer">Photographer</option><option value="Manager">Manager</option></select></td>
+        <td class="px-3 py-2"><input type="number" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" placeholder="0.00"></td>
+        <td class="px-3 py-2 text-right"><button type="button" onclick="this.closest('tr').remove()" class="text-xs text-red-600 hover:text-red-700 font-semibold">Remove</button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function collectEmploymentHistory() {
+      const rows = document.querySelectorAll('#empHistoryBody .empHistoryRow');
+      return Array.from(rows).map(row => {
+        const inputs = row.querySelectorAll('input');
+        return {
+          ds: inputs[0].value,
+          de: inputs[1].value,
+          company: inputs[2].value,
+          job: inputs[3].value
+        };
+      }).filter(row => row.ds || row.de || row.company || row.job);
+    }
+
+    function collectRoleHistory() {
+      const rows = document.querySelectorAll('#roleHistoryBody .roleHistoryRow');
+      return Array.from(rows).map(row => {
+        const inputs = row.querySelectorAll('input, select');
+        return {
+          ds: inputs[0].value,
+          de: inputs[1].value,
+          role: inputs[2].value,
+          salary: inputs[3].value
+        };
+      }).filter(row => row.ds || row.de || row.role || row.salary);
+    }
+
+    function getEmploymentStatus(ds, de) {
+      const hasStart = String(ds || '').trim() !== '';
+      const hasEnd = String(de || '').trim() !== '';
+      if (hasEnd) return 'Inactive';
+      if (hasStart) return 'Active';
+      return 'Not encoded';
+    }
+
+    function openAddModal() {
+      if (!guardAdminAccess()) return;
+      editingId = null;
+      document.getElementById('addEmployeeForm').reset();
+      document.getElementById('empHistoryBody').innerHTML = '';
+      document.getElementById('roleHistoryBody').innerHTML = '';
+      document.getElementById('modalTitle').textContent = 'Add New Employee';
+      document.getElementById('submitBtn').textContent = 'Save Employee';
+      document.getElementById('addEmployeeModal').classList.remove('hidden');
+    }
+
     function openEditModal(id) {
       editingId = id;
       const emp = employees.find(e => e.id === id);
@@ -667,19 +737,48 @@
       document.getElementById('age').value = emp.age || '';
       document.getElementById('gender').value = emp.gender || '';
       document.getElementById('maritalStatus').value = emp.maritalStatus || '';
-      document.getElementById('employmentStatus').value = emp.employmentStatus || '';
       document.getElementById('contactNumber').value = emp.contact || '';
       document.getElementById('address').value = emp.address || '';
-      document.getElementById('lastTitle').value = emp.lastTitle || '';
-      document.getElementById('dateStarted').value = emp.ds || '';
-      document.getElementById('dateEnded').value = emp.de || '';
-      document.getElementById('jobRole').value = emp.role || '';
-      document.getElementById('salary').value = emp.salary || '';
-      document.getElementById('emergencyName').value = emp.eName || '';
-      document.getElementById('emergencyContact').value = emp.eContact || '';
-      document.getElementById('emergencyRelation').value = emp.eRel || '';
       document.getElementById('email').value = emp.email || '';
       document.getElementById('password').value = emp.password || '';
+
+      // Populate employment history table
+      const empHistoryTbody = document.getElementById('empHistoryBody');
+      empHistoryTbody.innerHTML = '';
+      const empHistory = Array.isArray(emp.employmentHistory) ? emp.employmentHistory : [{ ds: emp.ds, de: emp.de, company: emp.company, job: emp.lastTitle }];
+      empHistory.forEach(entry => {
+        if (entry && (entry.ds || entry.de || entry.company || entry.job)) {
+          const tr = document.createElement('tr');
+          tr.className = 'empHistoryRow';
+          tr.innerHTML = `
+            <td class="px-3 py-2"><input type="month" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" value="${entry.ds || ''}"></td>
+            <td class="px-3 py-2"><input type="month" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" value="${entry.de || ''}"></td>
+            <td class="px-3 py-2"><input type="text" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" value="${entry.company || ''}"></td>
+            <td class="px-3 py-2"><input type="text" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" value="${entry.job || ''}"></td>
+            <td class="px-3 py-2 text-right"><button type="button" onclick="this.closest('tr').remove()" class="text-xs text-red-600 hover:text-red-700 font-semibold">Remove</button></td>
+          `;
+          empHistoryTbody.appendChild(tr);
+        }
+      });
+
+      // Populate role history table
+      const roleHistoryTbody = document.getElementById('roleHistoryBody');
+      roleHistoryTbody.innerHTML = '';
+      const roleHistory = Array.isArray(emp.roleHistory) ? emp.roleHistory : [{ ds: emp.ds, de: emp.de, role: emp.role, salary: emp.salary }];
+      roleHistory.forEach(entry => {
+        if (entry && (entry.ds || entry.de || entry.role || entry.salary)) {
+          const tr = document.createElement('tr');
+          tr.className = 'roleHistoryRow';
+          tr.innerHTML = `
+            <td class="px-3 py-2"><input type="month" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" value="${entry.ds || ''}"></td>
+            <td class="px-3 py-2"><input type="month" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" value="${entry.de || ''}"></td>
+            <td class="px-3 py-2"><select class="w-full rounded border border-zinc-300 px-2 py-1 text-xs"><option value="">Select...</option><option value="Editor" ${entry.role === 'Editor' ? 'selected' : ''}>Editor</option><option value="Writer" ${entry.role === 'Writer' ? 'selected' : ''}>Writer</option><option value="Photographer" ${entry.role === 'Photographer' ? 'selected' : ''}>Photographer</option><option value="Manager" ${entry.role === 'Manager' ? 'selected' : ''}>Manager</option></select></td>
+            <td class="px-3 py-2"><input type="number" class="w-full rounded border border-zinc-300 px-2 py-1 text-xs" value="${entry.salary || ''}"></td>
+            <td class="px-3 py-2 text-right"><button type="button" onclick="this.closest('tr').remove()" class="text-xs text-red-600 hover:text-red-700 font-semibold">Remove</button></td>
+          `;
+          roleHistoryTbody.appendChild(tr);
+        }
+      });
 
       document.getElementById('modalTitle').textContent = 'Edit Employee';
       document.getElementById('submitBtn').textContent = 'Update Employee';
@@ -690,6 +789,11 @@
       e.preventDefault();
       if (!guardAdminAccess()) return;
       
+      const empHistory = collectEmploymentHistory();
+      const roleHistory = collectRoleHistory();
+      const firstEmpEntry = empHistory[0] || {};
+      const firstRoleEntry = roleHistory[0] || {};
+
       const data = {
         firstName: document.getElementById('firstName').value,
         middleName: document.getElementById('middleName').value,
@@ -698,14 +802,17 @@
         age: document.getElementById('age').value,
         gender: document.getElementById('gender').value,
         maritalStatus: document.getElementById('maritalStatus').value,
-        employmentStatus: document.getElementById('employmentStatus').value,
+        employmentStatus: getEmploymentStatus(firstEmpEntry.ds, firstEmpEntry.de),
         contact: document.getElementById('contactNumber').value,
         address: document.getElementById('address').value,
-        lastTitle: document.getElementById('lastTitle').value,
-        ds: document.getElementById('dateStarted').value,
-        de: document.getElementById('dateEnded').value,
-        role: document.getElementById('jobRole').value,
-        salary: document.getElementById('salary').value,
+        lastTitle: firstEmpEntry.job || '',
+        company: firstEmpEntry.company || '',
+        ds: firstEmpEntry.ds || '',
+        de: firstEmpEntry.de || '',
+        role: firstRoleEntry.role || '',
+        salary: firstRoleEntry.salary || '',
+        employmentHistory: empHistory,
+        roleHistory: roleHistory,
         eName: document.getElementById('emergencyName').value,
         eContact: document.getElementById('emergencyContact').value,
         eRel: document.getElementById('emergencyRelation').value,
