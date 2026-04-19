@@ -173,7 +173,7 @@
       const isMissingExtendedColumn = /(middle_name|birth_date|marital_status|employment_status|address|date_hired|date_terminated|employment_history|role_history)/i.test(errorText);
 
       if (isMissingExtendedColumn) {
-        const fallbackPayload = mapLocalToDb(employee, { includeExtendedProfile: false });
+        const fallbackPayload = mapLocalToDb(employee, { includeExtendedProfile: false, includeHistory: false });
         const fallback = await window.supabaseClient
           .from("employees")
           .upsert(fallbackPayload, { onConflict: "id" });
