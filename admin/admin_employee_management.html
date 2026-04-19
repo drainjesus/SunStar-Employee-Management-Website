@@ -502,12 +502,14 @@
     }
 
     async function syncEmployeesFromSupabase() {
-      if (!window.EmployeeDataService) return;
+      if (!window.EmployeeDataService) return false;
       const remote = await window.EmployeeDataService.fetchEmployees();
       if (Array.isArray(remote)) {
         employees = remote;
         localStorage.setItem('sunstar_employees', JSON.stringify(remote));
+        return true;
       }
+      return false;
     }
 
     function updateTable() {
@@ -627,15 +629,6 @@
       await syncEmployeesFromSupabase();
       updateTable();
     });
-
-    function openAddModal() {
-      if (!guardAdminAccess()) return;
-      editingId = null;
-      document.getElementById('addEmployeeForm').reset();
-      document.getElementById('modalTitle').textContent = 'Add New Employee';
-      document.getElementById('submitBtn').textContent = 'Save Employee';
-      document.getElementById('addEmployeeModal').classList.remove('hidden');
-    }
 
     function generateEmployeeId() {
       return Date.now();
@@ -778,6 +771,9 @@
       document.getElementById('maritalStatus').value = emp.maritalStatus || '';
       document.getElementById('contactNumber').value = emp.contact || '';
       document.getElementById('address').value = emp.address || '';
+      document.getElementById('emergencyName').value = emp.eName || '';
+      document.getElementById('emergencyContact').value = emp.eContact || '';
+      document.getElementById('emergencyRelation').value = emp.eRel || '';
       document.getElementById('email').value = emp.email || '';
       document.getElementById('password').value = emp.password || '';
 
@@ -883,20 +879,24 @@
 
       const savedToSupabase = await window.EmployeeDataService.upsertEmployee(data);
       if (!savedToSupabase) {
-        alert('Unable to save employee account to Supabase. No changes were applied.');
+        const detail = window.EmployeeDataService.getLastError
+          ? window.EmployeeDataService.getLastError()
+          : '';
+        alert(detail || 'Unable to save employee account to Supabase. No changes were applied.');
         return;
       }
 
-      if (editingId) {
-        const index = employees.findIndex(emp => emp.id === editingId);
-        if (index !== -1) employees[index] = data;
-      } else {
-        employees.push(data);
+      const synced = await syncEmployeesFromSupabase();
+      if (!synced) {
+        if (editingId) {
+          const index = employees.findIndex(emp => emp.id === editingId);
+          if (index !== -1) employees[index] = data;
+        } else {
+          employees.push(data);
+        }
+        localStorage.setItem('sunstar_employees', JSON.stringify(employees));
       }
-
-      // Keep local cache aligned only after successful remote save.
-      localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-      renderTable(); // Update frontend interface automatically
+      updateTable();
 
       document.getElementById('addEmployeeForm').reset();
       document.getElementById('addEmployeeModal').classList.add('hidden');
@@ -921,13 +921,19 @@
 
         const deletedFromSupabase = await window.EmployeeDataService.deleteEmployeeById(deletedId);
         if (!deletedFromSupabase) {
-          alert('Unable to delete employee from Supabase. No changes were applied.');
+          const detail = window.EmployeeDataService.getLastError
+            ? window.EmployeeDataService.getLastError()
+            : '';
+          alert(detail || 'Unable to delete employee from Supabase. No changes were applied.');
           return;
         }
 
-        employees = employees.filter(e => e.id !== deleteTargetId);
-        localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-        renderTable();
+        const synced = await syncEmployeesFromSupabase();
+        if (!synced) {
+          employees = employees.filter(e => e.id !== deleteTargetId);
+          localStorage.setItem('sunstar_employees', JSON.stringify(employees));
+        }
+        updateTable();
         document.getElementById('deleteConfirmModal').classList.add('hidden');
         showSuccessModal("Employee successfully deleted from Supabase.");
         deleteTargetId = null;

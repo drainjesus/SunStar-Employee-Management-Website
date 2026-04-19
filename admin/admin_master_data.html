@@ -263,6 +263,14 @@
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Marital Status</span>
                     <span class="block mt-0.5 font-bold text-zinc-900" id="detMaritalStatus">-</span>
                   </div>
+                  <div>
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Date Hired</span>
+                    <span class="block mt-0.5 font-bold text-zinc-900" id="detDateHired">-</span>
+                  </div>
+                  <div>
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Date Terminated</span>
+                    <span class="block mt-0.5 font-bold text-zinc-900" id="detDateTerminated">-</span>
+                  </div>
                   <div class="col-span-2">
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Contact Number</span>
                     <span class="block mt-0.5 font-bold text-zinc-900" id="detContact">-</span>
@@ -348,6 +356,10 @@
                 <div class="mt-4">
                   <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Email Address</span>
                   <span class="block mt-1 text-sm font-bold text-zinc-900" id="detEmail">-</span>
+                </div>
+                <div>
+                  <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Password</span>
+                  <span class="block mt-1 text-sm font-bold text-zinc-900" id="detPassword">-</span>
                 </div>
               </div>
             </div>
@@ -598,6 +610,10 @@
       document.getElementById('detAge').textContent = emp.age || '-';
       document.getElementById('detGender').textContent = emp.gender || '-';
         document.getElementById('detMaritalStatus').textContent = emp.maritalStatus || '-';
+      const hiredDate = emp.dateHired || emp.ds || '';
+      const terminatedDate = emp.dateTerminated || (emp.de && emp.de !== 'Present' ? emp.de : '');
+      document.getElementById('detDateHired').textContent = hiredDate ? formatProfileDate(hiredDate) : '-';
+      document.getElementById('detDateTerminated').textContent = terminatedDate ? formatProfileDate(terminatedDate) : '-';
       document.getElementById('detContact').textContent = emp.contact || '-';
         document.getElementById('detAddress').textContent = emp.address || '-';
       renderEmploymentHistory(emp);
@@ -607,6 +623,7 @@
       document.getElementById('detEmergencyContact').textContent = emp.eContact || '-';
       document.getElementById('detEmergencyRelation').textContent = emp.eRel || '-';
       document.getElementById('detEmail').textContent = emp.email || '-';
+      document.getElementById('detPassword').textContent = emp.password || '-';
       
       document.getElementById('detailsModal').classList.remove('hidden');
     }

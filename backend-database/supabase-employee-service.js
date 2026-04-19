@@ -203,6 +203,11 @@
   }
 
   function mapDbToLocal(row) {
+    const employmentHistory = normalizeHistoryRows(row.employment_history, "employment");
+    const roleHistory = normalizeHistoryRows(row.role_history, "role");
+    const firstEmploymentRow = employmentHistory[0] || {};
+    const firstRoleRow = roleHistory[0] || {};
+
     return {
       id: row.id,
       firstName: row.first_name || "",
@@ -215,22 +220,22 @@
       employmentStatus: row.employment_status || "",
       contact: row.contact || "",
       address: row.address || "",
-      company: "",
-      lastTitle: row.last_title || "",
-      ds: row.date_started || "",
-      de: row.date_ended || "",
+      company: firstEmploymentRow.company || "",
+      lastTitle: row.last_title || firstEmploymentRow.job || "",
+      ds: row.date_started || firstEmploymentRow.ds || "",
+      de: row.date_ended || firstEmploymentRow.de || "",
       dateHired: row.date_hired || "",
       dateTerminated: row.date_terminated || "",
-      role: row.role || "",
-      salary: row.salary || "",
+      role: row.role || firstRoleRow.role || "",
+      salary: row.salary || firstRoleRow.salary || "",
       eName: row.emergency_name || "",
       eContact: row.emergency_contact || "",
       eRel: row.emergency_relation || "",
       email: row.email || "",
       password: row.password || "",
       profilePic: row.profile_pic || "",
-      employmentHistory: Array.isArray(row.employment_history) ? row.employment_history : [],
-      roleHistory: Array.isArray(row.role_history) ? row.role_history : [],
+      employmentHistory,
+      roleHistory,
       skills: Array.isArray(row.skills) ? row.skills : [],
       certs: Array.isArray(row.certs) ? row.certs : []
     };
@@ -239,6 +244,10 @@
   function mapLocalToDb(emp, options = {}) {
     const includeExtendedProfile = options.includeExtendedProfile !== false;
     const includeHistory = options.includeHistory !== false;
+    const normalizedEmploymentHistory = normalizeHistoryRows(emp.employmentHistory, "employment");
+    const normalizedRoleHistory = normalizeHistoryRows(emp.roleHistory, "role");
+    const firstEmploymentRow = normalizedEmploymentHistory[0] || {};
+    const firstRoleRow = normalizedRoleHistory[0] || {};
 
     const mapped = {
       id: emp.id,
@@ -247,11 +256,15 @@
       age: emp.age === "" ? null : Number(emp.age) || null,
       gender: emp.gender || null,
       contact: emp.contact || null,
-      last_title: emp.lastTitle || null,
-      date_started: normalizeDate(emp.ds),
-      date_ended: normalizeDate(emp.de),
-      role: emp.role || null,
-      salary: emp.salary === "" ? null : Number(emp.salary) || null,
+      last_title: emp.lastTitle || firstEmploymentRow.job || null,
+      date_started: normalizeDate(emp.ds || firstEmploymentRow.ds),
+      date_ended: normalizeDate(emp.de || firstEmploymentRow.de),
+      role: emp.role || firstRoleRow.role || null,
+      salary: (emp.salary === "" || emp.salary === null || emp.salary === undefined)
+        ? ((firstRoleRow.salary === "" || firstRoleRow.salary === null || firstRoleRow.salary === undefined)
+          ? null
+          : Number(firstRoleRow.salary) || null)
+        : Number(emp.salary) || null,
       emergency_name: emp.eName || null,
       emergency_contact: emp.eContact || null,
       emergency_relation: emp.eRel || null,
@@ -265,8 +278,8 @@
     if (includeHistory) {
       mapped.date_hired = normalizeDate(emp.dateHired);
       mapped.date_terminated = normalizeDate(emp.dateTerminated);
-      mapped.employment_history = Array.isArray(emp.employmentHistory) ? emp.employmentHistory : [];
-      mapped.role_history = Array.isArray(emp.roleHistory) ? emp.roleHistory : [];
+      mapped.employment_history = normalizedEmploymentHistory;
+      mapped.role_history = normalizedRoleHistory;
     }
 
     if (includeExtendedProfile) {
