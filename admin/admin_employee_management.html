@@ -881,6 +881,20 @@
         return;
       }
 
+      if (window.EmployeeDataService.fetchEmployeeById) {
+        const persisted = await window.EmployeeDataService.fetchEmployeeById(data.id);
+        if (persisted) {
+          const expectedHistory = (Array.isArray(data.employmentHistory) ? data.employmentHistory : [])
+            .filter(row => row && (row.ds || row.de || row.company || row.job));
+          const persistedHistory = (Array.isArray(persisted.employmentHistory) ? persisted.employmentHistory : [])
+            .filter(row => row && (row.ds || row.de || row.company || row.job));
+
+          if (expectedHistory.length > 0 && persistedHistory.length < expectedHistory.length) {
+            alert('Employee saved, but Employment History rows are incomplete in Supabase. Run 09_add_history_fields.sql and save again.');
+          }
+        }
+      }
+
       const synced = await syncEmployeesFromSupabase();
       if (!synced) {
         alert('Employee was saved to Supabase, but the latest list could not be reloaded. Please refresh the page.');

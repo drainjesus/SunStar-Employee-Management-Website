@@ -159,6 +159,30 @@
     return true;
   }
 
+  async function fetchEmployeeById(id) {
+    if (!hasClient()) {
+      setLastError("Supabase client is not available.");
+      return null;
+    }
+
+    const { data, error } = await window.supabaseClient
+      .from("employees")
+      .select("*")
+      .eq("id", id)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("fetchEmployeeById failed", error);
+      setLastError(error.message || "Unable to fetch employee from Supabase.");
+      return null;
+    }
+
+    if (!data) return null;
+    clearLastError();
+    return mapDbToLocal(data);
+  }
+
   async function deleteEmployeeById(id) {
     if (!hasClient()) {
       setLastError("Supabase client is not available.");
@@ -219,6 +243,7 @@
 
   window.EmployeeDataService = {
     fetchEmployees,
+    fetchEmployeeById,
     upsertEmployee,
     deleteEmployeeById,
     authenticateEmployee,
