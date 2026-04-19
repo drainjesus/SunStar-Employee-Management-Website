@@ -1,6 +1,8 @@
 (function () {
   const STORAGE_KEY = "sunstar_employees";
   const REQUIRED_PROFILE_COLUMNS_PATTERN = /(middle_name|birth_date|marital_status|employment_status|address|date_hired|date_terminated|employment_history|role_history)/i;
+  const EMPLOYEE_SETTINGS_TABLE = "employee_settings";
+  const EXTENDED_PROFILE_SETTINGS_KEY = "__employee_profile_snapshot";
   let lastErrorMessage = "";
 
   function setLastError(message) {
@@ -17,6 +19,171 @@
 
   function hasClient() {
     return !!window.supabaseClient;
+  }
+
+  function hasText(value) {
+    return value !== null && value !== undefined && String(value).trim() !== "";
+  }
+
+  function normalizeHistoryRows(rows, type) {
+    return (Array.isArray(rows) ? rows : [])
+      .map((row) => {
+        if (!row || typeof row !== "object") return null;
+
+        if (type === "employment") {
+          return {
+            ds: row.ds || "",
+            de: row.de || "",
+            company: row.company || "",
+            job: row.job || ""
+          };
+        }
+
+        return {
+          ds: row.ds || "",
+          de: row.de || "",
+          role: row.role || "",
+          salary: row.salary || ""
+        };
+      })
+      .filter((row) => row && Object.values(row).some((value) => hasText(value)));
+  }
+
+  function buildExtendedProfileSnapshot(employee) {
+    return {
+      middleName: employee.middleName || "",
+      birthDate: employee.birthDate || "",
+      maritalStatus: employee.maritalStatus || "",
+      employmentStatus: employee.employmentStatus || "",
+      address: employee.address || "",
+      dateHired: employee.dateHired || "",
+      dateTerminated: employee.dateTerminated || "",
+      company: employee.company || "",
+      employmentHistory: normalizeHistoryRows(employee.employmentHistory, "employment"),
+      roleHistory: normalizeHistoryRows(employee.roleHistory, "role")
+    };
+  }
+
+  function mergeExtendedProfile(employee, snapshot) {
+    if (!snapshot || typeof snapshot !== "object") return employee;
+
+    const mergedEmploymentHistory = (Array.isArray(employee.employmentHistory) && employee.employmentHistory.length > 0)
+      ? employee.employmentHistory
+      : normalizeHistoryRows(snapshot.employmentHistory, "employment");
+
+    const mergedRoleHistory = (Array.isArray(employee.roleHistory) && employee.roleHistory.length > 0)
+      ? employee.roleHistory
+      : normalizeHistoryRows(snapshot.roleHistory, "role");
+
+    return {
+      ...employee,
+      middleName: hasText(employee.middleName) ? employee.middleName : (snapshot.middleName || ""),
+      birthDate: hasText(employee.birthDate) ? employee.birthDate : (snapshot.birthDate || ""),
+      maritalStatus: hasText(employee.maritalStatus) ? employee.maritalStatus : (snapshot.maritalStatus || ""),
+      employmentStatus: hasText(employee.employmentStatus) ? employee.employmentStatus : (snapshot.employmentStatus || ""),
+      address: hasText(employee.address) ? employee.address : (snapshot.address || ""),
+      dateHired: hasText(employee.dateHired) ? employee.dateHired : (snapshot.dateHired || ""),
+      dateTerminated: hasText(employee.dateTerminated) ? employee.dateTerminated : (snapshot.dateTerminated || ""),
+      company: hasText(employee.company) ? employee.company : (snapshot.company || ""),
+      employmentHistory: mergedEmploymentHistory,
+      roleHistory: mergedRoleHistory
+    };
+  }
+
+  async function fetchExtendedProfilesByEmployeeIds(ids) {
+    if (!hasClient()) return new Map();
+
+    const numericIds = Array.from(new Set(
+      (Array.isArray(ids) ? ids : [])
+        .map((id) => Number(id))
+        .filter((id) => Number.isFinite(id))
+    ));
+
+    if (numericIds.length === 0) return new Map();
+
+    const { data, error } = await window.supabaseClient
+      .from(EMPLOYEE_SETTINGS_TABLE)
+      .select("employee_id,privacy_preferences")
+      .in("employee_id", numericIds);
+
+    if (error) {
+      console.warn("fetchExtendedProfilesByEmployeeIds skipped", error);
+      return new Map();
+    }
+
+    const map = new Map();
+    (data || []).forEach((row) => {
+      const prefs = row && row.privacy_preferences && typeof row.privacy_preferences === "object"
+        ? row.privacy_preferences
+        : {};
+      const snapshot = prefs[EXTENDED_PROFILE_SETTINGS_KEY];
+      if (snapshot && typeof snapshot === "object") {
+        map.set(String(row.employee_id), snapshot);
+      }
+    });
+
+    return map;
+  }
+
+  async function upsertExtendedProfileByEmployeeId(employeeId, employee) {
+    if (!hasClient()) {
+      setLastError("Supabase client is not available.");
+      return false;
+    }
+
+    const numericId = Number(employeeId);
+    if (!Number.isFinite(numericId)) {
+      setLastError("Invalid employee ID for profile history save.");
+      return false;
+    }
+
+    let existingPrivacy = {};
+    const { data: existingSettings, error: existingError } = await window.supabaseClient
+      .from(EMPLOYEE_SETTINGS_TABLE)
+      .select("privacy_preferences")
+      .eq("employee_id", numericId)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingError) {
+      const errorText = [existingError.message, existingError.details, existingError.hint].filter(Boolean).join(" ");
+      if (/employee_settings|privacy_preferences/i.test(errorText)) {
+        setLastError("Supabase schema is missing employee profile storage. Run 03_supabase_subsystem_tables.sql and 04_supabase_policies_dev_extended.sql, or add the employee profile/history columns.");
+      } else {
+        setLastError(existingError.message || "Unable to load employee profile settings from Supabase.");
+      }
+      console.error("upsertExtendedProfileByEmployeeId load failed", existingError);
+      return false;
+    }
+
+    if (existingSettings && existingSettings.privacy_preferences && typeof existingSettings.privacy_preferences === "object") {
+      existingPrivacy = existingSettings.privacy_preferences;
+    }
+
+    const payload = {
+      employee_id: numericId,
+      privacy_preferences: {
+        ...existingPrivacy,
+        [EXTENDED_PROFILE_SETTINGS_KEY]: buildExtendedProfileSnapshot(employee)
+      }
+    };
+
+    const { error } = await window.supabaseClient
+      .from(EMPLOYEE_SETTINGS_TABLE)
+      .upsert(payload, { onConflict: "employee_id" });
+
+    if (error) {
+      const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
+      if (/employee_settings|privacy_preferences/i.test(errorText)) {
+        setLastError("Supabase schema is missing employee profile storage. Run 03_supabase_subsystem_tables.sql and 04_supabase_policies_dev_extended.sql, or add the employee profile/history columns.");
+      } else {
+        setLastError(error.message || "Unable to save employee profile history to Supabase.");
+      }
+      console.error("upsertExtendedProfileByEmployeeId failed", error);
+      return false;
+    }
+
+    return true;
   }
 
   function normalizeDate(value) {
@@ -48,6 +215,7 @@
       employmentStatus: row.employment_status || "",
       contact: row.contact || "",
       address: row.address || "",
+      company: "",
       lastTitle: row.last_title || "",
       ds: row.date_started || "",
       de: row.date_ended || "",
@@ -129,8 +297,11 @@
       return null;
     }
 
+    const mappedEmployees = (data || []).map(mapDbToLocal);
+    const extendedMap = await fetchExtendedProfilesByEmployeeIds(mappedEmployees.map((employee) => employee.id));
+
     clearLastError();
-    return (data || []).map(mapDbToLocal);
+    return mappedEmployees.map((employee) => mergeExtendedProfile(employee, extendedMap.get(String(employee.id))));
   }
 
   async function upsertEmployee(employee) {
@@ -147,12 +318,26 @@
     if (error) {
       const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
       if (REQUIRED_PROFILE_COLUMNS_PATTERN.test(errorText)) {
-        setLastError("Supabase schema is missing employee profile/history columns. Run 05_supabase_employee_profile_fields.sql and 09_add_history_fields.sql, then save again.");
+        const fallbackPayload = mapLocalToDb(employee, { includeExtendedProfile: false, includeHistory: false });
+        const fallback = await window.supabaseClient
+          .from("employees")
+          .upsert(fallbackPayload, { onConflict: "id" });
+
+        if (fallback.error) {
+          setLastError(fallback.error.message || "Unable to save employee base fields to Supabase.");
+          console.error("upsertEmployee base fallback failed", fallback.error);
+          return false;
+        }
+
+        const savedExtended = await upsertExtendedProfileByEmployeeId(employee.id, employee);
+        if (!savedExtended) {
+          return false;
+        }
       } else {
         setLastError(error.message || "Unable to save employee to Supabase.");
+        console.error("upsertEmployee failed", error);
+        return false;
       }
-      console.error("upsertEmployee failed", error);
-      return false;
     }
 
     clearLastError();
@@ -179,8 +364,12 @@
     }
 
     if (!data) return null;
+
+    const mapped = mapDbToLocal(data);
+    const extendedMap = await fetchExtendedProfilesByEmployeeIds([mapped.id]);
+
     clearLastError();
-    return mapDbToLocal(data);
+    return mergeExtendedProfile(mapped, extendedMap.get(String(mapped.id)));
   }
 
   async function deleteEmployeeById(id) {
