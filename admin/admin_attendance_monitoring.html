@@ -142,6 +142,7 @@
                    <th class="px-6 py-4">Clock In</th>
                    <th class="px-6 py-4">Clock Out</th>
                    <th class="px-6 py-4">OT/Special</th>
+                   <th class="px-6 py-4">Requests</th>
                    <th class="px-6 py-4">Status</th>
                    <th class="px-6 py-4 text-right">Actions</th>
                 </tr>
@@ -234,6 +235,62 @@
     </div>
   </div>
 
+  <!-- Overtime Approval Modal -->
+  <div id="overtimeApprovalModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="max-w-lg w-full bg-white rounded-xl p-8 shadow-2xl border border-zinc-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 mb-6 text-amber-700 mx-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+        </div>
+        <h3 class="text-lg font-black uppercase text-zinc-900 mb-2 text-center tracking-tight">Approve Overtime</h3>
+        <p class="text-sm text-zinc-500 mb-4 text-center font-medium">Employee: <span id="overtimeEmpName" class="font-black text-zinc-900">---</span></p>
+        <p class="text-xs text-zinc-500 mb-5 text-center">Date: <span id="overtimeDate" class="font-bold text-zinc-700">---</span></p>
+        
+        <div class="bg-zinc-50 rounded-md p-4 mb-6 border border-zinc-200">
+          <p class="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-3">Request Details</p>
+          <div class="space-y-2">
+            <div><span class="text-[9px] font-bold text-zinc-500 uppercase">Requested Hours:</span> <span id="overtimeReqHours" class="font-black text-amber-700">---</span></div>
+            <div><span class="text-[9px] font-bold text-zinc-500 uppercase">Reason:</span> <span id="overtimeReqReason" class="text-xs text-zinc-700">---</span></div>
+          </div>
+        </div>
+
+        <label for="overtimeApprovedHours" class="block text-xs font-black uppercase tracking-widest text-zinc-500 mb-2">Approve Hours (can adjust)</label>
+        <input type="number" id="overtimeApprovedHours" min="0.5" step="0.5" placeholder="2.5" class="w-full rounded-md border border-zinc-200 px-3 py-2 text-sm text-zinc-700 focus:border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-100 mb-6">
+        
+        <div class="flex gap-3">
+          <button onclick="confirmOvertimeApproval()" class="flex-1 bg-green-600 py-3 text-sm font-bold text-white rounded-md hover:bg-green-700 transition shadow-md shadow-green-600/20">Approve OT</button>
+          <button onclick="document.getElementById('overtimeApprovalModal').classList.add('hidden')" class="flex-1 bg-white border border-zinc-200 py-3 text-sm font-bold text-zinc-500 rounded-md hover:bg-zinc-50 transition">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Official Business Approval Modal -->
+  <div id="officialBusinessApprovalModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="max-w-lg w-full bg-white rounded-xl p-8 shadow-2xl border border-zinc-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mb-6 text-blue-700 mx-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+        </div>
+        <h3 class="text-lg font-black uppercase text-zinc-900 mb-2 text-center tracking-tight">Approve Official Business</h3>
+        <p class="text-sm text-zinc-500 mb-4 text-center font-medium">Employee: <span id="obEmpName" class="font-black text-zinc-900">---</span></p>
+        <p class="text-xs text-zinc-500 mb-5 text-center">Date: <span id="obApprovalDate" class="font-bold text-zinc-700">---</span></p>
+        
+        <div class="bg-zinc-50 rounded-md p-4 mb-6 border border-zinc-200">
+          <p class="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-2">Business Purpose</p>
+          <p id="obApprovalReason" class="text-xs text-zinc-700">---</p>
+        </div>
+        
+        <div class="flex gap-3">
+          <button onclick="confirmOBApproval()" class="flex-1 bg-blue-600 py-3 text-sm font-bold text-white rounded-md hover:bg-blue-700 transition shadow-md shadow-blue-600/20">Approve</button>
+          <button onclick="document.getElementById('officialBusinessApprovalModal').classList.add('hidden')" class="flex-1 bg-white border border-zinc-200 py-3 text-sm font-bold text-zinc-500 rounded-md hover:bg-zinc-50 transition">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Logout Selection Modal -->
   <div id="logoutModal" class="relative z-50 hidden">
     <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
@@ -260,6 +317,10 @@
     let pendingAbsentEmployeeId = null;
     let pendingSanctionDate = '';
     let pendingSanctionRecordIndex = -1;
+    let pendingOvertimeDate = '';
+    let pendingOvertimeRecordIndex = -1;
+    let pendingOBDate = '';
+    let pendingOBRecordIndex = -1;
     const SESSION_ADMIN_EMAIL_KEY = 'sunstar_logged_in_admin_email';
     const MANILA_TIME_ZONE = 'Asia/Manila';
     const DEFAULT_SHIFT_SCHEDULE = 'Newsroom Day Shift (08:00 AM - 05:00 PM)';
@@ -492,8 +553,19 @@
             const inColor = rec.clockIn === '--' || rec.clockIn.includes('--') ? 'text-zinc-300 italic' : (rec.status === 'Present' ? 'text-green-600' : 'text-yellow-600');
             const outColor = rec.clockOut === '--' || rec.clockOut.includes('--') ? 'text-zinc-300 italic' : 'text-zinc-700';
 
+            let approvalButtons = '';
+            if (rec.otRequested && !rec.otApproved) {
+              approvalButtons += `<button onclick="openOvertimeApprovalModal('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-green-700 border border-green-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-green-50 transition-colors">Approve OT</button>`;
+              approvalButtons += `<button onclick="rejectOvertimeRequest('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Reject OT</button>`;
+            }
+            if (rec.isOfficialBusiness && !rec.isOfficialBusinessApproved) {
+              approvalButtons += `<button onclick="approveOfficialBusiness('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-blue-700 border border-blue-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-blue-50 transition-colors">Approve OB</button>`;
+              approvalButtons += `<button onclick="rejectOfficialBusiness('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Reject OB</button>`;
+            }
+
             const actionBtn = `
               <div class="inline-flex flex-wrap justify-end gap-1">
+                ${approvalButtons}
                 <button onclick="verifyAttendanceRecord('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-emerald-700 border border-emerald-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-emerald-50 transition-colors">Verify</button>
                 <button onclick="overrideAttendanceStatus('${dateIso}', ${idx}, 'Late')" class="text-[10px] font-black uppercase text-yellow-700 border border-yellow-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-yellow-50 transition-colors">Late</button>
                 <button onclick="overrideAttendanceStatus('${dateIso}', ${idx}, 'Absent')" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Absent</button>
@@ -503,6 +575,19 @@
 
             const otVal = rec.ot || "0.0";
             const specialVal = rec.isHoliday ? "Holiday Work" : "Regular Day";
+            
+            // Build requests column
+            let requestsHtml = '';
+            if (rec.otRequested && !rec.otApproved) {
+              requestsHtml += `<div class="ml-1 text-[9px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">OT Pending: ${rec.otRequestedHours || 0}h</div>`;
+            } else if (rec.otApproved) {
+              requestsHtml += `<div class="ml-1 text-[9px] font-black uppercase tracking-widest text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">OT Approved: ${rec.otApprovedHours || 0}h</div>`;
+            }
+            if (rec.isOfficialBusiness && !rec.isOfficialBusinessApproved) {
+              requestsHtml += `<div class="ml-1 text-[9px] font-black uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200 rounded px-2 py-1">Official Business Pending</div>`;
+            } else if (rec.isOfficialBusinessApproved) {
+              requestsHtml += `<div class="ml-1 text-[9px] font-black uppercase tracking-widest text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">Official Business Approved</div>`;
+            }
             
             tr.innerHTML = `
               <td class="px-6 py-4 font-medium tracking-tight text-zinc-900">${rec.name}</td>
@@ -520,6 +605,11 @@
                     <span class="text-[8px] font-bold uppercase text-zinc-400 tracking-tighter">${specialVal}</span>
                  </div>
               </td>
+              <td class="px-6 py-4">
+                 <div class="flex flex-col gap-2">
+                    ${requestsHtml || '<span class="text-[8px] text-zinc-400">---</span>'}
+                 </div>
+              </td>
                 <td class="px-6 py-4">
                  <div class="flex flex-col gap-1">
                   ${statusBtn}
@@ -532,6 +622,150 @@
             tbody.appendChild(tr);
          });
       }
+
+      window.openOvertimeApprovalModal = function(dateIso, recordIndex) {
+        const attendance = getAttendances();
+        const records = attendance[dateIso] || [];
+        const record = records[recordIndex];
+        if (!record) return;
+
+        pendingOvertimeDate = dateIso;
+        pendingOvertimeRecordIndex = recordIndex;
+
+        document.getElementById('overtimeEmpName').textContent = record.name || 'Employee';
+        document.getElementById('overtimeDate').textContent = formatReadableDate(dateIso);
+        document.getElementById('overtimeReqHours').textContent = record.otRequestedHours || '0';
+        document.getElementById('overtimeReqReason').textContent = record.otReason || 'No reason provided';
+        document.getElementById('overtimeApprovedHours').value = record.otRequestedHours || '0';
+        document.getElementById('overtimeApprovalModal').classList.remove('hidden');
+      };
+
+      window.confirmOvertimeApproval = async function() {
+        const approvedHours = document.getElementById('overtimeApprovedHours').value;
+        if (!approvedHours || parseFloat(approvedHours) < 0.5) {
+          alert('Please enter a valid number of hours (minimum 0.5).');
+          return;
+        }
+
+        const dateIso = pendingOvertimeDate;
+        const recordIndex = pendingOvertimeRecordIndex;
+        const attendance = getAttendances();
+        const records = attendance[dateIso] || [];
+        const record = records[recordIndex];
+        if (!record) {
+          document.getElementById('overtimeApprovalModal').classList.add('hidden');
+          return;
+        }
+
+        record.otApproved = true;
+        record.otApprovedHours = parseFloat(approvedHours).toFixed(1);
+        record.otApprovedBy = getVerifierName();
+        record.otApprovedAt = getManilaTimestampIso();
+        normalizeAttendanceRecordFields(record);
+
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+        if (window.HRDataService) {
+          await window.HRDataService.upsertAttendanceRecord(dateIso, record);
+        }
+
+        pendingOvertimeDate = '';
+        pendingOvertimeRecordIndex = -1;
+        document.getElementById('overtimeApprovalModal').classList.add('hidden');
+        renderTable(dateIso);
+        document.getElementById('successMessage').textContent = `Overtime approved for ${record.name}: ${approvedHours}h`;
+        document.getElementById('successModal').classList.remove('hidden');
+      };
+
+      window.rejectOvertimeRequest = async function(dateIso, recordIndex) {
+        if (!confirm('Reject this overtime request?')) return;
+
+        const attendance = getAttendances();
+        const records = attendance[dateIso] || [];
+        const record = records[recordIndex];
+        if (!record) return;
+
+        record.otRequested = false;
+        record.otApproved = false;
+        record.otRequestedHours = 0;
+        record.otReason = '';
+        normalizeAttendanceRecordFields(record);
+
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+        if (window.HRDataService) {
+          await window.HRDataService.upsertAttendanceRecord(dateIso, record);
+        }
+
+        renderTable(dateIso);
+        document.getElementById('successMessage').textContent = `Overtime request rejected for ${record.name}.`;
+        document.getElementById('successModal').classList.remove('hidden');
+      };
+
+      window.approveOfficialBusiness = function(dateIso, recordIndex) {
+        const attendance = getAttendances();
+        const records = attendance[dateIso] || [];
+        const record = records[recordIndex];
+        if (!record) return;
+
+        pendingOBDate = dateIso;
+        pendingOBRecordIndex = recordIndex;
+
+        document.getElementById('obEmpName').textContent = record.name || 'Employee';
+        document.getElementById('obApprovalDate').textContent = formatReadableDate(dateIso);
+        document.getElementById('obApprovalReason').textContent = record.officialBusinessReason || 'No reason provided';
+        document.getElementById('officialBusinessApprovalModal').classList.remove('hidden');
+      };
+
+      window.confirmOBApproval = async function() {
+        const dateIso = pendingOBDate;
+        const recordIndex = pendingOBRecordIndex;
+        const attendance = getAttendances();
+        const records = attendance[dateIso] || [];
+        const record = records[recordIndex];
+        if (!record) {
+          document.getElementById('officialBusinessApprovalModal').classList.add('hidden');
+          return;
+        }
+
+        record.isOfficialBusinessApproved = true;
+        record.isOBApprovedBy = getVerifierName();
+        record.isOBApprovedAt = getManilaTimestampIso();
+        normalizeAttendanceRecordFields(record);
+
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+        if (window.HRDataService) {
+          await window.HRDataService.upsertAttendanceRecord(dateIso, record);
+        }
+
+        pendingOBDate = '';
+        pendingOBRecordIndex = -1;
+        document.getElementById('officialBusinessApprovalModal').classList.add('hidden');
+        renderTable(dateIso);
+        document.getElementById('successMessage').textContent = `Official Business approved for ${record.name}.`;
+        document.getElementById('successModal').classList.remove('hidden');
+      };
+
+      window.rejectOfficialBusiness = async function(dateIso, recordIndex) {
+        if (!confirm('Reject this Official Business request?')) return;
+
+        const attendance = getAttendances();
+        const records = attendance[dateIso] || [];
+        const record = records[recordIndex];
+        if (!record) return;
+
+        record.isOfficialBusiness = false;
+        record.isOfficialBusinessApproved = false;
+        record.officialBusinessReason = '';
+        normalizeAttendanceRecordFields(record);
+
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+        if (window.HRDataService) {
+          await window.HRDataService.upsertAttendanceRecord(dateIso, record);
+        }
+
+        renderTable(dateIso);
+        document.getElementById('successMessage').textContent = `Official Business request rejected for ${record.name}.`;
+        document.getElementById('successModal').classList.remove('hidden');
+      };
 
       window.openSanctionModal = function(dateIso, recordIndex) {
         const attendance = getAttendances();
