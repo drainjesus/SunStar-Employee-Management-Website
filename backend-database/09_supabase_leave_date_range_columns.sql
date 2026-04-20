@@ -1,5 +1,6 @@
 -- Migration: Add date_from, date_to, and documents columns to leave_requests table
 -- This allows storing date ranges and uploaded document references for leave requests
+-- Automatically triggers on GitHub push
 
 alter table public.leave_requests
 add column date_from date,
