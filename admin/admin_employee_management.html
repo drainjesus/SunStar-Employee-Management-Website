@@ -230,14 +230,23 @@
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-zinc-700">Birth Date</label>
-                    <input type="date" id="birthDate" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                    <input type="date" id="birthDate" onchange="calculateAgeFromBirthDate()" class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-zinc-700">Age</label>
-                    <input type="number" id="age" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                    <input type="number" id="age" readonly class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm bg-zinc-100 focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold text-zinc-700">Upload Picture</label>
+                    <div class="mt-1.5 flex items-center gap-3">
+                      <input type="file" id="profilePicInput" accept="image/*" onchange="handleProfilePicUpload(event)" class="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-sun-yellowLight file:text-black hover:file:bg-sun-yellow">
+                      <div id="picturePreview" class="h-12 w-12 rounded-full bg-zinc-200 flex items-center justify-center flex-shrink-0 overflow-hidden border border-zinc-300">
+                        <span class="text-xs text-zinc-500">No image</span>
+                      </div>
+                    </div>
                   </div>
                   <div>
-                    <label class="block text-xs font-semibold text-zinc-700">Gender</label>
+                    <label class="block text-xs font-semibold text-zinc-700">Sex</label>
                     <select id="gender" required class="mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sun-yellow focus:outline-none focus:ring-2 focus:ring-sun-yellow/20">
                       <option value="">Select...</option>
                       <option value="Male">Male</option>
@@ -306,6 +315,7 @@
               <!-- Hidden data containers -->
               <input type="hidden" id="employmentHistoryData" value="[]">
               <input type="hidden" id="roleHistoryData" value="[]">
+              <input type="hidden" id="profilePic" value="">
 
               <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <!-- Emergency Contacts -->
@@ -744,10 +754,49 @@
       return 'Not encoded';
     }
 
+    function calculateAgeFromBirthDate() {
+      const birthDateInput = document.getElementById('birthDate');
+      const ageInput = document.getElementById('age');
+      const birthDate = birthDateInput.value;
+      
+      if (!birthDate) {
+        ageInput.value = '';
+        return;
+      }
+      
+      const today = new Date();
+      const birthDateObj = new Date(birthDate);
+      let age = today.getFullYear() - birthDateObj.getFullYear();
+      const monthDiff = today.getMonth() - birthDateObj.getMonth();
+      
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+        age--;
+      }
+      
+      ageInput.value = age >= 0 ? age : '';
+    }
+
+    function handleProfilePicUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64String = e.target.result;
+        document.getElementById('profilePic').value = base64String;
+        
+        const preview = document.getElementById('picturePreview');
+        preview.innerHTML = `<img src="${base64String}" class="w-full h-full object-cover" alt="Profile">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
     function openAddModal() {
       if (!guardAdminAccess()) return;
       editingId = null;
       document.getElementById('addEmployeeForm').reset();
+      document.getElementById('profilePic').value = '';
+      document.getElementById('picturePreview').innerHTML = '<span class="text-xs text-zinc-500">No image</span>';
       document.getElementById('empHistoryBody').innerHTML = '';
       document.getElementById('roleHistoryBody').innerHTML = '';
       addEmploymentHistoryRow();
@@ -778,6 +827,15 @@
       document.getElementById('emergencyRelation').value = emp.eRel || '';
       document.getElementById('email').value = emp.email || '';
       document.getElementById('password').value = emp.password || '';
+      document.getElementById('profilePic').value = emp.profilePic || '';
+      
+      // Update picture preview
+      const preview = document.getElementById('picturePreview');
+      if (emp.profilePic) {
+        preview.innerHTML = `<img src="${emp.profilePic}" class="w-full h-full object-cover" alt="Profile">`;
+      } else {
+        preview.innerHTML = '<span class="text-xs text-zinc-500">No image</span>';
+      }
 
       // Populate employment history table
       const empHistoryTbody = document.getElementById('empHistoryBody');
@@ -849,7 +907,8 @@
         eContact: document.getElementById('emergencyContact').value,
         eRel: document.getElementById('emergencyRelation').value,
         email: document.getElementById('email').value.trim().toLowerCase(),
-        password: document.getElementById('password').value
+        password: document.getElementById('password').value,
+        profilePic: document.getElementById('profilePic').value || ''
       };
 
       if (adminEmails.includes(data.email)) {
