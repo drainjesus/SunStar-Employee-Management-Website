@@ -217,13 +217,18 @@
                     <span class="text-xs font-bold text-zinc-700">Special Work on Holiday</span>
                  </label>
 
-                 <p class="mt-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">Overtime is auto-tracked on clock out after shift end.</p>
+                 <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button onclick="openOfficialBusinessModal()" class="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-3 text-xs font-bold text-blue-700 hover:bg-blue-100 transition uppercase tracking-widest">📋 File Official Business</button>
+                    <button onclick="openOvertimeApplicationModal()" class="w-full rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-xs font-bold text-amber-700 hover:bg-amber-100 transition uppercase tracking-widest">⏱️ Apply for Overtime</button>
+                 </div>
+
+                 <p class="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Overtime and special work require admin approval. File Official Business if unable to clock in due to business reasons.</p>
               </div>
 
               <!-- Quick Info Card -->
               <div class="rounded-2xl border border-dashed border-zinc-200 p-6 bg-white/50">
                  <p class="text-xs text-zinc-500 font-medium italic leading-relaxed">
-                   Reliability and punctuality are core values at <span class="text-zinc-900 font-bold">SunStar Davao</span>. Clock in is allowed only between <span class="text-sun-yellowDark font-black underline decoration-sun-yellow underline-offset-4">08:00 AM and 05:00 PM (PST)</span>, and overtime is tracked once you clock out.
+                   Reliability and punctuality are core values at <span class="text-zinc-900 font-bold">SunStar Davao</span>. Clock in and clock out can be done anytime. To file overtime or special work, submit an application for admin approval.
                  </p>
               </div>
            </div>
@@ -284,7 +289,7 @@
     </div>
   </div>
 
-   <!-- Sanction Details Modal -->
+  <!-- Sanction Note Modal -->
    <div id="sanctionNoteModal" class="relative z-50 hidden">
       <div class="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm"></div>
       <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
@@ -357,6 +362,64 @@
         <div class="flex flex-col gap-3">
             <button onclick="window.location.href='../index.html'" class="w-full bg-sun-yellow py-3 text-sm font-bold text-zinc-900 rounded-xl hover:bg-sun-yellowLight transition shadow-lg uppercase tracking-widest border border-sun-yellowDark">Yes, logout</button>
             <button onclick="document.getElementById('logoutModal').classList.add('hidden')" class="w-full bg-white border border-zinc-200 py-3 text-sm font-bold text-zinc-400 rounded-xl hover:bg-zinc-100 transition uppercase tracking-widest">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Official Business Modal -->
+  <div id="officialBusinessModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="relative max-w-sm w-full rounded-2xl bg-white p-8 shadow-2xl border border-zinc-200 animate-modal-in">
+        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-1">Official Business</h3>
+        <p class="text-[10px] text-zinc-400 mb-6 font-black uppercase tracking-[0.2em]">Request official business leave</p>
+        
+        <div class="space-y-4 mb-6">
+          <div>
+            <label class="block text-[10px] font-black uppercase text-zinc-600 mb-2">Date</label>
+            <input type="date" id="officialBusinessDate" class="w-full px-4 py-3 border-2 border-zinc-200 rounded-xl focus:border-sun-yellow focus:outline-none text-sm">
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase text-zinc-600 mb-2">Reason for Official Business</label>
+            <textarea id="officialBusinessReason" placeholder="Enter the reason..." class="w-full px-4 py-3 border-2 border-zinc-200 rounded-xl focus:border-sun-yellow focus:outline-none text-sm placeholder-zinc-300 h-24 resize-none"></textarea>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <button onclick="submitOfficialBusiness()" class="w-full bg-sun-yellow py-4 text-sm font-bold text-zinc-900 rounded-xl shadow-lg uppercase tracking-widest hover:bg-sun-yellowLight transition-all active:scale-[0.98] border border-sun-yellowDark">Submit Request</button>
+          <button onclick="document.getElementById('officialBusinessModal').classList.add('hidden')" class="w-full bg-white text-zinc-400 py-3 text-xs font-black uppercase tracking-widest hover:text-zinc-900 transition active:scale-95">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overtime Application Modal -->
+  <div id="overtimeApplicationModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="relative max-w-sm w-full rounded-2xl bg-white p-8 shadow-2xl border border-zinc-200 animate-modal-in">
+        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-1">Overtime Application</h3>
+        <p class="text-[10px] text-zinc-400 mb-6 font-black uppercase tracking-[0.2em]">Request overtime hours approval</p>
+        
+        <div class="space-y-4 mb-6">
+          <div>
+            <label class="block text-[10px] font-black uppercase text-zinc-600 mb-2">Date</label>
+            <input type="date" id="overtimeDate" class="w-full px-4 py-3 border-2 border-zinc-200 rounded-xl focus:border-sun-yellow focus:outline-none text-sm">
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase text-zinc-600 mb-2">Overtime Hours</label>
+            <input type="number" id="overtimeHours" placeholder="2.5" min="0.5" step="0.5" class="w-full px-4 py-3 border-2 border-zinc-200 rounded-xl focus:border-sun-yellow focus:outline-none text-sm placeholder-zinc-300">
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase text-zinc-600 mb-2">Reason for Overtime</label>
+            <textarea id="overtimeReason" placeholder="Enter the reason..." class="w-full px-4 py-3 border-2 border-zinc-200 rounded-xl focus:border-sun-yellow focus:outline-none text-sm placeholder-zinc-300 h-24 resize-none"></textarea>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <button onclick="submitOvertimeApplication()" class="w-full bg-sun-yellow py-4 text-sm font-bold text-zinc-900 rounded-xl shadow-lg uppercase tracking-widest hover:bg-sun-yellowLight transition-all active:scale-[0.98] border border-sun-yellowDark">Submit Application</button>
+          <button onclick="document.getElementById('overtimeApplicationModal').classList.add('hidden')" class="w-full bg-white text-zinc-400 py-3 text-xs font-black uppercase tracking-widest hover:text-zinc-900 transition active:scale-95">Cancel</button>
         </div>
       </div>
     </div>
@@ -764,6 +827,10 @@
                statusClasses += ' bg-green-50 text-green-700 ring-green-600/20';
             } else if (rec.status === 'Late') {
                statusClasses += ' bg-yellow-50 text-yellow-700 ring-yellow-600/20';
+            } else if (rec.status === 'Official Business') {
+               statusClasses += ' bg-blue-50 text-blue-700 ring-blue-600/20';
+            } else if (rec.otRequested) {
+               statusClasses += ' bg-amber-50 text-amber-700 ring-amber-600/20';
             } else {
                statusClasses += ' bg-red-50 text-red-700 ring-red-600/20';
             }
@@ -807,11 +874,6 @@
             return;
          }
 
-         if (type === 'in' && !isClockInWindowOpen()) {
-            alert('Clock in is only allowed between 08:00 AM and 05:00 PM (Philippine Standard Time).');
-            return;
-         }
-
          currentActionType = type;
          const title = type === 'in' ? 'Clock In' : 'Clock Out';
          const desc = type === 'in' ? 'Ready to start your work day?' : 'Finishing your shift? This will log your exit time.';
@@ -843,13 +905,6 @@
          }
 
          if (currentActionType === 'in') {
-            if (!isClockInWindowOpen()) {
-               alert('Clock in is only allowed between 08:00 AM and 05:00 PM (Philippine Standard Time).');
-               document.getElementById('confirmModal').classList.add('hidden');
-               initAttendance();
-               return;
-            }
-
             if (myRecord) {
                alert('You already have a clock-in record for today.');
                document.getElementById('confirmModal').classList.add('hidden');
@@ -877,7 +932,9 @@
          } else if (myRecord) {
             myRecord.clockOut = nowTime;
             myRecord.shift = myRecord.shift || selectedShift;
-            myRecord.ot = calculateOvertimeHours(nowTime, myRecord.shift);
+            myRecord.ot = '0.0';
+            myRecord.otRequested = false;
+            myRecord.otApproved = false;
             if (typeof myRecord.isHoliday !== 'boolean') {
                myRecord.isHoliday = holidayWork;
             }
@@ -959,6 +1016,117 @@
           }, 300);
        }
     }
+
+      function openOfficialBusinessModal() {
+         if (!activeUser) {
+            alert('No employee profile found. Please contact admin.');
+            return;
+         }
+         const today = new Date();
+         document.getElementById('officialBusinessDate').valueAsDate = today;
+         document.getElementById('officialBusinessReason').value = '';
+         document.getElementById('officialBusinessModal').classList.remove('hidden');
+      }
+
+      async function submitOfficialBusiness() {
+         if (!activeUser) return;
+
+         const reason = document.getElementById('officialBusinessReason').value.trim();
+         const dateStr = document.getElementById('officialBusinessDate').value;
+
+         if (!reason || !dateStr) {
+            alert('Please fill in all fields.');
+            return;
+         }
+
+         const data = getAttendances();
+         if (!data[dateStr]) data[dateStr] = [];
+
+         let record = data[dateStr].find(r => String(r.empId) === String(activeUser.id));
+
+         if (!record) {
+            record = {
+               empId: activeUser.id,
+               name: getActiveUserName(),
+               clockIn: '--',
+               clockOut: '--',
+               status: 'Official Business',
+               shift: 'Official Business',
+               ot: '0.0',
+               isHoliday: false,
+               isOfficialBusiness: true,
+               officialBusinessReason: reason,
+               otRequested: false,
+               otApproved: false,
+               statusSource: 'employee',
+               isVerified: false,
+               verifiedBy: '',
+               verifiedAt: ''
+            };
+            data[dateStr].push(record);
+         } else {
+            record.isOfficialBusiness = true;
+            record.officialBusinessReason = reason;
+            record.status = 'Official Business';
+         }
+
+         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+         if (window.HRDataService && record) {
+            await window.HRDataService.upsertAttendanceRecord(dateStr, record);
+         }
+
+         document.getElementById('officialBusinessModal').classList.add('hidden');
+         alert('Official Business request submitted successfully.');
+      }
+
+      function openOvertimeApplicationModal() {
+         if (!activeUser) {
+            alert('No employee profile found. Please contact admin.');
+            return;
+         }
+         const today = new Date();
+         document.getElementById('overtimeDate').valueAsDate = today;
+         document.getElementById('overtimeReason').value = '';
+         document.getElementById('overtimeHours').value = '';
+         document.getElementById('overtimeApplicationModal').classList.remove('hidden');
+      }
+
+      async function submitOvertimeApplication() {
+         if (!activeUser) return;
+
+         const reason = document.getElementById('overtimeReason').value.trim();
+         const hours = document.getElementById('overtimeHours').value;
+         const dateStr = document.getElementById('overtimeDate').value;
+
+         if (!reason || !hours || !dateStr) {
+            alert('Please fill in all fields.');
+            return;
+         }
+
+         const data = getAttendances();
+         if (!data[dateStr]) data[dateStr] = [];
+
+         let record = data[dateStr].find(r => String(r.empId) === String(activeUser.id));
+
+         if (!record) {
+            alert('You must clock in first before applying for overtime.');
+            return;
+         }
+
+         record.otRequested = true;
+         record.otRequestedHours = parseFloat(hours);
+         record.otReason = reason;
+         record.otApproved = false;
+         record.otApprovedHours = '0.0';
+
+         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+         if (window.HRDataService) {
+            await window.HRDataService.upsertAttendanceRecord(dateStr, record);
+         }
+
+         document.getElementById('overtimeApplicationModal').classList.add('hidden');
+         alert('Overtime application submitted. Awaiting admin approval.');
+      }
 
       document.addEventListener('DOMContentLoaded', async () => {
          await syncEmployeesFromSupabase();
