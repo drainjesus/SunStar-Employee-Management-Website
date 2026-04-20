@@ -89,11 +89,34 @@
       employee_name: leave.name || "Unknown Employee",
       date_filed: safeDateString(leave.dateFiled),
       date_of_leave: safeDateString(leave.dateOfLeave),
+      date_from: safeDateString(leave.dateFrom),
+      date_to: safeDateString(leave.dateTo),
       reason: leave.reason || null,
       note: leave.note || null,
       days: Number(leave.days || 1),
+      documents: Array.isArray(leave.documents) ? leave.documents : [],
       status: leave.status || "Pending",
       time_filed: leave.timeFiled || null
+    };
+  }
+
+  function mapLeaveDbToLocal(row) {
+    return {
+      id: row.id,
+      empId: row.employee_id,
+      name: row.employee_name || "Unknown Employee",
+      dateFiled: row.date_filed,
+      timeFiled: row.time_filed,
+      dateOfLeave: row.date_of_leave,
+      dateFrom: row.date_from,
+      dateTo: row.date_to,
+      reason: row.reason,
+      note: row.note,
+      days: row.days || 1,
+      documents: Array.isArray(row.documents) ? row.documents : [],
+      status: row.status || "Pending",
+      createdAt: row.created_at,
+      updatedAt: row.updated_at
     };
   }
 
