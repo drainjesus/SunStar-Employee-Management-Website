@@ -420,6 +420,7 @@
         tbody.innerHTML = '';
         window.leaveDetailsStore = {};
         let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
+        console.log('Loaded leaves from localStorage:', leaves); // Debug log
         updateOverviewCounts(leaves);
         // Sort by filed date + time, newest first
         leaves.sort((a, b) => getFiledSortValue(b) - getFiledSortValue(a));
@@ -465,6 +466,8 @@
           let dateFromDisplay = '---';
           let dateToDisplay = '---';
           
+          console.log(`Processing leave #${index}:`, { dateFrom: l.dateFrom, dateTo: l.dateTo, documents: l.documents }); // Debug log
+          
           try {
             if (l.dateFrom && l.dateFrom !== '---') {
               dateFromDisplay = formatReadableDate(l.dateFrom) || '---';
@@ -484,6 +487,8 @@
             console.warn('Error formatting dateTo:', e, 'value:', l.dateTo);
             dateToDisplay = '---';
           }
+          
+          console.log(`Formatted dates for #${index}:`, { dateFromDisplay, dateToDisplay }); // Debug log
           
           const storeKey = `leave_${l.id || index}`;
           window.leaveDetailsStore[storeKey] = {
