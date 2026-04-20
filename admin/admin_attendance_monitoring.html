@@ -142,7 +142,6 @@
                    <th class="px-6 py-4">Clock In</th>
                    <th class="px-6 py-4">Clock Out</th>
                    <th class="px-6 py-4">OT/Special</th>
-                   <th class="px-6 py-4">Requests</th>
                    <th class="px-6 py-4">Status</th>
                    <th class="px-6 py-4 text-right">Actions</th>
                 </tr>
@@ -154,7 +153,35 @@
           </div>
         </section>
 
-        <!-- Section 2: Attendance Control (Mark Absent) -->
+        <!-- Section 2: Pending Requests (Overtime & Official Business) -->
+        <section>
+          <div class="mb-4">
+            <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Pending Requests</h2>
+            <p class="text-xs text-zinc-500 font-medium mt-1">Review and approve pending overtime and official business requests from employees.</p>
+          </div>
+
+          <div class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm text-zinc-600">
+                <thead class="border-b border-zinc-200 bg-zinc-50 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                  <tr>
+                    <th class="px-6 py-4">Employee</th>
+                    <th class="px-6 py-4">Request Type</th>
+                    <th class="px-6 py-4">Date</th>
+                    <th class="px-6 py-4">Details</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="pendingRequestsBody" class="divide-y divide-zinc-100">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+            <div id="noPendingMsg" class="px-6 py-10 text-center text-sm text-zinc-400 italic">No pending requests at this time.</div>
+          </div>
+        </section>
+
+        <!-- Section 3: Attendance Control (Mark Absent) -->
         <section>
           <div class="mb-4">
             <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Manual Attendance Control</h2>
@@ -554,18 +581,9 @@
             const outColor = rec.clockOut === '--' || rec.clockOut.includes('--') ? 'text-zinc-300 italic' : 'text-zinc-700';
 
             let approvalButtons = '';
-            if (rec.otRequested && !rec.otApproved) {
-              approvalButtons += `<button onclick="openOvertimeApprovalModal('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-green-700 border border-green-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-green-50 transition-colors">Approve OT</button>`;
-              approvalButtons += `<button onclick="rejectOvertimeRequest('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Reject OT</button>`;
-            }
-            if (rec.isOfficialBusiness && !rec.isOfficialBusinessApproved) {
-              approvalButtons += `<button onclick="approveOfficialBusiness('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-blue-700 border border-blue-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-blue-50 transition-colors">Approve OB</button>`;
-              approvalButtons += `<button onclick="rejectOfficialBusiness('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Reject OB</button>`;
-            }
-
+            
             const actionBtn = `
               <div class="inline-flex flex-wrap justify-end gap-1">
-                ${approvalButtons}
                 <button onclick="verifyAttendanceRecord('${dateIso}', ${idx})" class="text-[10px] font-black uppercase text-emerald-700 border border-emerald-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-emerald-50 transition-colors">Verify</button>
                 <button onclick="overrideAttendanceStatus('${dateIso}', ${idx}, 'Late')" class="text-[10px] font-black uppercase text-yellow-700 border border-yellow-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-yellow-50 transition-colors">Late</button>
                 <button onclick="overrideAttendanceStatus('${dateIso}', ${idx}, 'Absent')" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Absent</button>
@@ -575,19 +593,6 @@
 
             const otVal = rec.ot || "0.0";
             const specialVal = rec.isHoliday ? "Holiday Work" : "Regular Day";
-            
-            // Build requests column
-            let requestsHtml = '';
-            if (rec.otRequested && !rec.otApproved) {
-              requestsHtml += `<div class="ml-1 text-[9px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">OT Pending: ${rec.otRequestedHours || 0}h</div>`;
-            } else if (rec.otApproved) {
-              requestsHtml += `<div class="ml-1 text-[9px] font-black uppercase tracking-widest text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">OT Approved: ${rec.otApprovedHours || 0}h</div>`;
-            }
-            if (rec.isOfficialBusiness && !rec.isOfficialBusinessApproved) {
-              requestsHtml += `<div class="ml-1 text-[9px] font-black uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200 rounded px-2 py-1">Official Business Pending</div>`;
-            } else if (rec.isOfficialBusinessApproved) {
-              requestsHtml += `<div class="ml-1 text-[9px] font-black uppercase tracking-widest text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">Official Business Approved</div>`;
-            }
             
             tr.innerHTML = `
               <td class="px-6 py-4 font-medium tracking-tight text-zinc-900">${rec.name}</td>
@@ -605,11 +610,6 @@
                     <span class="text-[8px] font-bold uppercase text-zinc-400 tracking-tighter">${specialVal}</span>
                  </div>
               </td>
-              <td class="px-6 py-4">
-                 <div class="flex flex-col gap-2">
-                    ${requestsHtml || '<span class="text-[8px] text-zinc-400">---</span>'}
-                 </div>
-              </td>
                 <td class="px-6 py-4">
                  <div class="flex flex-col gap-1">
                   ${statusBtn}
@@ -621,6 +621,90 @@
             `;
             tbody.appendChild(tr);
          });
+      }
+
+      function renderPendingRequests() {
+        const attendance = getAttendances();
+        const pendingBody = document.getElementById('pendingRequestsBody');
+        const noPendingMsg = document.getElementById('noPendingMsg');
+        pendingBody.innerHTML = '';
+
+        let pendingRequests = [];
+
+        // Collect all pending requests from all dates
+        Object.keys(attendance).forEach(dateIso => {
+          const records = Array.isArray(attendance[dateIso]) ? attendance[dateIso] : [];
+          records.forEach((rec, idx) => {
+            // Pending Overtime
+            if (rec.otRequested && !rec.otApproved) {
+              pendingRequests.push({
+                type: 'Overtime',
+                dateIso,
+                recordIdx: idx,
+                record: rec,
+                hours: rec.otRequestedHours || 0,
+                reason: rec.otReason || 'No reason provided'
+              });
+            }
+            // Pending Official Business
+            if (rec.isOfficialBusiness && !rec.isOfficialBusinessApproved) {
+              pendingRequests.push({
+                type: 'Official Business',
+                dateIso,
+                recordIdx: idx,
+                record: rec,
+                reason: rec.officialBusinessReason || 'No reason provided'
+              });
+            }
+          });
+        });
+
+        if (pendingRequests.length === 0) {
+          noPendingMsg.classList.remove('hidden');
+          pendingBody.innerHTML = '';
+          return;
+        }
+
+        noPendingMsg.classList.add('hidden');
+        pendingRequests.forEach(req => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-zinc-50 transition border-b border-zinc-100 last:border-0';
+
+          let typeLabel = '';
+          let detailsHtml = '';
+          let approveBtn = '';
+          let rejectBtn = '';
+
+          if (req.type === 'Overtime') {
+            typeLabel = '<span class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset bg-amber-50 text-amber-700 ring-amber-600/20">Overtime</span>';
+            detailsHtml = `<span class="font-bold text-amber-700">${req.hours}h</span> requested<br><span class="text-[9px] text-zinc-500">${req.reason}</span>`;
+            approveBtn = `<button onclick="openOvertimeApprovalModal('${req.dateIso}', ${req.recordIdx})" class="text-[10px] font-black uppercase text-green-700 border border-green-200 bg-white px-3 py-2 rounded-md hover:bg-green-50 transition-colors">Approve</button>`;
+            rejectBtn = `<button onclick="rejectOvertimeRequest('${req.dateIso}', ${req.recordIdx})" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-3 py-2 rounded-md hover:bg-red-50 transition-colors">Reject</button>`;
+          } else if (req.type === 'Official Business') {
+            typeLabel = '<span class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset bg-blue-50 text-blue-700 ring-blue-600/20">Official Business</span>';
+            detailsHtml = `<span class="text-[9px] text-zinc-500">${req.reason}</span>`;
+            approveBtn = `<button onclick="approveOfficialBusiness('${req.dateIso}', ${req.recordIdx})" class="text-[10px] font-black uppercase text-blue-700 border border-blue-200 bg-white px-3 py-2 rounded-md hover:bg-blue-50 transition-colors">Approve</button>`;
+            rejectBtn = `<button onclick="rejectOfficialBusiness('${req.dateIso}', ${req.recordIdx})" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-3 py-2 rounded-md hover:bg-red-50 transition-colors">Reject</button>`;
+          }
+
+          tr.innerHTML = `
+            <td class="px-6 py-4 font-medium tracking-tight text-zinc-900">${escapeHtml(req.record.name)}</td>
+            <td class="px-6 py-4">${typeLabel}</td>
+            <td class="px-6 py-4 text-sm font-bold text-zinc-700">${formatReadableDate(req.dateIso)}</td>
+            <td class="px-6 py-4 text-sm text-zinc-600">
+              <div class="flex flex-col gap-1">
+                ${detailsHtml}
+              </div>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <div class="inline-flex gap-2">
+                ${approveBtn}
+                ${rejectBtn}
+              </div>
+            </td>
+          `;
+          pendingBody.appendChild(tr);
+        });
       }
 
       window.openOvertimeApprovalModal = function(dateIso, recordIndex) {
@@ -672,6 +756,7 @@
         pendingOvertimeRecordIndex = -1;
         document.getElementById('overtimeApprovalModal').classList.add('hidden');
         renderTable(dateIso);
+        renderPendingRequests();
         document.getElementById('successMessage').textContent = `Overtime approved for ${record.name}: ${approvedHours}h`;
         document.getElementById('successModal').classList.remove('hidden');
       };
@@ -696,6 +781,7 @@
         }
 
         renderTable(dateIso);
+        renderPendingRequests();
         document.getElementById('successMessage').textContent = `Overtime request rejected for ${record.name}.`;
         document.getElementById('successModal').classList.remove('hidden');
       };
@@ -740,6 +826,7 @@
         pendingOBRecordIndex = -1;
         document.getElementById('officialBusinessApprovalModal').classList.add('hidden');
         renderTable(dateIso);
+        renderPendingRequests();
         document.getElementById('successMessage').textContent = `Official Business approved for ${record.name}.`;
         document.getElementById('successModal').classList.remove('hidden');
       };
@@ -763,6 +850,7 @@
         }
 
         renderTable(dateIso);
+        renderPendingRequests();
         document.getElementById('successMessage').textContent = `Official Business request rejected for ${record.name}.`;
         document.getElementById('successModal').classList.remove('hidden');
       };
@@ -900,6 +988,7 @@
         }
 
         renderTable(dateIso);
+        renderPendingRequests();
         document.getElementById('successMessage').textContent = `${name} has been set to ${nextStatus} and verified by admin.`;
         document.getElementById('successModal').classList.remove('hidden');
       }
@@ -958,11 +1047,15 @@
          const newIso = shiftIsoDate(currentIso, offset);
          dateInput.value = newIso;
          renderTable(newIso);
+         renderPendingRequests();
       }
 
       prevDateBtn.addEventListener('click', () => updateDateObj(-1));
       nextDateBtn.addEventListener('click', () => updateDateObj(1));
-      dateInput.addEventListener('change', (e) => renderTable(e.target.value));
+      dateInput.addEventListener('change', (e) => {
+        renderTable(e.target.value);
+        renderPendingRequests();
+      });
 
       window.addEventListener('storage', async function(event) {
         if (event.key && event.key !== 'sunstar_attendance' && event.key !== 'sunstar_employees') return;
@@ -970,6 +1063,7 @@
         await syncAttendanceFromSupabase();
         const activeDate = dateInput.value || getManilaIsoDate();
         renderTable(activeDate);
+        renderPendingRequests();
         renderControl();
       });
 
@@ -977,6 +1071,7 @@
       const todayIso = getManilaIsoDate();
       dateInput.value = todayIso;
       renderTable(todayIso);
+      renderPendingRequests();
       renderControl();
     });
   </script>
