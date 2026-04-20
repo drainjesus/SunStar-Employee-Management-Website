@@ -66,22 +66,6 @@
     };
   }
 
-  function mapLeaveDbToLocal(row) {
-    return {
-      id: row.id,
-      empId: row.employee_id,
-      name: row.employee_name || "",
-      dateFiled: row.date_filed || "",
-      dateOfLeave: row.date_of_leave || "",
-      reason: row.reason || "",
-      note: row.note || "",
-      days: Number(row.days || 1),
-      status: row.status || "Pending",
-      timeFiled: row.time_filed || "",
-      createdAt: row.created_at || ""
-    };
-  }
-
   function mapLeaveLocalToDb(leave) {
     return {
       id: leave.id,

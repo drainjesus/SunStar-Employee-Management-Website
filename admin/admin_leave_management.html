@@ -161,9 +161,10 @@
                   <th class="px-6 py-4">Employee</th>
                   <th class="px-6 py-4 whitespace-nowrap">Date/Time Filed</th>
                   <th class="px-6 py-4">Category</th>
-                  <th class="px-6 py-4">Effectivity</th>
-                  <th class="px-6 py-4">Credits</th>
-                  <th class="px-6 py-4 text-center">Duration</th>
+                  <th class="px-6 py-4">Date From</th>
+                  <th class="px-6 py-4">Date To</th>
+                  <th class="px-6 py-4 text-center">No. of Days</th>
+                  <th class="px-6 py-4">Documents</th>
                   <th class="px-6 py-4">Status</th>
                   <th class="px-6 py-4 text-right">Actions</th>
               </tr>
@@ -428,7 +429,7 @@
         const currentData = leaves.slice(startIndex, endIndex);
 
           if (!currentData.length) {
-            tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-sm text-zinc-400 italic">No leave requests found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-8 text-center text-sm text-zinc-400 italic">No leave requests found.</td></tr>`;
            return;
         }
 
@@ -484,15 +485,15 @@
                   </button>
                </div>
             </td>
-            <td class="px-6 py-4 text-zinc-900 font-bold text-xs underline decoration-sun-yellow/30 decoration-2 underline-offset-4">${formatReadableDate(l.dateOfLeave)}</td>
-            <td class="px-6 py-4">
-               <div class="flex items-center gap-2">
-                  <span class="text-zinc-700 font-black text-xs">${remainingCredits}/15</span>
-                  <p class="text-[8px] text-zinc-400 font-bold uppercase tracking-wide">Left</p>
-               </div>
-            </td>
+            <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${formatReadableDate(l.dateFrom)}</td>
+            <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${formatReadableDate(l.dateTo)}</td>
             <td class="px-6 py-4 text-center">
               <span class="font-black text-zinc-900 text-xs">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</span>
+            </td>
+            <td class="px-6 py-4">
+              ${Array.isArray(l.documents) && l.documents.length > 0 
+                ? `<button class="text-[10px] font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded hover:bg-blue-100 transition">${l.documents.length} file(s)</button>` 
+                : `<span class="text-[9px] text-zinc-400">No docs</span>`}
             </td>
             <td class="px-6 py-4">${statusBadge}</td>
             <td class="px-6 py-4 text-right">
