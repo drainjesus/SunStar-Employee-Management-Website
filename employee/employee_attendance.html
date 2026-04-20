@@ -1056,7 +1056,6 @@
                isHoliday: false,
                isOfficialBusiness: true,
                officialBusinessReason: reason,
-               isOfficialBusinessApproved: false,
                otRequested: false,
                otApproved: false,
                statusSource: 'employee',
@@ -1068,7 +1067,6 @@
          } else {
             record.isOfficialBusiness = true;
             record.officialBusinessReason = reason;
-            record.isOfficialBusinessApproved = false;
             record.status = 'Official Business';
          }
 
@@ -1120,8 +1118,6 @@
          record.otReason = reason;
          record.otApproved = false;
          record.otApprovedHours = '0.0';
-         record.otApprovedBy = '';
-         record.otApprovedAt = '';
 
          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
          if (window.HRDataService) {
