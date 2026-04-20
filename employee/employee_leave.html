@@ -200,9 +200,10 @@
                  <thead>
                     <tr class="border-b border-zinc-100 bg-zinc-50/50">
                        <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Filed</th>
-                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Leave Date</th>
+                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">From Date</th>
+                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">To Date</th>
                        <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Type</th>
-                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Duration</th>
+                       <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">No. of Days</th>
                        <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Status</th>
                        <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] text-right">Details</th>
                     </tr>
@@ -245,16 +246,24 @@
                 </select>
              </div>
              <div>
-                <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Date of Leave</label>
-                <input type="date" id="dateOfLeave" required class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 focus:border-sun-yellow outline-none">
-             </div>
-             <div>
-                <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Duration (Number of Days)</label>
-                <input type="number" id="days" value="1" min="1" required class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 focus:border-sun-yellow outline-none">
-             </div>
-             <div>
                 <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Date Filed</label>
                 <input type="text" id="dateFiled" readonly class="w-full bg-zinc-100 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-500 cursor-not-allowed">
+             </div>
+             <div>
+                <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Date From</label>
+                <input type="date" id="dateFrom" required onchange="computeDays()" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 focus:border-sun-yellow outline-none">
+             </div>
+             <div>
+                <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Date To</label>
+                <input type="date" id="dateTo" required onchange="computeDays()" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 focus:border-sun-yellow outline-none">
+             </div>
+             <div>
+                <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">No. of Days</label>
+                <input type="number" id="days" value="1" min="1" readonly class="w-full bg-zinc-100 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 cursor-not-allowed">
+             </div>
+             <div>
+                <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Documents (Optional)</label>
+                <input type="file" id="documents" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 focus:border-sun-yellow outline-none">
              </div>
           </div>
           
@@ -518,7 +527,10 @@
                 <p class="font-bold text-zinc-900 text-xs">${l.dateFiled || '--'}</p>
              </td>
              <td class="px-8 py-5 border-r border-zinc-50">
-                <p class="font-bold text-xs text-zinc-700">${formatReadable(l.dateOfLeave)}</p>
+                <p class="font-bold text-xs text-zinc-700">${formatReadable(l.dateFrom)}</p>
+             </td>
+             <td class="px-8 py-5 border-r border-zinc-50">
+                <p class="font-bold text-xs text-zinc-700">${formatReadable(l.dateTo)}</p>
              </td>
              <td class="px-8 py-5 border-r border-zinc-50">
                 <span class="inline-flex items-center rounded-md bg-sun-yellowLight/50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-sun-yellowDark ring-1 ring-inset ring-sun-yellow/20">${l.reason || 'General'}</span>
@@ -551,10 +563,22 @@
        }
 
        const reason = document.getElementById('reason').value;
-       const dateLeave = document.getElementById('dateOfLeave').value;
+       const dateFrom = document.getElementById('dateFrom').value;
+       const dateTo = document.getElementById('dateTo').value;
        const days = document.getElementById('days').value;
        const note = document.getElementById('note').value;
-      const filedNow = getNowFiledValues();
+       const documentsInput = document.getElementById('documents');
+       const filedNow = getNowFiledValues();
+
+       if (!dateFrom || !dateTo) {
+        alert('Please select both From and To dates.');
+        return;
+       }
+
+       if (new Date(dateFrom) > new Date(dateTo)) {
+        alert('Date From must be before Date To.');
+        return;
+       }
 
        let leaves = getLeaves();
        
@@ -564,10 +588,12 @@
          name: getActiveUserName(),
          dateFiled: filedNow.dateDisplay,
          timeFiled: filedNow.timeDisplay,
-          dateOfLeave: dateLeave,
+          dateFrom: dateFrom,
+          dateTo: dateTo,
           reason: reason,
           note: note,
           days: parseInt(days),
+          documents: documentsInput.files.length > 0 ? Array.from(documentsInput.files).map(f => f.name) : [],
           status: 'Pending'
        };
 
@@ -583,6 +609,28 @@
        setTimeout(() => {
           document.getElementById('successModal').classList.remove('hidden');
        }, 300);
+    }
+
+    function computeDays() {
+       const dateFromInput = document.getElementById('dateFrom').value;
+       const dateToInput = document.getElementById('dateTo').value;
+       const daysInput = document.getElementById('days');
+
+       if (!dateFromInput || !dateToInput) {
+        daysInput.value = '1';
+        return;
+       }
+
+       const dateFrom = new Date(dateFromInput);
+       const dateTo = new Date(dateToInput);
+
+       if (dateFrom > dateTo) {
+        daysInput.value = '1';
+        return;
+       }
+
+       const daysDiff = Math.floor((dateTo - dateFrom) / (1000 * 60 * 60 * 24)) + 1;
+       daysInput.value = Math.max(1, daysDiff);
     }
 
     window.viewNote = function(msg) {

@@ -161,9 +161,9 @@
                   <th class="px-6 py-4">Employee</th>
                   <th class="px-6 py-4 whitespace-nowrap">Date/Time Filed</th>
                   <th class="px-6 py-4">Category</th>
-                  <th class="px-6 py-4">Effectivity</th>
-                  <th class="px-6 py-4">Credits</th>
-                  <th class="px-6 py-4 text-center">Duration</th>
+                  <th class=\"px-6 py-4\">From Date</th>
+                  <th class=\"px-6 py-4\">To Date</th>
+                  <th class=\"px-6 py-4\">No. of Days</th>
                   <th class="px-6 py-4">Status</th>
                   <th class="px-6 py-4 text-right">Actions</th>
               </tr>
@@ -484,13 +484,8 @@
                   </button>
                </div>
             </td>
-            <td class="px-6 py-4 text-zinc-900 font-bold text-xs underline decoration-sun-yellow/30 decoration-2 underline-offset-4">${formatReadableDate(l.dateOfLeave)}</td>
-            <td class="px-6 py-4">
-               <div class="flex items-center gap-2">
-                  <span class="text-zinc-700 font-black text-xs">${remainingCredits}/15</span>
-                  <p class="text-[8px] text-zinc-400 font-bold uppercase tracking-wide">Left</p>
-               </div>
-            </td>
+            <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${formatReadableDate(l.dateFrom || l.dateOfLeave)}</td>
+            <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${formatReadableDate(l.dateTo)}</td>
             <td class="px-6 py-4 text-center">
               <span class="font-black text-zinc-900 text-xs">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</span>
             </td>
@@ -562,26 +557,48 @@
       };
 
       async function syncToAttendance(leave) {
-        if(!leave.dateOfLeave) return;
-        let attendance = JSON.parse(localStorage.getItem('sunstar_attendance')) || {};
-        if(!attendance[leave.dateOfLeave]) attendance[leave.dateOfLeave] = [];
+        if(!leave.dateFrom || !leave.dateTo) return;
         
-        // Avoid duplicates
-        if(!attendance[leave.dateOfLeave].some(r => String(r.empId) === String(leave.empId) || r.name === leave.name)) {
-          const absentRecord = {
-            empId: leave.empId,
-            name: leave.name,
-            clockIn: '--',
-            clockOut: '--',
-            status: 'Absent',
-            color: 'red'
-          };
-          attendance[leave.dateOfLeave].push(absentRecord);
-          localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
-          if (window.HRDataService) {
-            await window.HRDataService.upsertAttendanceRecord(leave.dateOfLeave, absentRecord);
+        let attendance = JSON.parse(localStorage.getItem('sunstar_attendance')) || {};
+        
+        // Calculate date range
+        const startDate = new Date(leave.dateFrom);
+        const endDate = new Date(leave.dateTo);
+        const currentDate = new Date(startDate);
+        
+        // Iterate through each date in the range
+        while (currentDate <= endDate) {
+          const dateStr = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+          
+          if(!attendance[dateStr]) attendance[dateStr] = [];
+          
+          // Avoid duplicates
+          if(!attendance[dateStr].some(r => String(r.empId) === String(leave.empId) || r.name === leave.name)) {
+            const absentRecord = {
+              empId: leave.empId,
+              name: leave.name,
+              clockIn: '--',
+              clockOut: '--',
+              status: 'Absent',
+              shift: 'On Leave',
+              ot: '0.0',
+              color: 'red',
+              leaveType: leave.reason,
+              leaveId: leave.id
+            };
+            attendance[dateStr].push(absentRecord);
+            
+            // Sync to Supabase for each date
+            if (window.HRDataService) {
+              await window.HRDataService.upsertAttendanceRecord(dateStr, absentRecord);
+            }
           }
+          
+          // Move to next day
+          currentDate.setDate(currentDate.getDate() + 1);
         }
+        
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
       }
 
       function showSuccessModal(statusType) {
