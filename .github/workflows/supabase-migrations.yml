@@ -1,0 +1,71 @@
+name: Run Supabase Migrations
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend-database/**/*.sql'
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get changed SQL files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+        with:
+          files: |
+            backend-database/**/*.sql
+
+      - name: Run migrations
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # Install PostgreSQL client
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+          # Extract host from URL (postgres://[USER]:[PASSWORD]@[HOST]:[PORT]/[DATABASE])
+          # Supabase URL format: https://xxxxx.supabase.co
+          # We'll derive the DB connection from the service role JWT and URL
+          
+          # Get list of changed SQL files
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          
+          # Run each SQL file
+          for file in $CHANGED_FILES; do
+            echo "Running migration: $file"
+            
+            # Execute the SQL file against Supabase using curl and the REST API
+            RESPONSE=$(curl -s -X POST \
+              "${SUPABASE_URL}/rest/v1/rpc/exec_sql" \
+              -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+              -H "Content-Type: application/json" \
+              -d @- << EOF
+          {
+            "query": "$(cat "$file" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')"
+          }
+          EOF
+            )
+            
+            echo "Response: $RESPONSE"
+            
+            # Check if there was an error
+            if echo "$RESPONSE" | grep -q "error\|Error\|ERROR"; then
+              echo "Migration failed!"
+              exit 1
+            fi
+          done
+          
+          echo "All migrations completed successfully!"
+
+      - name: Migration Summary
+        if: always()
+        run: echo "✓ Supabase migrations workflow completed"
