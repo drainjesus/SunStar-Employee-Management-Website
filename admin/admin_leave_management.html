@@ -461,6 +461,30 @@
           const filedDate = formatFiledDate(l.dateFiled, l.createdAt);
           const filedTime = formatFiledTime(l.timeFiled, l.createdAt);
           
+          // Format dates with explicit null checks and debugging
+          let dateFromDisplay = '---';
+          let dateToDisplay = '---';
+          
+          try {
+            if (l.dateFrom && l.dateFrom !== '---') {
+              dateFromDisplay = formatReadableDate(l.dateFrom) || '---';
+            } else if (l.dateOfLeave && l.dateOfLeave !== '---') {
+              dateFromDisplay = formatReadableDate(l.dateOfLeave) || '---';
+            }
+          } catch (e) {
+            console.warn('Error formatting dateFrom:', e, 'value:', l.dateFrom);
+            dateFromDisplay = '---';
+          }
+          
+          try {
+            if (l.dateTo && l.dateTo !== '---') {
+              dateToDisplay = formatReadableDate(l.dateTo) || '---';
+            }
+          } catch (e) {
+            console.warn('Error formatting dateTo:', e, 'value:', l.dateTo);
+            dateToDisplay = '---';
+          }
+          
           const storeKey = `leave_${l.id || index}`;
           window.leaveDetailsStore[storeKey] = {
             description: l.note || l.description || l.leaveDescription || 'No additional details provided.',
@@ -490,8 +514,8 @@
                   </button>
                </div>
             </td>
-            <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${l.dateFrom ? formatReadableDate(l.dateFrom) : (l.dateOfLeave ? formatReadableDate(l.dateOfLeave) : '---')}</td>
-            <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${l.dateTo ? formatReadableDate(l.dateTo) : '---'}</td>
+            <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${dateFromDisplay}</td>
+            <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${dateToDisplay}</td>
             <td class="px-6 py-4 text-center">
               <span class="font-black text-zinc-900 text-xs">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</span>
             </td>
