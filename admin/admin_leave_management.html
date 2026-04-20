@@ -161,9 +161,9 @@
                   <th class="px-6 py-4">Employee</th>
                   <th class="px-6 py-4 whitespace-nowrap">Date/Time Filed</th>
                   <th class="px-6 py-4">Category</th>
-                  <th class=\"px-6 py-4\">From Date</th>
-                  <th class=\"px-6 py-4\">To Date</th>
-                  <th class=\"px-6 py-4\">No. of Days</th>
+                  <th class="px-6 py-4">Effectivity</th>
+                  <th class="px-6 py-4">Credits</th>
+                  <th class="px-6 py-4 text-center">Duration</th>
                   <th class="px-6 py-4">Status</th>
                   <th class="px-6 py-4 text-right">Actions</th>
               </tr>
@@ -240,14 +240,9 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </div>
-        <div class="bg-zinc-50 rounded-lg p-5 sm:p-6 border border-zinc-100 max-h-[65vh] overflow-y-auto">
-          <p class="text-[11px] font-black uppercase tracking-wider text-zinc-400 mb-3">Additional Note / Reason Details</p>
-          <p id="leaveNoteDisplay" class="text-base text-zinc-700 leading-relaxed whitespace-pre-wrap break-words mb-6" style="overflow-wrap:anywhere;"></p>
-          
-          <div id="documentsSection" class="hidden border-t border-zinc-200 pt-5">
-            <p class="text-[11px] font-black uppercase tracking-wider text-zinc-400 mb-3">Attached Documents</p>
-            <div id="documentsList" class="space-y-2"></div>
-          </div>
+        <div class="bg-zinc-50 rounded-lg p-5 sm:p-6 border border-zinc-100">
+          <p class="text-[11px] font-black uppercase tracking-wider text-zinc-400 mb-2">Additional Note / Reason Details</p>
+          <p id="leaveNoteDisplay" class="text-base text-zinc-700 leading-relaxed whitespace-pre-wrap break-words max-h-[46vh] overflow-y-auto pr-1" style="overflow-wrap:anywhere;"></p>
         </div>
         <button onclick="document.getElementById('leaveNoteModal').classList.add('hidden')" class="mt-5 w-full bg-sun-yellow py-2.5 text-sm font-bold rounded-md hover:bg-sun-yellowDark transition">Close</button>
       </div>
@@ -420,7 +415,6 @@
         tbody.innerHTML = '';
         window.leaveDetailsStore = {};
         let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
-        console.log('Loaded leaves from localStorage:', leaves); // Debug log
         updateOverviewCounts(leaves);
         // Sort by filed date + time, newest first
         leaves.sort((a, b) => getFiledSortValue(b) - getFiledSortValue(a));
@@ -462,38 +456,9 @@
           const filedDate = formatFiledDate(l.dateFiled, l.createdAt);
           const filedTime = formatFiledTime(l.timeFiled, l.createdAt);
           
-          // Format dates with explicit null checks and debugging
-          let dateFromDisplay = '---';
-          let dateToDisplay = '---';
-          
-          console.log(`Processing leave #${index}:`, { dateFrom: l.dateFrom, dateTo: l.dateTo, documents: l.documents }); // Debug log
-          
-          try {
-            if (l.dateFrom && l.dateFrom !== '---') {
-              dateFromDisplay = formatReadableDate(l.dateFrom) || '---';
-            } else if (l.dateOfLeave && l.dateOfLeave !== '---') {
-              dateFromDisplay = formatReadableDate(l.dateOfLeave) || '---';
-            }
-          } catch (e) {
-            console.warn('Error formatting dateFrom:', e, 'value:', l.dateFrom);
-            dateFromDisplay = '---';
-          }
-          
-          try {
-            if (l.dateTo && l.dateTo !== '---') {
-              dateToDisplay = formatReadableDate(l.dateTo) || '---';
-            }
-          } catch (e) {
-            console.warn('Error formatting dateTo:', e, 'value:', l.dateTo);
-            dateToDisplay = '---';
-          }
-          
-          console.log(`Formatted dates for #${index}:`, { dateFromDisplay, dateToDisplay }); // Debug log
-          
           const storeKey = `leave_${l.id || index}`;
           window.leaveDetailsStore[storeKey] = {
-            description: l.note || l.description || l.leaveDescription || 'No additional details provided.',
-            documents: Array.isArray(l.documents) ? l.documents : []
+            description: l.note || l.description || l.leaveDescription || 'No additional details provided.'
           };
 
           tr.innerHTML = `
@@ -519,8 +484,13 @@
                   </button>
                </div>
             </td>
-            <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${dateFromDisplay}</td>
-            <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${dateToDisplay}</td>
+            <td class="px-6 py-4 text-zinc-900 font-bold text-xs underline decoration-sun-yellow/30 decoration-2 underline-offset-4">${formatReadableDate(l.dateOfLeave)}</td>
+            <td class="px-6 py-4">
+               <div class="flex items-center gap-2">
+                  <span class="text-zinc-700 font-black text-xs">${remainingCredits}/15</span>
+                  <p class="text-[8px] text-zinc-400 font-bold uppercase tracking-wide">Left</p>
+               </div>
+            </td>
             <td class="px-6 py-4 text-center">
               <span class="font-black text-zinc-900 text-xs">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</span>
             </td>
@@ -553,30 +523,11 @@
 
       window.showLeaveDescription = function(storeKey) {
         const details = window.leaveDetailsStore[storeKey];
-        console.log('Opening leave details for key:', storeKey, 'details:', details); // Debug log
         if (!details) {
           console.error('Leave details not found for key:', storeKey);
           return;
         }
         document.getElementById('leaveNoteDisplay').textContent = details.description || 'No additional details provided.';
-        
-        // Handle documents
-        const docsSection = document.getElementById('documentsSection');
-        const docsList = document.getElementById('documentsList');
-        
-        console.log('Documents to display:', details.documents); // Debug log
-        if (Array.isArray(details.documents) && details.documents.length > 0) {
-          docsSection.classList.remove('hidden');
-          docsList.innerHTML = details.documents.map(doc => `
-            <div class="flex items-center gap-2 px-3 py-2 bg-white rounded-md border border-zinc-200 text-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span class="flex-1 text-zinc-700 font-medium truncate">${doc}</span>
-            </div>
-          `).join('');
-        } else {
-          docsSection.classList.add('hidden');
-        }
-        
         document.getElementById('leaveNoteModal').classList.remove('hidden');
       };
 
@@ -611,48 +562,26 @@
       };
 
       async function syncToAttendance(leave) {
-        if(!leave.dateFrom || !leave.dateTo) return;
-        
+        if(!leave.dateOfLeave) return;
         let attendance = JSON.parse(localStorage.getItem('sunstar_attendance')) || {};
+        if(!attendance[leave.dateOfLeave]) attendance[leave.dateOfLeave] = [];
         
-        // Calculate date range
-        const startDate = new Date(leave.dateFrom);
-        const endDate = new Date(leave.dateTo);
-        const currentDate = new Date(startDate);
-        
-        // Iterate through each date in the range
-        while (currentDate <= endDate) {
-          const dateStr = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-          
-          if(!attendance[dateStr]) attendance[dateStr] = [];
-          
-          // Avoid duplicates
-          if(!attendance[dateStr].some(r => String(r.empId) === String(leave.empId) || r.name === leave.name)) {
-            const absentRecord = {
-              empId: leave.empId,
-              name: leave.name,
-              clockIn: '--',
-              clockOut: '--',
-              status: 'Absent',
-              shift: 'On Leave',
-              ot: '0.0',
-              color: 'red',
-              leaveType: leave.reason,
-              leaveId: leave.id
-            };
-            attendance[dateStr].push(absentRecord);
-            
-            // Sync to Supabase for each date
-            if (window.HRDataService) {
-              await window.HRDataService.upsertAttendanceRecord(dateStr, absentRecord);
-            }
+        // Avoid duplicates
+        if(!attendance[leave.dateOfLeave].some(r => String(r.empId) === String(leave.empId) || r.name === leave.name)) {
+          const absentRecord = {
+            empId: leave.empId,
+            name: leave.name,
+            clockIn: '--',
+            clockOut: '--',
+            status: 'Absent',
+            color: 'red'
+          };
+          attendance[leave.dateOfLeave].push(absentRecord);
+          localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+          if (window.HRDataService) {
+            await window.HRDataService.upsertAttendanceRecord(leave.dateOfLeave, absentRecord);
           }
-          
-          // Move to next day
-          currentDate.setDate(currentDate.getDate() + 1);
         }
-        
-        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
       }
 
       function showSuccessModal(statusType) {
