@@ -553,6 +553,7 @@
 
       window.showLeaveDescription = function(storeKey) {
         const details = window.leaveDetailsStore[storeKey];
+        console.log('Opening leave details for key:', storeKey, 'details:', details); // Debug log
         if (!details) {
           console.error('Leave details not found for key:', storeKey);
           return;
@@ -563,6 +564,7 @@
         const docsSection = document.getElementById('documentsSection');
         const docsList = document.getElementById('documentsList');
         
+        console.log('Documents to display:', details.documents); // Debug log
         if (Array.isArray(details.documents) && details.documents.length > 0) {
           docsSection.classList.remove('hidden');
           docsList.innerHTML = details.documents.map(doc => `
