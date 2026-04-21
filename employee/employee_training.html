@@ -586,6 +586,13 @@
         const entries = getTrainingDevEntries();
         entries.push(newEntry);
         setTrainingDevEntries(entries);
+
+        // Ensure employee exists remotely before saving FK-linked training entry.
+        const activeEmployee = getActiveEmployee();
+        if (activeEmployee && window.EmployeeDataService && typeof window.EmployeeDataService.upsertEmployee === 'function') {
+          await window.EmployeeDataService.upsertEmployee(activeEmployee);
+        }
+
         if (window.HRDataService && typeof window.HRDataService.upsertTrainingDevEntry === 'function') {
           const ok = await window.HRDataService.upsertTrainingDevEntry(newEntry);
           if (!ok) {
@@ -593,10 +600,11 @@
               ? window.HRDataService.getTrainingDevLastError()
               : '';
             alert(`Entry saved locally but failed to sync to database.${detail ? `\n\n${detail}` : ''}`);
+          } else {
+            await syncTrainingDevEntriesFromSupabase();
           }
         }
         document.getElementById('trainingDevForm').reset();
-        await syncTrainingDevEntriesFromSupabase();
         renderTrainingEntries();
       });
     });
