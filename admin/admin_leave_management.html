@@ -460,32 +460,16 @@
       }
 
       function updateLeaveTypeBalances(leaves) {
-        const approvedLeaves = leaves.filter(l => l.status === 'Approve');
-        const usedByType = {
-          Vacation: 0,
-          Sick: 0,
-          Emergency: 0,
-          Maternity: 0,
-          Paternity: 0
-        };
-
-        approvedLeaves.forEach(item => {
-          const type = String(item.reason || '').trim();
-          if (Object.prototype.hasOwnProperty.call(usedByType, type)) {
-            usedByType[type] += Number(item.days || 1);
-          }
-        });
-
         document.getElementById('adminVacationTotal').textContent = LEAVE_LIMITS.Vacation;
-        document.getElementById('adminVacationRemain').textContent = Math.max(0, LEAVE_LIMITS.Vacation - usedByType.Vacation);
+        document.getElementById('adminVacationRemain').textContent = LEAVE_LIMITS.Vacation;
         document.getElementById('adminSickTotal').textContent = LEAVE_LIMITS.Sick;
-        document.getElementById('adminSickRemain').textContent = Math.max(0, LEAVE_LIMITS.Sick - usedByType.Sick);
+        document.getElementById('adminSickRemain').textContent = LEAVE_LIMITS.Sick;
         document.getElementById('adminEmergencyTotal').textContent = LEAVE_LIMITS.Emergency;
-        document.getElementById('adminEmergencyRemain').textContent = Math.max(0, LEAVE_LIMITS.Emergency - usedByType.Emergency);
+        document.getElementById('adminEmergencyRemain').textContent = LEAVE_LIMITS.Emergency;
         document.getElementById('adminMaternityTotal').textContent = LEAVE_LIMITS.Maternity;
-        document.getElementById('adminMaternityRemain').textContent = Math.max(0, LEAVE_LIMITS.Maternity - usedByType.Maternity);
+        document.getElementById('adminMaternityRemain').textContent = LEAVE_LIMITS.Maternity;
         document.getElementById('adminPaternityTotal').textContent = LEAVE_LIMITS.Paternity;
-        document.getElementById('adminPaternityRemain').textContent = Math.max(0, LEAVE_LIMITS.Paternity - usedByType.Paternity);
+        document.getElementById('adminPaternityRemain').textContent = LEAVE_LIMITS.Paternity;
       }
 
       function renderLeaveTable() {
