@@ -35,11 +35,23 @@
     };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .sun-sidebar {
+      background-color: #f4d000 !important;
+      border-right-color: #ca8a04 !important;
+    }
+    .sun-sidebar * {
+      color: #111111 !important;
+    }
+    .sun-sidebar a:hover {
+      background-color: #fef08a !important;
+    }
+  </style>
 </head>
 
 <body class="min-h-screen bg-white font-sans text-sun-ink">
   <div class="flex h-screen bg-white">
-    <aside class="hidden w-64 border-r border-zinc-200 bg-white lg:flex lg:flex-col shadow-sm">
+    <aside class="sun-sidebar hidden w-64 border-r border-zinc-200 bg-white lg:flex lg:flex-col shadow-sm">
       <div class="mb-8 px-5 pt-8 pb-2">
         <p class="font-logo text-3xl font-black tracking-tight text-black">SunStar <span class="text-sun-yellow">Davao</span></p>
         <p class="mt-1 font-sans text-xs font-black uppercase tracking-[0.15em] text-zinc-500">Admin Portal</p>
