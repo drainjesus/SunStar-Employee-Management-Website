@@ -557,11 +557,11 @@
         delete fallbackPayload.status;
         shouldRetry = true;
       }
-      if (/certificate_url/i.test(errorText)) {
+      if (/certificate[_\s]?url/i.test(errorText)) {
         delete fallbackPayload.certificate_url;
         shouldRetry = true;
       }
-      if (/certificate_storage_path/i.test(errorText)) {
+      if (/certificate[_\s]?storage[_\s]?path/i.test(errorText)) {
         delete fallbackPayload.certificate_storage_path;
         shouldRetry = true;
       }
