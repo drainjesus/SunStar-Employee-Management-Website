@@ -688,6 +688,9 @@
           const submissionType = entry.submissionType === 'external' ? 'External' : 'Catalog';
           const linkedProgram = trainings.find(training => String(training.id) === String(entry.programId));
           const status = entry.status || 'Pending';
+          const certificateUrl = resolveCertificateUrl(entry);
+          const hasCertificateToView = Boolean(certificateUrl);
+          const safeEntryId = String(entry.id || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
           const statusClass = status === 'Approved'
             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
             : status === 'Declined'
@@ -705,9 +708,9 @@
               <div class="flex items-center gap-2">
                 <span>${entry.certificateName || '-'}</span>
                 <button
-                  onclick="viewTrainingCertificate(${entry.id})"
-                  class="rounded-md border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition ${entry.certificateDataUrl ? 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100' : 'border-zinc-200 bg-zinc-100 text-zinc-400 cursor-not-allowed'}"
-                  ${entry.certificateDataUrl ? '' : 'disabled'}>
+                  onclick="viewTrainingCertificate('${safeEntryId}')"
+                  class="rounded-md border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition ${hasCertificateToView ? 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100' : 'border-zinc-200 bg-zinc-100 text-zinc-400 cursor-not-allowed'}"
+                  ${hasCertificateToView ? '' : 'disabled'}>
                   View
                 </button>
               </div>
@@ -764,15 +767,33 @@
       }
     }
 
+    function resolveCertificateUrl(entry) {
+      const raw = String(entry && entry.certificateDataUrl ? entry.certificateDataUrl : '').trim();
+      if (!raw || raw === 'undefined' || raw === 'null') return '';
+      if (/^data:/i.test(raw)) return raw;
+      if (/^https?:\/\//i.test(raw)) return raw;
+      if (/^blob:/i.test(raw)) return raw;
+      if (/^[A-Za-z0-9+/=\r\n]+$/.test(raw) && raw.length > 80) {
+        return `data:application/octet-stream;base64,${raw.replace(/\s+/g, '')}`;
+      }
+      return '';
+    }
+
     function viewTrainingCertificate(entryId) {
       const entries = getTrainingDevEntries();
       const entry = entries.find(item => String(item.id) === String(entryId));
-      if (!entry || !entry.certificateDataUrl) {
-        alert('No certificate file is available for this entry yet.');
+      if (!entry) {
+        alert('Training entry not found.');
         return;
       }
 
-      const opened = window.open(entry.certificateDataUrl, '_blank', 'noopener,noreferrer');
+      const certificateUrl = resolveCertificateUrl(entry);
+      if (!certificateUrl) {
+        alert('No certificate file is available for this entry yet. This may be an older submission without uploaded file data.');
+        return;
+      }
+
+      const opened = window.open(certificateUrl, '_blank', 'noopener,noreferrer');
       if (!opened) {
         alert('Popup blocked. Please allow popups for this site to view the certificate.');
       }
