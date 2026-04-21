@@ -327,7 +327,24 @@
                 <div>
                   <span class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">Employment Status</span>
                   <span class="block mt-0.5 font-bold text-zinc-900" id="detEmploymentStatus">-</span>
-                  </div>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-50 shadow-sm">
+                  <table class="min-w-full text-left text-sm text-zinc-600">
+                    <thead class="bg-zinc-100 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                      <tr>
+                        <th class="px-4 py-3">Date from</th>
+                        <th class="px-4 py-3">Date to</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">Remarks</th>
+                      </tr>
+                    </thead>
+                    <tbody id="detEmploymentStatusHistoryBody" class="divide-y divide-zinc-100 bg-white">
+                      <tr>
+                        <td colspan="4" class="px-4 py-4 text-xs text-zinc-500">No employment status history recorded.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
                 </div>
               </div>
 
@@ -579,21 +596,73 @@
       });
     }
 
-    function getEmploymentStatus(emp) {
-      // Use new dateHired and dateTerminated fields if available
-      if (emp.dateHired || emp.dateTerminated) {
-        const hasStart = String(emp.dateHired || '').trim() !== '';
-        const hasEnd = String(emp.dateTerminated || '').trim() !== '';
-        if (hasEnd) return 'Inactive';
-        if (hasStart) return 'Active';
-        return 'Not encoded';
-      }
-      // Fallback to old ds/de logic
-      const hasStart = String(emp.ds || '').trim() !== '';
-      const hasEnd = String(emp.de || '').trim() !== '' && emp.de !== 'Present';
+    function getStatusFromDates(dateFrom, dateTo) {
+      const hasStart = String(dateFrom || '').trim() !== '';
+      const hasEnd = String(dateTo || '').trim() !== '';
       if (hasEnd) return 'Inactive';
       if (hasStart) return 'Active';
       return 'Not encoded';
+    }
+
+    function getEmploymentStatusHistory(emp) {
+      const rows = Array.isArray(emp.employmentStatusHistory) ? emp.employmentStatusHistory : [];
+      const cleaned = rows
+        .map(row => ({
+          dateFrom: row?.dateFrom || '',
+          dateTo: row?.dateTo || '',
+          remarks: row?.remarks || ''
+        }))
+        .filter(row => row.dateFrom || row.dateTo || row.remarks);
+
+      if (cleaned.length > 0) {
+        return cleaned.map(row => ({ ...row, status: getStatusFromDates(row.dateFrom, row.dateTo) }));
+      }
+
+      const fallbackFrom = emp.dateHired || emp.ds || '';
+      const fallbackTo = emp.dateTerminated || (emp.de && emp.de !== 'Present' ? emp.de : '');
+      if (!fallbackFrom && !fallbackTo) return [];
+      return [{ dateFrom: fallbackFrom, dateTo: fallbackTo, status: getStatusFromDates(fallbackFrom, fallbackTo), remarks: '' }];
+    }
+
+    function renderEmploymentStatusHistory(emp) {
+      const tbody = document.getElementById('detEmploymentStatusHistoryBody');
+      const rows = getEmploymentStatusHistory(emp);
+      tbody.innerHTML = '';
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-xs text-zinc-500">No employment status history recorded.</td></tr>`;
+        return rows;
+      }
+
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-zinc-700">${row.dateFrom ? formatProfileDate(row.dateFrom) : '-'}</td>
+          <td class="px-4 py-3 text-zinc-700">${row.dateTo ? formatProfileDate(row.dateTo) : '-'}</td>
+          <td class="px-4 py-3 font-bold text-zinc-700">${row.status}</td>
+          <td class="px-4 py-3 text-zinc-700">${row.remarks || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      return rows;
+    }
+
+    function getEmploymentStatus(emp) {
+      const rows = getEmploymentStatusHistory(emp);
+      if (!rows.length) return 'Not encoded';
+      const active = rows.find(row => row.status === 'Active');
+      if (active) return 'Active';
+      return rows[rows.length - 1].status || 'Not encoded';
+    }
+
+    function getCurrentEmploymentRange(emp) {
+      const rows = getEmploymentStatusHistory(emp);
+      if (!rows.length) return { dateHired: '', dateTerminated: '' };
+      const active = rows.find(row => row.status === 'Active');
+      if (active) return { dateHired: active.dateFrom || '', dateTerminated: '' };
+      const last = rows[rows.length - 1];
+      return { dateHired: last.dateFrom || '', dateTerminated: last.dateTo || '' };
     }
 
     function showDetails(id) {
@@ -615,14 +684,16 @@
       document.getElementById('detAge').textContent = emp.age || '-';
       document.getElementById('detGender').textContent = emp.gender || '-';
         document.getElementById('detMaritalStatus').textContent = emp.maritalStatus || '-';
-      const hiredDate = emp.dateHired || emp.ds || '';
-      const terminatedDate = emp.dateTerminated || (emp.de && emp.de !== 'Present' ? emp.de : '');
+      const activeRange = getCurrentEmploymentRange(emp);
+      const hiredDate = activeRange.dateHired;
+      const terminatedDate = activeRange.dateTerminated;
       document.getElementById('detDateHired').textContent = hiredDate ? formatProfileDate(hiredDate) : '-';
       document.getElementById('detDateTerminated').textContent = terminatedDate ? formatProfileDate(terminatedDate) : '-';
       document.getElementById('detContact').textContent = emp.contact || '-';
         document.getElementById('detAddress').textContent = emp.address || '-';
       renderEmploymentHistory(emp);
       renderRoleHistory(emp);
+      renderEmploymentStatusHistory(emp);
         document.getElementById('detEmploymentStatus').textContent = getEmploymentStatus(emp);
       document.getElementById('detEmergencyName').textContent = emp.eName || '-';
       document.getElementById('detEmergencyContact').textContent = emp.eContact || '-';

@@ -49,6 +49,20 @@
       .filter((row) => row && Object.values(row).some((value) => hasText(value)));
   }
 
+  function normalizeEmploymentStatusRows(rows) {
+    return (Array.isArray(rows) ? rows : [])
+      .map((row) => {
+        if (!row || typeof row !== "object") return null;
+        return {
+          dateFrom: row.dateFrom || "",
+          dateTo: row.dateTo || "",
+          status: row.status || "",
+          remarks: row.remarks || ""
+        };
+      })
+      .filter((row) => row && Object.values(row).some((value) => hasText(value)));
+  }
+
   function buildExtendedProfileSnapshot(employee) {
     return {
       middleName: employee.middleName || "",
@@ -60,7 +74,8 @@
       dateTerminated: employee.dateTerminated || "",
       company: employee.company || "",
       employmentHistory: normalizeHistoryRows(employee.employmentHistory, "employment"),
-      roleHistory: normalizeHistoryRows(employee.roleHistory, "role")
+      roleHistory: normalizeHistoryRows(employee.roleHistory, "role"),
+      employmentStatusHistory: normalizeEmploymentStatusRows(employee.employmentStatusHistory)
     };
   }
 
@@ -74,6 +89,9 @@
     const mergedRoleHistory = (Array.isArray(employee.roleHistory) && employee.roleHistory.length > 0)
       ? employee.roleHistory
       : normalizeHistoryRows(snapshot.roleHistory, "role");
+    const mergedEmploymentStatusHistory = (Array.isArray(employee.employmentStatusHistory) && employee.employmentStatusHistory.length > 0)
+      ? employee.employmentStatusHistory
+      : normalizeEmploymentStatusRows(snapshot.employmentStatusHistory);
 
     return {
       ...employee,
@@ -86,7 +104,8 @@
       dateTerminated: hasText(employee.dateTerminated) ? employee.dateTerminated : (snapshot.dateTerminated || ""),
       company: hasText(employee.company) ? employee.company : (snapshot.company || ""),
       employmentHistory: mergedEmploymentHistory,
-      roleHistory: mergedRoleHistory
+      roleHistory: mergedRoleHistory,
+      employmentStatusHistory: mergedEmploymentStatusHistory
     };
   }
 
@@ -236,6 +255,7 @@
       profilePic: row.profile_pic || "",
       employmentHistory,
       roleHistory,
+      employmentStatusHistory: normalizeEmploymentStatusRows(row.employment_status_history),
       skills: Array.isArray(row.skills) ? row.skills : [],
       certs: Array.isArray(row.certs) ? row.certs : []
     };
