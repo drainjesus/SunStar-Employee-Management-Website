@@ -155,7 +155,7 @@
       <div class="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
         
         <!-- Top Stats Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
            <!-- Final Score Card -->
            <div class="shad-card p-8 relative overflow-hidden">
               <div class="relative z-10 flex flex-col h-full justify-between">
@@ -199,6 +199,21 @@
                  <p class="text-sm text-zinc-500 mt-2 font-medium italic">Support your colleagues. Provide constructive feedback for your teammates.</p>
               </div>
               <button onclick="document.getElementById('peerReviewModal').classList.remove('hidden')" class="w-full mt-6 bg-white border border-zinc-300 py-3 text-xs font-semibold uppercase text-zinc-900 rounded-md hover:bg-zinc-100 transition tracking-widest active:scale-95 shadow-sm">Rate Colleagues</button>
+           </div>
+
+           <!-- Manager Review -->
+           <div class="shad-card p-8 transition duration-300 flex flex-col justify-between">
+              <div>
+                 <div class="flex items-center justify-between mb-4">
+                    <div class="h-12 w-12 bg-zinc-100 text-zinc-400 rounded-2xl flex items-center justify-center transition shadow-inner">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4"/><path d="m16 6 2.29-2.29"/><path d="M18 12h4"/><path d="m16 18 2.29 2.29"/><path d="M12 18v4"/><path d="m4 18-2.29 2.29"/><path d="M2 12H6"/><path d="M4 6 1.71 3.71"/><circle cx="12" cy="12" r="3"/></svg>
+                    </div>
+                    <span id="managerReviewBadge" class="text-[10px] font-black uppercase px-2 py-1 bg-zinc-100 text-zinc-400 rounded">Not Submitted</span>
+                 </div>
+                 <h3 class="text-xl font-black text-zinc-900">Rate Manager</h3>
+                 <p class="text-sm text-zinc-500 mt-2 font-medium italic">Give feedback to your manager using a fixed set of criteria.</p>
+              </div>
+              <button onclick="openManagerReviewModal()" class="w-full mt-6 bg-white border border-zinc-300 py-3 text-xs font-semibold uppercase text-zinc-900 rounded-md hover:bg-zinc-100 transition tracking-widest active:scale-95 shadow-sm">Open Form</button>
            </div>
         </div>
 
@@ -315,6 +330,58 @@
      </div>
   </div>
 
+  <!-- Manager Review Modal -->
+  <div id="managerReviewModal" class="relative z-50 hidden">
+     <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
+     <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+        <div class="relative w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl border border-zinc-200 text-left">
+           <h2 class="text-2xl font-black text-zinc-900 uppercase tracking-tighter mb-2">Manager Review</h2>
+           <p class="text-sm text-zinc-500 mb-8 font-medium italic border-b border-zinc-50 pb-4">Submit manager feedback based on set criteria.</p>
+
+           <form id="managerReviewForm" class="space-y-6">
+              <div>
+                 <label class="block text-xs font-black uppercase text-zinc-400 mb-2 tracking-widest">Leadership (1-5)</label>
+                 <select id="managerLeadership" class="w-full rounded-2xl border border-zinc-200 p-3 text-sm font-bold focus:border-sun-yellow outline-none transition bg-zinc-50/50">
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Good</option>
+                    <option value="3" selected>3 - Satisfactory</option>
+                    <option value="2">2 - Needs Improvement</option>
+                    <option value="1">1 - Poor</option>
+                 </select>
+              </div>
+              <div>
+                 <label class="block text-xs font-black uppercase text-zinc-400 mb-2 tracking-widest">Communication (1-5)</label>
+                 <select id="managerCommunication" class="w-full rounded-2xl border border-zinc-200 p-3 text-sm font-bold focus:border-sun-yellow outline-none transition bg-zinc-50/50">
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Good</option>
+                    <option value="3" selected>3 - Satisfactory</option>
+                    <option value="2">2 - Needs Improvement</option>
+                    <option value="1">1 - Poor</option>
+                 </select>
+              </div>
+              <div>
+                 <label class="block text-xs font-black uppercase text-zinc-400 mb-2 tracking-widest">Support for Team (1-5)</label>
+                 <select id="managerSupport" class="w-full rounded-2xl border border-zinc-200 p-3 text-sm font-bold focus:border-sun-yellow outline-none transition bg-zinc-50/50">
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Good</option>
+                    <option value="3" selected>3 - Satisfactory</option>
+                    <option value="2">2 - Needs Improvement</option>
+                    <option value="1">1 - Poor</option>
+                 </select>
+              </div>
+              <div>
+                 <label class="block text-xs font-black uppercase text-zinc-400 mb-2 tracking-widest">Comments</label>
+                 <textarea id="managerReviewComment" rows="3" class="w-full rounded-2xl border border-zinc-200 p-4 text-sm focus:border-sun-yellow outline-none transition shadow-inner font-medium" placeholder="Share constructive feedback..."></textarea>
+              </div>
+              <div class="flex gap-3 pt-4">
+                 <button type="button" onclick="document.getElementById('managerReviewModal').classList.add('hidden')" class="flex-1 py-4 text-xs font-black uppercase text-zinc-400 hover:bg-zinc-50 rounded-2xl transition">Cancel</button>
+                 <button type="submit" class="flex-1 bg-sun-yellow py-4 text-xs font-black uppercase text-zinc-900 rounded-2xl shadow-xl hover:bg-sun-yellowLight transition tracking-widest border border-sun-yellowDark">Submit Review</button>
+              </div>
+           </form>
+        </div>
+     </div>
+  </div>
+
   <!-- Global Modals (Profile, Logout) -->
   <div id="uploadPhotoModal" class="relative z-50 hidden"> <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div> <div class="fixed inset-0 z-10 flex items-center justify-center p-4"> <div class="relative max-w-sm w-full rounded-2xl bg-white p-8 shadow-2xl border border-zinc-200 text-center"> <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">Update Profile Photo</h3> <div class="mb-6 mx-auto h-32 w-32 rounded-full border-4 border-zinc-50 bg-zinc-100 flex items-center justify-center overflow-hidden shadow-inner"> <img id="previewImg" src="" class="hidden w-full h-full object-cover"> <svg id="previewPlaceholder" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-zinc-300"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> </div> <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handlePreview(event)"> <div class="flex flex-col gap-3"> <button onclick="document.getElementById('photoInput').click()" class="w-full border-2 border-dashed border-zinc-200 py-3 text-xs font-black uppercase text-zinc-400 rounded-xl hover:bg-zinc-50 transition">Select Image</button> <button onclick="savePhoto()" class="w-full bg-zinc-900 py-3.5 text-sm font-bold text-white rounded-xl shadow-lg uppercase tracking-widest">Save Changes</button> <button onclick="document.getElementById('uploadPhotoModal').classList.add('hidden')" class="w-full bg-white text-zinc-400 py-3 text-sm font-bold rounded-xl active:scale-95">Cancel</button> </div> </div> </div> </div>
   <div id="successPhotoModal" class="relative z-50 hidden"> <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div> <div class="fixed inset-0 z-10 flex items-center justify-center p-4"> <div class="relative max-w-sm w-full rounded-3xl bg-white p-8 shadow-2xl border border-zinc-200 text-center"> <div class="h-16 w-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-6 mx-auto shadow-inner"> <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> </div> <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">Profile Updated!</h3> <p class="text-sm text-zinc-500 mb-8 font-medium italic">Your photo has been saved.</p> <button onclick="document.getElementById('successPhotoModal').classList.add('hidden')" class="w-full bg-zinc-900 py-4 text-sm font-bold text-white rounded-2xl uppercase tracking-widest italic">Proceed</button> </div> </div> </div>
@@ -343,6 +410,7 @@
       const EMPLOYEE_KEY = 'sunstar_employees';
       const PERFORMANCE_KEY = 'sunstar_performances';
       const PEER_REVIEW_KEY = 'sunstar_peer_reviews';
+      const MANAGER_REVIEW_KEY = 'sunstar_manager_reviews';
       const APPRAISAL_TEMPLATE_KEY = 'sunstar_performance_appraisal_template';
       const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
       const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
@@ -381,6 +449,42 @@
 
       function setPeerReviews(reviews) {
          localStorage.setItem(PEER_REVIEW_KEY, JSON.stringify(reviews));
+      }
+
+      function getManagerReviews() {
+         return safeParse(localStorage.getItem(MANAGER_REVIEW_KEY), []);
+      }
+
+      function setManagerReviews(reviews) {
+         localStorage.setItem(MANAGER_REVIEW_KEY, JSON.stringify(reviews));
+      }
+
+      function getMyManagerReview() {
+         if (activeUserId === null) return null;
+         const reviews = getManagerReviews();
+         return reviews.find(review => String(review.employeeId) === String(activeUserId)) || null;
+      }
+
+      function updateManagerReviewBadge() {
+         const badge = document.getElementById('managerReviewBadge');
+         if (!badge) return;
+         const myReview = getMyManagerReview();
+         if (myReview) {
+            badge.textContent = 'Submitted';
+            badge.className = 'text-[10px] font-black uppercase px-2 py-1 bg-green-50 text-green-600 rounded';
+         } else {
+            badge.textContent = 'Not Submitted';
+            badge.className = 'text-[10px] font-black uppercase px-2 py-1 bg-zinc-100 text-zinc-400 rounded';
+         }
+      }
+
+      function openManagerReviewModal() {
+         const myReview = getMyManagerReview();
+         document.getElementById('managerLeadership').value = myReview ? String(myReview.criteria?.leadership || 3) : '3';
+         document.getElementById('managerCommunication').value = myReview ? String(myReview.criteria?.communication || 3) : '3';
+         document.getElementById('managerSupport').value = myReview ? String(myReview.criteria?.support || 3) : '3';
+         document.getElementById('managerReviewComment').value = myReview ? (myReview.comment || '') : '';
+         document.getElementById('managerReviewModal').classList.remove('hidden');
       }
 
       function getAppraisalTemplate() {
@@ -701,6 +805,38 @@
          alert('Peer review submitted anonymously. Thank you!');
       });
 
+      document.getElementById('managerReviewForm').addEventListener('submit', event => {
+         event.preventDefault();
+         if (activeUserId === null) {
+            alert('No active user profile found.');
+            return;
+         }
+
+         const leadership = Number.parseInt(document.getElementById('managerLeadership').value, 10);
+         const communication = Number.parseInt(document.getElementById('managerCommunication').value, 10);
+         const support = Number.parseInt(document.getElementById('managerSupport').value, 10);
+         const comment = String(document.getElementById('managerReviewComment').value || '').trim();
+
+         const reviews = getManagerReviews();
+         const payload = {
+            employeeId: activeUserId,
+            employeeName: activeUserName,
+            criteria: { leadership, communication, support },
+            average: ((leadership + communication + support) / 3).toFixed(1),
+            comment,
+            updatedAt: new Date().toISOString()
+         };
+
+         const index = reviews.findIndex(review => String(review.employeeId) === String(activeUserId));
+         if (index === -1) reviews.push(payload);
+         else reviews[index] = payload;
+
+         setManagerReviews(reviews);
+         updateManagerReviewBadge();
+         document.getElementById('managerReviewModal').classList.add('hidden');
+         alert('Manager review submitted successfully.');
+      });
+
       function refreshProfilePic() {
          const employees = getEmployees();
          let me = null;
@@ -776,6 +912,7 @@
          renderMyPerformance();
          populatePeerSelect();
          updatePeerPendingBadge();
+         updateManagerReviewBadge();
          refreshProfilePic();
       });
 
@@ -786,6 +923,7 @@
          renderMyPerformance();
          populatePeerSelect();
          updatePeerPendingBadge();
+         updateManagerReviewBadge();
          refreshProfilePic();
       });
    </script>
