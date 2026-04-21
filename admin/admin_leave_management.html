@@ -150,6 +150,29 @@
            </div>
         </div>
 
+        <div class="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+            <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Vacation</p>
+            <p class="mt-2 text-sm font-black text-zinc-900"><span id="adminVacationRemain">7</span>/<span id="adminVacationTotal">7</span> Days</p>
+          </div>
+          <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+            <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Sick</p>
+            <p class="mt-2 text-sm font-black text-zinc-900"><span id="adminSickRemain">15</span>/<span id="adminSickTotal">15</span> Days</p>
+          </div>
+          <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+            <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Emergency</p>
+            <p class="mt-2 text-sm font-black text-zinc-900"><span id="adminEmergencyRemain">5</span>/<span id="adminEmergencyTotal">5</span> Days</p>
+          </div>
+          <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+            <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Maternity</p>
+            <p class="mt-2 text-sm font-black text-zinc-900"><span id="adminMaternityRemain">90</span>/<span id="adminMaternityTotal">90</span> Days</p>
+          </div>
+          <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+            <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Paternity</p>
+            <p class="mt-2 text-sm font-black text-zinc-900"><span id="adminPaternityRemain">30</span>/<span id="adminPaternityTotal">30</span> Days</p>
+          </div>
+        </div>
+
         <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 class="text-lg font-bold text-zinc-900">Leave Requests History</h2>
         </div>
@@ -275,6 +298,13 @@
   <script>
     // Global store for leave details
     window.leaveDetailsStore = {};
+    const LEAVE_LIMITS = {
+      Vacation: 7,
+      Sick: 15,
+      Emergency: 5,
+      Maternity: 90,
+      Paternity: 30
+    };
 
     document.addEventListener("DOMContentLoaded", async function () {
       const tbody = document.getElementById('leaveTableBody');
@@ -429,11 +459,41 @@
          document.getElementById('countApproved').textContent = approved;
       }
 
+      function updateLeaveTypeBalances(leaves) {
+        const approvedLeaves = leaves.filter(l => l.status === 'Approve');
+        const usedByType = {
+          Vacation: 0,
+          Sick: 0,
+          Emergency: 0,
+          Maternity: 0,
+          Paternity: 0
+        };
+
+        approvedLeaves.forEach(item => {
+          const type = String(item.reason || '').trim();
+          if (Object.prototype.hasOwnProperty.call(usedByType, type)) {
+            usedByType[type] += Number(item.days || 1);
+          }
+        });
+
+        document.getElementById('adminVacationTotal').textContent = LEAVE_LIMITS.Vacation;
+        document.getElementById('adminVacationRemain').textContent = Math.max(0, LEAVE_LIMITS.Vacation - usedByType.Vacation);
+        document.getElementById('adminSickTotal').textContent = LEAVE_LIMITS.Sick;
+        document.getElementById('adminSickRemain').textContent = Math.max(0, LEAVE_LIMITS.Sick - usedByType.Sick);
+        document.getElementById('adminEmergencyTotal').textContent = LEAVE_LIMITS.Emergency;
+        document.getElementById('adminEmergencyRemain').textContent = Math.max(0, LEAVE_LIMITS.Emergency - usedByType.Emergency);
+        document.getElementById('adminMaternityTotal').textContent = LEAVE_LIMITS.Maternity;
+        document.getElementById('adminMaternityRemain').textContent = Math.max(0, LEAVE_LIMITS.Maternity - usedByType.Maternity);
+        document.getElementById('adminPaternityTotal').textContent = LEAVE_LIMITS.Paternity;
+        document.getElementById('adminPaternityRemain').textContent = Math.max(0, LEAVE_LIMITS.Paternity - usedByType.Paternity);
+      }
+
       function renderLeaveTable() {
         tbody.innerHTML = '';
         window.leaveDetailsStore = {};
         let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
         updateOverviewCounts(leaves);
+        updateLeaveTypeBalances(leaves);
         // Sort by filed date + time, newest first
         leaves.sort((a, b) => getFiledSortValue(b) - getFiledSortValue(a));
 
@@ -470,7 +530,6 @@
           const isApproved = l.status === 'Approve';
           const selectClasses = "rounded-md border border-zinc-200 py-1.5 pl-3 pr-8 text-xs font-bold text-zinc-700 bg-white shadow-sm focus:border-sun-yellow outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
 
-          const remainingCredits = 15 - (l.status === 'Approve' ? l.days : 0);
           const filedDate = formatFiledDate(l.dateFiled, l.createdAt);
           const filedTime = formatFiledTime(l.timeFiled, l.createdAt);
           const documents = Array.isArray(l.documents) ? l.documents.filter(doc => doc && typeof doc === 'object') : [];

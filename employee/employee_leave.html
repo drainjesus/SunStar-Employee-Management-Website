@@ -168,18 +168,26 @@
       <div class="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
 
         <!-- Leave Balance Overview -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-           <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-              <p class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-2">Total Credits</p>
-              <p class="text-3xl font-black text-zinc-900" id="totalCredits">15</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+           <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <p class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-2">Vacation Leave</p>
+              <p class="text-lg font-black text-zinc-900"><span id="vacationRemain">7</span>/<span id="vacationTotal">7</span> Days</p>
            </div>
-           <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-              <p class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-2">Used</p>
-              <p class="text-3xl font-black text-sun-yellowDark" id="usedCredits">0</p>
+           <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <p class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-2">Sick Leave</p>
+              <p class="text-lg font-black text-zinc-900"><span id="sickRemain">15</span>/<span id="sickTotal">15</span> Days</p>
            </div>
-           <div class="rounded-2xl border border-sun-yellow bg-sun-yellowLight/30 p-6 shadow-sm">
-              <p class="text-[10px] font-black uppercase text-sun-yellowDark tracking-[0.2em] mb-2">Remaining</p>
-              <p class="text-3xl font-black text-zinc-900" id="remainCredits">15</p>
+           <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <p class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-2">Emergency Leave</p>
+              <p class="text-lg font-black text-zinc-900"><span id="emergencyRemain">5</span>/<span id="emergencyTotal">5</span> Days</p>
+           </div>
+           <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <p class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-2">Maternity Leave</p>
+              <p class="text-lg font-black text-zinc-900"><span id="maternityRemain">90</span>/<span id="maternityTotal">90</span> Days</p>
+           </div>
+           <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <p class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] mb-2">Paternity Leave</p>
+              <p class="text-lg font-black text-zinc-900"><span id="paternityRemain">30</span>/<span id="paternityTotal">30</span> Days</p>
            </div>
         </div>
         
@@ -243,6 +251,8 @@
                    <option value="Vacation">Vacation Leave</option>
                    <option value="Sick">Sick Leave</option>
                    <option value="Emergency">Emergency Leave</option>
+                   <option value="Maternity">Maternity Leave</option>
+                   <option value="Paternity">Paternity Leave</option>
                 </select>
              </div>
              <div>
@@ -398,6 +408,13 @@
     const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
     const MAX_LEAVE_DOCUMENTS = 3;
     const MAX_LEAVE_DOCUMENT_SIZE_BYTES = 5 * 1024 * 1024;
+    const LEAVE_LIMITS = {
+      Vacation: 7,
+      Sick: 15,
+      Emergency: 5,
+      Maternity: 90,
+      Paternity: 30
+    };
 
     let activeUser = null;
 
@@ -704,10 +721,31 @@
     function updateBalanceCards() {
       const leaves = getLeaves();
       const myApproved = leaves.filter(l => isMyLeave(l) && String(l.status || '') === 'Approve');
-      const usedDays = myApproved.reduce((sum, item) => sum + Number(item.days || 1), 0);
-      document.getElementById('totalCredits').textContent = '15';
-      document.getElementById('usedCredits').textContent = usedDays;
-      document.getElementById('remainCredits').textContent = Math.max(0, 15 - usedDays);
+      const usedByType = {
+        Vacation: 0,
+        Sick: 0,
+        Emergency: 0,
+        Maternity: 0,
+        Paternity: 0
+      };
+
+      myApproved.forEach(item => {
+        const type = String(item.reason || '').trim();
+        if (Object.prototype.hasOwnProperty.call(usedByType, type)) {
+          usedByType[type] += Number(item.days || 1);
+        }
+      });
+
+      document.getElementById('vacationTotal').textContent = LEAVE_LIMITS.Vacation;
+      document.getElementById('vacationRemain').textContent = Math.max(0, LEAVE_LIMITS.Vacation - usedByType.Vacation);
+      document.getElementById('sickTotal').textContent = LEAVE_LIMITS.Sick;
+      document.getElementById('sickRemain').textContent = Math.max(0, LEAVE_LIMITS.Sick - usedByType.Sick);
+      document.getElementById('emergencyTotal').textContent = LEAVE_LIMITS.Emergency;
+      document.getElementById('emergencyRemain').textContent = Math.max(0, LEAVE_LIMITS.Emergency - usedByType.Emergency);
+      document.getElementById('maternityTotal').textContent = LEAVE_LIMITS.Maternity;
+      document.getElementById('maternityRemain').textContent = Math.max(0, LEAVE_LIMITS.Maternity - usedByType.Maternity);
+      document.getElementById('paternityTotal').textContent = LEAVE_LIMITS.Paternity;
+      document.getElementById('paternityRemain').textContent = Math.max(0, LEAVE_LIMITS.Paternity - usedByType.Paternity);
     }
 
     function renderHistory() {
