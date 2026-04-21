@@ -146,6 +146,7 @@
       dateFrom: row.date_from || "",
       dateTo: row.date_to || "",
       certificateName: row.certificate_name || "",
+      certificateDataUrl: row.certificate_data_url || "",
       status: row.status || "Pending",
       reviewNote: row.review_note || "",
       reviewedBy: row.reviewed_by || "",
@@ -168,6 +169,7 @@
       date_from: safeDateString(entry.dateFrom),
       date_to: safeDateString(entry.dateTo),
       certificate_name: entry.certificateName || "",
+      certificate_data_url: entry.certificateDataUrl || null,
       status: entry.status || "Pending",
       review_note: entry.reviewNote || null,
       reviewed_by: entry.reviewedBy || null,
@@ -548,6 +550,10 @@
       }
       if (/status/i.test(errorText)) {
         delete fallbackPayload.status;
+        shouldRetry = true;
+      }
+      if (/certificate_data_url/i.test(errorText)) {
+        delete fallbackPayload.certificate_data_url;
         shouldRetry = true;
       }
 

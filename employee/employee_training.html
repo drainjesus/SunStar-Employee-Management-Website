@@ -508,6 +508,15 @@
       }
     }
 
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new Error('Failed to read certificate file.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
     function handlePreview(e) {
       const file = e.target.files[0];
       if (!file) {
@@ -638,6 +647,14 @@
           return;
         }
 
+        let certificateDataUrl = '';
+        try {
+          certificateDataUrl = await fileToDataUrl(selectedFile);
+        } catch {
+          alert('Unable to read the certificate file. Please try another file.');
+          return;
+        }
+
         const submissionType = submissionTypeInput.value === 'external' ? 'external' : 'catalog';
         const catalogProgramId = submissionType === 'catalog' ? catalogTrainingInput.value : '';
         const trainings = getTrainings();
@@ -667,6 +684,7 @@
           dateFrom,
           dateTo,
           certificateName: selectedFile.name,
+          certificateDataUrl,
           status: 'Pending',
           reviewNote: '',
           reviewedBy: '',

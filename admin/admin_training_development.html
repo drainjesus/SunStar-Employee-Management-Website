@@ -701,7 +701,17 @@
             <td class="px-6 py-4 text-zinc-700">${entry.title || '-'}</td>
             <td class="px-6 py-4 text-zinc-600">${entry.dateFrom || '-'}</td>
             <td class="px-6 py-4 text-zinc-600">${entry.dateTo || '-'}</td>
-            <td class="px-6 py-4 text-zinc-600">${entry.certificateName || '-'}</td>
+            <td class="px-6 py-4 text-zinc-600">
+              <div class="flex items-center gap-2">
+                <span>${entry.certificateName || '-'}</span>
+                <button
+                  onclick="viewTrainingCertificate(${entry.id})"
+                  class="rounded-md border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition ${entry.certificateDataUrl ? 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100' : 'border-zinc-200 bg-zinc-100 text-zinc-400 cursor-not-allowed'}"
+                  ${entry.certificateDataUrl ? '' : 'disabled'}>
+                  View
+                </button>
+              </div>
+            </td>
             <td class="px-6 py-4">
               <span class="inline-flex rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${statusClass}">
                 ${status}
@@ -751,6 +761,20 @@
           await syncTrainingDevEntriesFromSupabase();
           renderTrainingDevEntries();
         }
+      }
+    }
+
+    function viewTrainingCertificate(entryId) {
+      const entries = getTrainingDevEntries();
+      const entry = entries.find(item => String(item.id) === String(entryId));
+      if (!entry || !entry.certificateDataUrl) {
+        alert('No certificate file is available for this entry yet.');
+        return;
+      }
+
+      const opened = window.open(entry.certificateDataUrl, '_blank', 'noopener,noreferrer');
+      if (!opened) {
+        alert('Popup blocked. Please allow popups for this site to view the certificate.');
       }
     }
 
