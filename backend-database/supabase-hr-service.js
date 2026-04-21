@@ -10,6 +10,7 @@
   const DEFAULT_SHIFT_SCHEDULE = "Newsroom Day Shift (08:00 AM - 05:00 PM)";
   let trainingDevLastError = "";
   let attendanceRequestTableMissingInSession = false;
+  const unsupportedTrainingDevColumns = new Set();
   const ATTENDANCE_EXTENDED_COLUMNS = [
     "is_verified",
     "verified_by",
@@ -520,6 +521,37 @@
     if (!hasClient()) return false;
 
     const payload = mapTrainingDevLocalToDb(entry);
+    if (unsupportedTrainingDevColumns.has("certificate_url")) {
+      delete payload.certificate_url;
+    }
+    if (unsupportedTrainingDevColumns.has("certificate_storage_path")) {
+      delete payload.certificate_storage_path;
+    }
+    if (unsupportedTrainingDevColumns.has("certificate_data_url")) {
+      delete payload.certificate_data_url;
+    }
+    if (unsupportedTrainingDevColumns.has("submission_type")) {
+      delete payload.submission_type;
+    }
+    if (unsupportedTrainingDevColumns.has("program_id")) {
+      delete payload.program_id;
+    }
+    if (unsupportedTrainingDevColumns.has("provider_name")) {
+      delete payload.provider_name;
+    }
+    if (unsupportedTrainingDevColumns.has("review_note")) {
+      delete payload.review_note;
+    }
+    if (unsupportedTrainingDevColumns.has("reviewed_by")) {
+      delete payload.reviewed_by;
+    }
+    if (unsupportedTrainingDevColumns.has("reviewed_at")) {
+      delete payload.reviewed_at;
+    }
+    if (unsupportedTrainingDevColumns.has("status")) {
+      delete payload.status;
+    }
+
     let { error } = await window.supabaseClient
       .from("training_development_entries")
       .upsert(payload, { onConflict: "id" });
@@ -531,42 +563,52 @@
 
       if (/submission_type/i.test(errorText)) {
         delete fallbackPayload.submission_type;
+        unsupportedTrainingDevColumns.add("submission_type");
         shouldRetry = true;
       }
       if (/program_id/i.test(errorText)) {
         delete fallbackPayload.program_id;
+        unsupportedTrainingDevColumns.add("program_id");
         shouldRetry = true;
       }
       if (/provider_name/i.test(errorText)) {
         delete fallbackPayload.provider_name;
+        unsupportedTrainingDevColumns.add("provider_name");
         shouldRetry = true;
       }
       if (/review_note/i.test(errorText)) {
         delete fallbackPayload.review_note;
+        unsupportedTrainingDevColumns.add("review_note");
         shouldRetry = true;
       }
       if (/reviewed_by/i.test(errorText)) {
         delete fallbackPayload.reviewed_by;
+        unsupportedTrainingDevColumns.add("reviewed_by");
         shouldRetry = true;
       }
       if (/reviewed_at/i.test(errorText)) {
         delete fallbackPayload.reviewed_at;
+        unsupportedTrainingDevColumns.add("reviewed_at");
         shouldRetry = true;
       }
       if (/status/i.test(errorText)) {
         delete fallbackPayload.status;
+        unsupportedTrainingDevColumns.add("status");
         shouldRetry = true;
       }
       if (/certificate[_\s]?url/i.test(errorText)) {
         delete fallbackPayload.certificate_url;
+        unsupportedTrainingDevColumns.add("certificate_url");
         shouldRetry = true;
       }
       if (/certificate[_\s]?storage[_\s]?path/i.test(errorText)) {
         delete fallbackPayload.certificate_storage_path;
+        unsupportedTrainingDevColumns.add("certificate_storage_path");
         shouldRetry = true;
       }
       if (/certificate_data_url/i.test(errorText)) {
         delete fallbackPayload.certificate_data_url;
+        unsupportedTrainingDevColumns.add("certificate_data_url");
         shouldRetry = true;
       }
 
