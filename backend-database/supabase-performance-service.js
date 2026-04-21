@@ -1,9 +1,9 @@
-const MANAGER_REVIEW_KEY = "sunstar_manager_reviews";
+const PERFORMANCE_MANAGER_REVIEW_KEY = "sunstar_manager_reviews";
 let managerReviewTableMissingInSession = false;
 
 function getCachedManagerReviews() {
   try {
-    const raw = localStorage.getItem(MANAGER_REVIEW_KEY);
+    const raw = localStorage.getItem(PERFORMANCE_MANAGER_REVIEW_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed : [];
   } catch {
