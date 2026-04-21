@@ -149,12 +149,27 @@
         <div class="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
           <div class="p-6 border-b border-zinc-100 bg-zinc-50/50">
             <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Training & Development Entry</h2>
-            <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Submit one training record with certificate attachment</p>
+            <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Submit training proof for admin verification</p>
           </div>
           <form id="trainingDevForm" class="p-6 space-y-5">
             <div>
+              <label for="submissionType" class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Submission Type</label>
+              <select id="submissionType" class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow focus:ring-2 focus:ring-sun-yellow/20 outline-none">
+                <option value="catalog">Company Training (from admin catalog)</option>
+                <option value="external">External Training / Seminar</option>
+              </select>
+            </div>
+            <div id="catalogTrainingWrap">
+              <label for="catalogTrainingId" class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Catalog Training</label>
+              <select id="catalogTrainingId" class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow focus:ring-2 focus:ring-sun-yellow/20 outline-none"></select>
+            </div>
+            <div>
               <label for="trainingTitle" class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Training Title</label>
               <input id="trainingTitle" type="text" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow focus:ring-2 focus:ring-sun-yellow/20 outline-none">
+            </div>
+            <div id="externalProviderWrap" class="hidden">
+              <label for="providerName" class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Provider / Organizer</label>
+              <input id="providerName" type="text" class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow focus:ring-2 focus:ring-sun-yellow/20 outline-none">
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -468,7 +483,10 @@
           <div class="rounded-xl border border-zinc-200 p-4">
             <p class="text-sm font-bold text-zinc-900">${entry.title}</p>
             <p class="mt-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">${entry.dateFrom} to ${entry.dateTo}</p>
-            <p class="mt-2 text-xs text-zinc-500">Certificate: <span class="font-semibold text-zinc-700">${entry.certificateName}</span></p>
+            <p class="mt-2 text-xs text-zinc-500">Type: <span class="font-semibold text-zinc-700">${entry.submissionType === 'external' ? 'External' : 'Catalog'}</span></p>
+            <p class="mt-1 text-xs text-zinc-500">Certificate: <span class="font-semibold text-zinc-700">${entry.certificateName}</span></p>
+            <p class="mt-1 text-xs text-zinc-500">Status: <span class="font-semibold ${entry.status === 'Approved' ? 'text-emerald-600' : entry.status === 'Declined' ? 'text-red-600' : 'text-amber-600'}">${entry.status || 'Pending'}</span></p>
+            ${entry.reviewNote ? `<p class="mt-1 text-xs text-zinc-500">Admin Note: <span class="font-semibold text-zinc-700">${entry.reviewNote}</span></p>` : ''}
           </div>
         `)
         .join('');
@@ -552,6 +570,53 @@
     document.addEventListener('DOMContentLoaded', () => {
       initPage();
 
+      const submissionTypeInput = document.getElementById('submissionType');
+      const catalogTrainingInput = document.getElementById('catalogTrainingId');
+      const trainingTitleInput = document.getElementById('trainingTitle');
+      const providerInput = document.getElementById('providerName');
+      const catalogWrap = document.getElementById('catalogTrainingWrap');
+      const externalProviderWrap = document.getElementById('externalProviderWrap');
+
+      function populateTrainingCatalog() {
+        const options = getTrainings();
+        if (!Array.isArray(options) || options.length === 0) {
+          catalogTrainingInput.innerHTML = '<option value="">No admin training available</option>';
+          return;
+        }
+
+        catalogTrainingInput.innerHTML = options
+          .slice()
+          .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+          .map(program => `<option value="${program.id}">${program.name || 'Untitled Program'}</option>`)
+          .join('');
+      }
+
+      function syncCatalogTitle() {
+        if (submissionTypeInput.value !== 'catalog') return;
+        const selectedId = catalogTrainingInput.value;
+        const program = getTrainings().find(item => String(item.id) === String(selectedId));
+        trainingTitleInput.value = program ? (program.name || '') : '';
+      }
+
+      function updateFormByType() {
+        const isCatalog = submissionTypeInput.value === 'catalog';
+        catalogWrap.classList.toggle('hidden', !isCatalog);
+        externalProviderWrap.classList.toggle('hidden', isCatalog);
+        catalogTrainingInput.required = isCatalog;
+        providerInput.required = !isCatalog;
+        trainingTitleInput.readOnly = isCatalog;
+        if (isCatalog) {
+          syncCatalogTitle();
+        } else if (!trainingTitleInput.value.trim()) {
+          trainingTitleInput.value = '';
+        }
+      }
+
+      populateTrainingCatalog();
+      submissionTypeInput.addEventListener('change', updateFormByType);
+      catalogTrainingInput.addEventListener('change', syncCatalogTitle);
+      updateFormByType();
+
       document.getElementById('trainingDevForm').addEventListener('submit', async (event) => {
         event.preventDefault();
         if (activeUserId === null) {
@@ -573,14 +638,39 @@
           return;
         }
 
+        const submissionType = submissionTypeInput.value === 'external' ? 'external' : 'catalog';
+        const catalogProgramId = submissionType === 'catalog' ? catalogTrainingInput.value : '';
+        const trainings = getTrainings();
+        const selectedProgram = trainings.find(program => String(program.id) === String(catalogProgramId));
+        const normalizedTitle = submissionType === 'catalog'
+          ? (selectedProgram ? String(selectedProgram.name || '').trim() : '')
+          : String(trainingTitleInput.value || '').trim();
+
+        if (!normalizedTitle) {
+          alert('Please provide a training title.');
+          return;
+        }
+
+        if (submissionType === 'catalog' && !selectedProgram) {
+          alert('Please select a valid catalog training from admin.');
+          return;
+        }
+
         const newEntry = {
           id: Date.now(),
           employeeId: activeUserId,
           employeeName: activeUserName || '',
-          title: document.getElementById('trainingTitle').value.trim(),
+          submissionType,
+          programId: submissionType === 'catalog' ? selectedProgram.id : null,
+          providerName: submissionType === 'external' ? String(providerInput.value || '').trim() : '',
+          title: normalizedTitle,
           dateFrom,
           dateTo,
           certificateName: selectedFile.name,
+          status: 'Pending',
+          reviewNote: '',
+          reviewedBy: '',
+          reviewedAt: '',
           createdAt: new Date().toISOString()
         };
 
@@ -600,6 +690,7 @@
           }
         }
         document.getElementById('trainingDevForm').reset();
+        updateFormByType();
         renderTrainingEntries();
       });
     });

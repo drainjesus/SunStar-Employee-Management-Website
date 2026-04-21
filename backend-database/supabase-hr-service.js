@@ -139,10 +139,17 @@
       id: row.id,
       employeeId: row.employee_id,
       employeeName: row.employee_name || "",
+      submissionType: row.submission_type || "catalog",
+      programId: row.program_id ?? null,
+      providerName: row.provider_name || "",
       title: row.training_title || "",
       dateFrom: row.date_from || "",
       dateTo: row.date_to || "",
       certificateName: row.certificate_name || "",
+      status: row.status || "Pending",
+      reviewNote: row.review_note || "",
+      reviewedBy: row.reviewed_by || "",
+      reviewedAt: row.reviewed_at || "",
       createdAt: row.created_at || "",
       updatedAt: row.updated_at || ""
     };
@@ -154,10 +161,17 @@
       id: entry.id,
       employee_id: Number.isFinite(numericEmployeeId) ? numericEmployeeId : null,
       employee_name: entry.employeeName || null,
+      submission_type: entry.submissionType === "external" ? "external" : "catalog",
+      program_id: entry.programId === null || entry.programId === undefined || entry.programId === "" ? null : Number(entry.programId),
+      provider_name: entry.providerName || null,
       training_title: entry.title || "",
       date_from: safeDateString(entry.dateFrom),
       date_to: safeDateString(entry.dateTo),
       certificate_name: entry.certificateName || "",
+      status: entry.status || "Pending",
+      review_note: entry.reviewNote || null,
+      reviewed_by: entry.reviewedBy || null,
+      reviewed_at: entry.reviewedAt || null,
       created_at: entry.createdAt || null
     };
   }
@@ -499,11 +513,57 @@
     if (!hasClient()) return false;
 
     const payload = mapTrainingDevLocalToDb(entry);
-    const { error } = await window.supabaseClient
+    let { error } = await window.supabaseClient
       .from("training_development_entries")
       .upsert(payload, { onConflict: "id" });
 
     if (error) {
+      const fallbackPayload = { ...payload };
+      const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
+      let shouldRetry = false;
+
+      if (/submission_type/i.test(errorText)) {
+        delete fallbackPayload.submission_type;
+        shouldRetry = true;
+      }
+      if (/program_id/i.test(errorText)) {
+        delete fallbackPayload.program_id;
+        shouldRetry = true;
+      }
+      if (/provider_name/i.test(errorText)) {
+        delete fallbackPayload.provider_name;
+        shouldRetry = true;
+      }
+      if (/review_note/i.test(errorText)) {
+        delete fallbackPayload.review_note;
+        shouldRetry = true;
+      }
+      if (/reviewed_by/i.test(errorText)) {
+        delete fallbackPayload.reviewed_by;
+        shouldRetry = true;
+      }
+      if (/reviewed_at/i.test(errorText)) {
+        delete fallbackPayload.reviewed_at;
+        shouldRetry = true;
+      }
+      if (/status/i.test(errorText)) {
+        delete fallbackPayload.status;
+        shouldRetry = true;
+      }
+
+      if (shouldRetry) {
+        const fallback = await window.supabaseClient
+          .from("training_development_entries")
+          .upsert(fallbackPayload, { onConflict: "id" });
+
+        if (!fallback.error) {
+          clearTrainingDevLastError();
+          return true;
+        }
+
+        error = fallback.error;
+      }
+
       console.error("upsertTrainingDevEntry failed", error);
       setTrainingDevLastError(error);
       return false;

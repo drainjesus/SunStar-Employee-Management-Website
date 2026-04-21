@@ -112,11 +112,23 @@
       </div>
 
       <div class="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
-        
+        <div class="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-zinc-100 bg-zinc-50/50 flex items-center justify-between gap-3">
+            <div>
+              <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Training Catalog</h2>
+              <p class="mt-1 text-[10px] font-black uppercase tracking-widest text-zinc-400">Admin-managed list of company trainings</p>
+            </div>
+            <button onclick="document.getElementById('addTrainingModal').classList.remove('hidden')" class="rounded-md bg-sun-yellow px-4 py-2 text-xs font-black uppercase tracking-wider text-black hover:bg-sun-yellowDark transition">
+              Add Training Program
+            </button>
+          </div>
+          <div id="programsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4"></div>
+        </div>
+
         <div class="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
           <div class="p-4 border-b border-zinc-100 bg-zinc-50/50">
             <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Employee Training & Development Submissions</h2>
-            <p class="mt-1 text-[10px] font-black uppercase tracking-widest text-zinc-400">Merged module view reflecting employee-side entries</p>
+            <p class="mt-1 text-[10px] font-black uppercase tracking-widest text-zinc-400">Validate employee submissions against policy</p>
           </div>
           <div class="overflow-x-auto">
             <div id="entriesSyncError" class="hidden mx-4 mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700"></div>
@@ -124,10 +136,13 @@
               <thead class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-black uppercase tracking-widest text-zinc-500">
                 <tr>
                   <th class="px-6 py-4">Employee</th>
+                  <th class="px-6 py-4">Type</th>
                   <th class="px-6 py-4">Training Title</th>
                   <th class="px-6 py-4">Date From</th>
                   <th class="px-6 py-4">Date To</th>
                   <th class="px-6 py-4">Certificate</th>
+                  <th class="px-6 py-4">Status</th>
+                  <th class="px-6 py-4">Action</th>
                 </tr>
               </thead>
               <tbody id="entriesTableBody" class="divide-y divide-zinc-100">
@@ -327,6 +342,7 @@
       await syncTrainingsFromSupabase();
       await syncTrainingDevEntriesFromSupabase();
       syncEmployeeFields();
+      renderPrograms();
       renderTrainingDevEntries();
       showTrainingDevSyncError();
     });
@@ -656,10 +672,11 @@
       tbody.innerHTML = '';
 
       if (!entries.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-zinc-400 italic">No training entries submitted yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-10 text-center text-zinc-400 italic">No training entries submitted yet.</td></tr>';
         return;
       }
 
+      const trainings = getTrainings();
       entries
         .slice()
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
@@ -668,17 +685,73 @@
           const employeeName = employee
             ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim()
             : (entry.employeeName || 'Unknown Employee');
+          const submissionType = entry.submissionType === 'external' ? 'External' : 'Catalog';
+          const linkedProgram = trainings.find(training => String(training.id) === String(entry.programId));
+          const status = entry.status || 'Pending';
+          const statusClass = status === 'Approved'
+            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+            : status === 'Declined'
+              ? 'bg-red-50 text-red-700 border-red-200'
+              : 'bg-amber-50 text-amber-700 border-amber-200';
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-zinc-50 transition';
           tr.innerHTML = `
             <td class="px-6 py-4 font-medium text-zinc-900">${employeeName}</td>
+            <td class="px-6 py-4 text-zinc-600">${submissionType}</td>
             <td class="px-6 py-4 text-zinc-700">${entry.title || '-'}</td>
             <td class="px-6 py-4 text-zinc-600">${entry.dateFrom || '-'}</td>
             <td class="px-6 py-4 text-zinc-600">${entry.dateTo || '-'}</td>
             <td class="px-6 py-4 text-zinc-600">${entry.certificateName || '-'}</td>
+            <td class="px-6 py-4">
+              <span class="inline-flex rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${statusClass}">
+                ${status}
+              </span>
+              ${entry.reviewNote ? `<p class="mt-2 max-w-xs text-[11px] text-zinc-500">${entry.reviewNote}</p>` : ''}
+              ${linkedProgram ? `<p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Program: ${linkedProgram.name || '-'}</p>` : ''}
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex flex-wrap gap-2">
+                <button onclick="updateTrainingEntryStatus(${entry.id}, 'Approved')" class="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-700 hover:bg-emerald-100 transition">Approve</button>
+                <button onclick="updateTrainingEntryStatus(${entry.id}, 'Declined')" class="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-700 hover:bg-red-100 transition">Decline</button>
+              </div>
+            </td>
           `;
           tbody.appendChild(tr);
         });
+    }
+
+    async function updateTrainingEntryStatus(entryId, nextStatus) {
+      const entries = getTrainingDevEntries();
+      const index = entries.findIndex(entry => String(entry.id) === String(entryId));
+      if (index === -1) return;
+
+      const note = window.prompt(`Optional note for ${nextStatus.toLowerCase()} decision:`, entries[index].reviewNote || '');
+      if (note === null) return;
+
+      entries[index] = {
+        ...entries[index],
+        status: nextStatus,
+        reviewNote: note.trim(),
+        reviewedBy: 'Admin',
+        reviewedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      localStorage.setItem(TRAINING_DEV_KEY, JSON.stringify(entries));
+      renderTrainingDevEntries();
+
+      if (window.HRDataService && typeof window.HRDataService.upsertTrainingDevEntry === 'function') {
+        const ok = await window.HRDataService.upsertTrainingDevEntry(entries[index]);
+        if (!ok) {
+          const detail = typeof window.HRDataService.getTrainingDevLastError === 'function'
+            ? window.HRDataService.getTrainingDevLastError()
+            : '';
+          alert(`Updated locally but failed to sync status to database.${detail ? `\n\n${detail}` : ''}`);
+        } else {
+          await syncTrainingDevEntriesFromSupabase();
+          renderTrainingDevEntries();
+        }
+      }
     }
 
     window.addEventListener('storage', async function(event) {
@@ -687,6 +760,7 @@
       await syncTrainingsFromSupabase();
       await syncTrainingDevEntriesFromSupabase();
       syncEmployeeFields();
+      renderPrograms();
       renderTrainingDevEntries();
       showTrainingDevSyncError();
     });
