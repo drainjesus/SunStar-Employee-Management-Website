@@ -250,6 +250,23 @@
     </div>
   </div>
 
+  <!-- Leave Documents Modal -->
+  <div id="leaveDocumentsModal" class="relative z-50 hidden">
+    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="max-w-3xl w-full rounded-lg border border-zinc-200 bg-white p-6 shadow-xl sm:p-8 max-h-[85vh] overflow-hidden">
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="text-lg font-black uppercase text-zinc-900">Submitted Documents</h3>
+          <button onclick="closeLeaveDocumentsModal()" class="text-zinc-400 transition hover:text-zinc-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <div id="leaveDocumentsList" class="space-y-3 overflow-y-auto max-h-[52vh] pr-1"></div>
+        <button onclick="closeLeaveDocumentsModal()" class="mt-5 w-full rounded-md bg-sun-yellow py-2.5 text-sm font-bold transition hover:bg-sun-yellowDark">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../backend-database/supabase-config.js"></script>
   <script src="../backend-database/supabase-client.js"></script>
@@ -456,10 +473,17 @@
           const remainingCredits = 15 - (l.status === 'Approve' ? l.days : 0);
           const filedDate = formatFiledDate(l.dateFiled, l.createdAt);
           const filedTime = formatFiledTime(l.timeFiled, l.createdAt);
+          const documents = Array.isArray(l.documents) ? l.documents.filter(doc => doc && typeof doc === 'object') : [];
+          const hasDocuments = documents.length > 0;
+          const documentLabel = hasDocuments ? `Document (${documents.length})` : 'Document';
+          const docsButtonClasses = hasDocuments
+            ? 'view-leave-docs-btn rounded px-2 py-1 text-[10px] font-black uppercase tracking-wider text-blue-700 hover:bg-blue-50 hover:text-blue-800 transition cursor-pointer border border-blue-200'
+            : 'rounded px-2 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300 border border-zinc-200 cursor-not-allowed';
           
           const storeKey = `leave_${l.id || index}`;
           window.leaveDetailsStore[storeKey] = {
-            description: l.note || l.description || l.leaveDescription || 'No additional details provided.'
+            description: l.note || l.description || l.leaveDescription || 'No additional details provided.',
+            documents
           };
 
           tr.innerHTML = `
@@ -476,14 +500,14 @@
                </div>
             </td>
             <td class="px-6 py-4">
-               <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black uppercase text-zinc-600 ring-1 ring-inset ring-zinc-200">
-                     ${l.reason || 'Personal'}
-                  </span>
-                  <button type=\"button\" data-store-key=\"${storeKey}\" class=\"view-leave-note-btn text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 rounded px-1.5 py-0.5 text-xs font-bold transition cursor-pointer\" title=\"View details\">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7"/><circle cx="12" cy="12" r="3"/></svg>
-                  </button>
-               </div>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black uppercase text-zinc-600 ring-1 ring-inset ring-zinc-200">
+                  ${l.reason || 'Personal'}
+                </span>
+                <button type=\"button\" data-store-key=\"${storeKey}\" class=\"view-leave-note-btn text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 rounded px-1.5 py-0.5 text-xs font-bold transition cursor-pointer\" title=\"View details\">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
             </td>
             <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${formatReadableDate(l.dateFrom)}</td>
             <td class="px-6 py-4 text-zinc-900 font-bold text-xs">${formatReadableDate(l.dateTo)}</td>
@@ -491,9 +515,7 @@
               <span class="font-black text-zinc-900 text-xs">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</span>
             </td>
             <td class="px-6 py-4">
-              ${Array.isArray(l.documents) && l.documents.length > 0 
-                ? `<button class="text-[10px] font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded hover:bg-blue-100 transition">${l.documents.length} file(s)</button>` 
-                : `<span class="text-[9px] text-zinc-400">No docs</span>`}
+              <button type=\"button\" data-store-key=\"${storeKey}\" class=\"${docsButtonClasses}\" ${hasDocuments ? '' : 'disabled'}>${documentLabel}</button>
             </td>
             <td class="px-6 py-4">${statusBadge}</td>
             <td class="px-6 py-4 text-right">
@@ -532,8 +554,99 @@
         document.getElementById('leaveNoteModal').classList.remove('hidden');
       };
 
+      function closeLeaveDocumentsModal() {
+        document.getElementById('leaveDocumentsModal').classList.add('hidden');
+      }
+
+      window.closeLeaveDocumentsModal = closeLeaveDocumentsModal;
+
+      function formatDocumentSize(bytes) {
+        const numeric = Number(bytes || 0);
+        if (!Number.isFinite(numeric) || numeric <= 0) return '';
+        if (numeric >= 1024 * 1024) return `${(numeric / (1024 * 1024)).toFixed(2)} MB`;
+        return `${Math.max(1, Math.round(numeric / 1024))} KB`;
+      }
+
+      function getDocumentUrl(doc) {
+        return String(doc && (doc.dataUrl || doc.url || doc.fileUrl) || '').trim();
+      }
+
+      window.showLeaveDocuments = function(storeKey) {
+        const details = window.leaveDetailsStore[storeKey];
+        if (!details) {
+          console.error('Leave documents not found for key:', storeKey);
+          return;
+        }
+
+        const container = document.getElementById('leaveDocumentsList');
+        container.innerHTML = '';
+
+        const documents = Array.isArray(details.documents) ? details.documents : [];
+        if (documents.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-4 text-sm font-medium text-zinc-500';
+          empty.textContent = 'No documents were submitted for this leave request.';
+          container.appendChild(empty);
+        } else {
+          documents.forEach((doc, index) => {
+            const row = document.createElement('div');
+            row.className = 'rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3';
+
+            const top = document.createElement('div');
+            top.className = 'flex flex-wrap items-center justify-between gap-3';
+
+            const meta = document.createElement('div');
+            meta.className = 'min-w-0';
+
+            const name = document.createElement('p');
+            name.className = 'truncate text-sm font-bold text-zinc-900';
+            name.textContent = doc.name || `Document ${index + 1}`;
+
+            const size = document.createElement('p');
+            size.className = 'mt-1 text-[10px] font-black uppercase tracking-wider text-zinc-400';
+            const sizeText = formatDocumentSize(doc.size);
+            size.textContent = sizeText || 'Submitted file';
+
+            meta.appendChild(name);
+            meta.appendChild(size);
+
+            const href = getDocumentUrl(doc);
+            if (href) {
+              const view = document.createElement('a');
+              view.className = 'inline-flex items-center rounded-md border border-blue-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wider text-blue-700 hover:bg-blue-50';
+              view.href = href;
+              view.target = '_blank';
+              view.rel = 'noopener noreferrer';
+              view.textContent = 'View File';
+              top.appendChild(meta);
+              top.appendChild(view);
+            } else {
+              const unavailable = document.createElement('span');
+              unavailable.className = 'inline-flex items-center rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wider text-zinc-400';
+              unavailable.textContent = 'Unavailable';
+              top.appendChild(meta);
+              top.appendChild(unavailable);
+            }
+
+            row.appendChild(top);
+            container.appendChild(row);
+          });
+        }
+
+        document.getElementById('leaveDocumentsModal').classList.remove('hidden');
+      };
+
       // Delegated click handler for view leave note buttons
       tbody.addEventListener('click', function(event) {
+        const docsBtn = event.target.closest('.view-leave-docs-btn');
+        if (docsBtn) {
+          const storeKey = docsBtn.getAttribute('data-store-key');
+          if (storeKey) {
+            window.showLeaveDocuments(storeKey);
+          }
+          return;
+        }
+
         const btn = event.target.closest('.view-leave-note-btn');
         if (!btn) return;
         const storeKey = btn.getAttribute('data-store-key');

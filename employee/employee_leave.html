@@ -190,7 +190,7 @@
                  <span class="h-2 w-8 bg-sun-yellow rounded-full"></span>
                  Request History
               </h2>
-              <button onclick="document.getElementById('fileLeaveModal').classList.remove('hidden')" class="bg-sun-yellow text-zinc-900 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-sun-yellowLight transition-all active:scale-[0.98] shadow-lg shadow-sun-yellow/10 flex items-center gap-2 border border-sun-yellowDark">
+              <button onclick="openLeaveModal()" class="bg-sun-yellow text-zinc-900 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-sun-yellowLight transition-all active:scale-[0.98] shadow-lg shadow-sun-yellow/10 flex items-center gap-2 border border-sun-yellowDark">
                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                  Apply for Leave
               </button>
@@ -228,15 +228,15 @@
   <!-- Apply for Leave Modal -->
   <div id="fileLeaveModal" class="relative z-50 hidden">
     <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md transition-all"></div>
-    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-      <div class="relative max-w-xl w-full rounded-3xl bg-white p-8 shadow-2xl border border-zinc-200 overflow-hidden animate-modal-in">
-        <header class="mb-8">
+    <div class="fixed inset-0 z-10 flex items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6">
+      <div class="relative max-w-xl w-full rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 max-h-[92vh] overflow-y-auto animate-modal-in sm:p-8">
+        <header class="mb-6">
           <h3 class="text-2xl font-black text-zinc-900 uppercase tracking-tighter">Submit Leave Request</h3>
           <p class="text-[10px] text-zinc-400 font-black uppercase tracking-[0.2em] mt-1">Ensure all details are accurate for HR approval</p>
         </header>
 
-        <form id="leaveForm" class="space-y-6" onsubmit="submitForm(event)">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form id="leaveForm" class="space-y-5" onsubmit="submitForm(event)">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div>
                 <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Type of Leave</label>
                 <select id="reason" required class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 focus:border-sun-yellow focus:ring-0 focus:outline-none transition">
@@ -262,9 +262,12 @@
                 <input type="number" id="days" value="1" min="1" readonly class="w-full bg-zinc-100 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-500 cursor-not-allowed">
                 <p class="text-[9px] text-zinc-400 mt-1">Automatically calculated from Date From and Date To</p>
              </div>
-             <div>
+             <div class="md:col-span-2">
                 <label class="block text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1.5 ml-1">Date Filed</label>
-                <input type="text" id="dateFiled" readonly class="w-full bg-zinc-100 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-500 cursor-not-allowed">
+               <div class="w-full rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3">
+                <p id="dateFiledDisplay" class="text-sm font-bold text-zinc-700">--</p>
+                <p class="mt-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">Automatically recorded on submit</p>
+               </div>
              </div>
           </div>
           
@@ -284,9 +287,9 @@
              <textarea id="note" required rows="4" placeholder="Briefly explain your reason for leave..." class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 focus:border-sun-yellow outline-none transition resize-none"></textarea>
           </div>
 
-          <div class="flex gap-4 pt-4 border-t border-zinc-100">
+           <div class="flex flex-col-reverse gap-3 border-t border-zinc-100 pt-4 sm:flex-row sm:gap-4">
               <button type="submit" class="flex-1 bg-sun-yellow py-4 text-sm font-bold text-zinc-900 rounded-2xl border border-sun-yellowDark hover:bg-sun-yellowLight transition-all active:scale-[0.98] shadow-lg">Submit Request</button>
-              <button type="button" onclick="document.getElementById('fileLeaveModal').classList.add('hidden')" class="flex-1 bg-white border border-zinc-200 py-4 text-sm font-bold text-zinc-400 rounded-2xl hover:bg-zinc-50 transition-all">Cancel</button>
+              <button type="button" onclick="closeLeaveModal()" class="flex-1 bg-white border border-zinc-200 py-4 text-sm font-bold text-zinc-400 rounded-2xl hover:bg-zinc-50 transition-all">Cancel</button>
           </div>
         </form>
       </div>
@@ -393,6 +396,8 @@
     const EMPLOYEE_KEY = 'sunstar_employees';
     const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
     const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
+    const MAX_LEAVE_DOCUMENTS = 3;
+    const MAX_LEAVE_DOCUMENT_SIZE_BYTES = 5 * 1024 * 1024;
 
     let activeUser = null;
 
@@ -478,18 +483,222 @@
 
     function initPage() {
       resolveActiveUser();
-      const filedNow = getNowFiledValues();
-      document.getElementById('dateFiled').value = filedNow.dateDisplay;
+      updateFiledDatePreview();
+      renderUploadedDocumentsList();
       renderHistory();
       updateBalanceCards();
     }
 
     function getNowFiledValues() {
       const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+
       return {
+        createdAt: now.toISOString(),
+        dateIso: `${year}-${month}-${day}`,
+        timeValue: `${hours}:${minutes}:${seconds}`,
         dateDisplay: now.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }),
         timeDisplay: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })
       };
+    }
+
+    function updateFiledDatePreview() {
+      const filedNow = getNowFiledValues();
+      const display = document.getElementById('dateFiledDisplay');
+      if (display) {
+        display.textContent = `${filedNow.dateDisplay} at ${filedNow.timeDisplay}`;
+      }
+    }
+
+    function openLeaveModal() {
+      updateFiledDatePreview();
+      renderUploadedDocumentsList();
+      document.getElementById('fileLeaveModal').classList.remove('hidden');
+    }
+
+    function closeLeaveModal() {
+      document.getElementById('fileLeaveModal').classList.add('hidden');
+    }
+
+    function formatFileSize(bytes) {
+      const numeric = Number(bytes || 0);
+      if (!Number.isFinite(numeric) || numeric <= 0) return '0 KB';
+
+      if (numeric >= 1024 * 1024) {
+        return `${(numeric / (1024 * 1024)).toFixed(2)} MB`;
+      }
+
+      return `${Math.max(1, Math.round(numeric / 1024))} KB`;
+    }
+
+    function renderUploadedDocumentsList() {
+      const docsList = document.getElementById('docsList');
+      if (!docsList) return;
+
+      docsList.innerHTML = '';
+
+      if (!Array.isArray(uploadedDocuments) || uploadedDocuments.length === 0) {
+        return;
+      }
+
+      uploadedDocuments.forEach((doc, idx) => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 p-3';
+        fileItem.innerHTML = `
+          <div class="flex items-center gap-2 min-w-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-500 shrink-0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div class="min-w-0">
+              <p class="truncate text-[10px] font-bold text-zinc-900">${doc.name}</p>
+              <p class="text-[9px] text-zinc-400">${formatFileSize(doc.size)}</p>
+            </div>
+          </div>
+          <button type="button" onclick="removeDocument(${idx})" class="text-xs font-bold text-red-500 transition hover:text-red-700">Remove</button>
+        `;
+        docsList.appendChild(fileItem);
+      });
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new Error('Unable to read selected file.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function collectLeaveDocuments() {
+      const files = Array.isArray(uploadedDocuments) ? uploadedDocuments : [];
+
+      if (files.length > MAX_LEAVE_DOCUMENTS) {
+        alert(`You can upload up to ${MAX_LEAVE_DOCUMENTS} supporting documents only.`);
+        return null;
+      }
+
+      const documents = [];
+      for (const item of files) {
+        if (Number(item.size || 0) > MAX_LEAVE_DOCUMENT_SIZE_BYTES) {
+          alert(`"${item.name}" exceeds the 5 MB limit.`);
+          return null;
+        }
+
+        const rawFile = item.file;
+        if (!rawFile) {
+          continue;
+        }
+
+        const dataUrl = await readFileAsDataUrl(rawFile);
+        documents.push({
+          name: item.name,
+          mimeType: item.type || '',
+          size: Number(item.size || 0),
+          dataUrl,
+          uploadedAt: new Date().toISOString()
+        });
+      }
+
+      return documents;
+    }
+
+    function parseDateInput(value) {
+      if (!value) return null;
+      const raw = String(value).trim();
+      if (!raw || raw === '---') return null;
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+        const [year, month, day] = raw.split('-').map(Number);
+        return new Date(year, month - 1, day);
+      }
+
+      const parsed = new Date(raw);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return parsed;
+    }
+
+    function parseTimeInput(value) {
+      if (!value) return null;
+      const raw = String(value).trim();
+      if (!raw) return null;
+
+      const match24 = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+      if (!match24) return null;
+
+      const hours = Number(match24[1]);
+      const minutes = Number(match24[2]);
+      const seconds = Number(match24[3] || 0);
+
+      if (
+        Number.isNaN(hours) || Number.isNaN(minutes) || Number.isNaN(seconds) ||
+        hours < 0 || hours > 23 ||
+        minutes < 0 || minutes > 59 ||
+        seconds < 0 || seconds > 59
+      ) {
+        return null;
+      }
+
+      return { hours, minutes, seconds };
+    }
+
+    function formatFiledDate(dateStr, createdAt) {
+      if (createdAt) {
+        const createdDate = new Date(createdAt);
+        if (!Number.isNaN(createdDate.getTime())) {
+          return createdDate.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+        }
+      }
+
+      const parsedDate = parseDateInput(dateStr);
+      if (!parsedDate) return '---';
+      return parsedDate.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+    }
+
+    function formatFiledTime(timeStr, createdAt) {
+      if (createdAt) {
+        const createdDate = new Date(createdAt);
+        if (!Number.isNaN(createdDate.getTime())) {
+          return createdDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        }
+      }
+
+      const parsedTime = parseTimeInput(timeStr);
+      if (!parsedTime) return '--:--';
+
+      const sample = new Date(2000, 0, 1, parsedTime.hours, parsedTime.minutes, parsedTime.seconds, 0);
+      return sample.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    }
+
+    function getFiledSortValue(leave) {
+      if (leave.createdAt) {
+        const createdDate = new Date(leave.createdAt);
+        if (!Number.isNaN(createdDate.getTime())) {
+          return createdDate.getTime();
+        }
+      }
+
+      const datePart = parseDateInput(leave.dateFiled);
+      if (!datePart) return 0;
+      datePart.setHours(0, 0, 0, 0);
+
+      const timePart = parseTimeInput(leave.timeFiled);
+      if (!timePart) return datePart.getTime();
+
+      return datePart.getTime() + (((timePart.hours * 60 + timePart.minutes) * 60) + timePart.seconds) * 1000;
+    }
+
+    function resetLeaveFormUi() {
+      document.getElementById('leaveForm').reset();
+      uploadedDocuments = [];
+      const docsInput = document.getElementById('docsInput');
+      if (docsInput) {
+        docsInput.value = '';
+      }
+      updateFiledDatePreview();
+      renderUploadedDocumentsList();
     }
 
     function updateBalanceCards() {
@@ -508,7 +717,7 @@
 
       tbody.innerHTML = '';
       const myLeaves = leaves.filter(isMyLeave);
-      myLeaves.sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled));
+      myLeaves.sort((a, b) => getFiledSortValue(b) - getFiledSortValue(a));
 
       if (myLeaves.length === 0) {
         noData.classList.remove('hidden');
@@ -520,6 +729,8 @@
       myLeaves.forEach(l => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-zinc-50/50 transition';
+        const filedDate = formatFiledDate(l.dateFiled, l.createdAt);
+        const filedTime = formatFiledTime(l.timeFiled, l.createdAt);
 
         let statusClasses = 'inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset';
         if (l.status === 'Pending') {
@@ -536,7 +747,8 @@
 
         tr.innerHTML = `
              <td class="px-8 py-5 border-r border-zinc-50">
-                <p class="font-bold text-zinc-900 text-xs">${l.dateFiled || '--'}</p>
+               <p class="font-bold text-zinc-900 text-xs">${filedDate}</p>
+               <p class="mt-1 text-[9px] font-black uppercase tracking-widest text-zinc-400">${filedTime}</p>
              </td>
              <td class="px-8 py-5 border-r border-zinc-50">
                 <p class="font-bold text-xs text-zinc-700">${formatReadable(l.dateFrom)}</p>
@@ -595,16 +807,19 @@
 
     function handleDocumentUpload(event) {
       const files = event.target.files;
-      const docsList = document.getElementById('docsList');
-      
       uploadedDocuments = [];
-      docsList.innerHTML = '';
 
       if (files.length === 0) return;
 
-      Array.from(files).forEach((file, index) => {
+      if (files.length > MAX_LEAVE_DOCUMENTS) {
+        alert(`You can upload up to ${MAX_LEAVE_DOCUMENTS} supporting documents only.`);
+        event.target.value = '';
+        return;
+      }
+
+      Array.from(files).forEach((file) => {
         // Check file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
+        if (file.size > MAX_LEAVE_DOCUMENT_SIZE_BYTES) {
           alert(`File "${file.name}" exceeds 5MB limit`);
           return;
         }
@@ -615,42 +830,14 @@
           type: file.type,
           file: file
         });
-
-        const fileItem = document.createElement('div');
-        fileItem.className = 'flex items-center justify-between p-3 bg-zinc-50 rounded-lg border border-zinc-200';
-        fileItem.innerHTML = `
-          <div class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <div>
-              <p class="text-[10px] font-bold text-zinc-900">${file.name}</p>
-              <p class="text-[9px] text-zinc-400">${(file.size / 1024).toFixed(2)} KB</p>
-            </div>
-          </div>
-          <button type="button" onclick="removeDocument(${index})" class="text-red-500 hover:text-red-700 transition text-xs font-bold">Remove</button>
-        `;
-        docsList.appendChild(fileItem);
       });
+
+      renderUploadedDocumentsList();
     }
 
     function removeDocument(index) {
       uploadedDocuments.splice(index, 1);
-      const docsList = document.getElementById('docsList');
-      docsList.innerHTML = '';
-      uploadedDocuments.forEach((doc, idx) => {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'flex items-center justify-between p-3 bg-zinc-50 rounded-lg border border-zinc-200';
-        fileItem.innerHTML = `
-          <div class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <div>
-              <p class="text-[10px] font-bold text-zinc-900">${doc.name}</p>
-              <p class="text-[9px] text-zinc-400">${(doc.size / 1024).toFixed(2)} KB</p>
-            </div>
-          </div>
-          <button type="button" onclick="removeDocument(${idx})" class="text-red-500 hover:text-red-700 transition text-xs font-bold">Remove</button>
-        `;
-        docsList.appendChild(fileItem);
-      });
+      renderUploadedDocumentsList();
     }
 
      async function submitForm(e) {
@@ -667,7 +854,11 @@
        const dateTo = document.getElementById('dateTo').value;
        const days = document.getElementById('days').value;
        const note = document.getElementById('note').value;
-      const filedNow = getNowFiledValues();
+       const filedNow = getNowFiledValues();
+       const documents = await collectLeaveDocuments();
+       if (documents === null) {
+         return;
+       }
 
        let leaves = getLeaves();
        
@@ -675,16 +866,17 @@
           id: Date.now(),
          empId: activeUser.id,
          name: getActiveUserName(),
-         dateFiled: filedNow.dateDisplay,
-         timeFiled: filedNow.timeDisplay,
+         dateFiled: filedNow.dateIso,
+         timeFiled: filedNow.timeValue,
+         createdAt: filedNow.createdAt,
           dateOfLeave: dateLeave,
           dateFrom: dateFrom,
           dateTo: dateTo,
           reason: reason,
           note: note,
           days: parseInt(days),
-          documents: uploadedDocuments.map(doc => ({ name: doc.name, size: doc.size, type: doc.type })),
-          status: 'Pending'
+          status: 'Pending',
+          documents
        };
 
        leaves.push(newRequest);
@@ -693,10 +885,8 @@
          await window.HRDataService.upsertLeave(newRequest);
        }
 
-       uploadedDocuments = [];
-       document.getElementById('fileLeaveModal').classList.add('hidden');
-       document.getElementById('leaveForm').reset();
-       document.getElementById('docsList').innerHTML = '';
+       closeLeaveModal();
+       resetLeaveFormUi();
        initPage();
        setTimeout(() => {
           document.getElementById('successModal').classList.remove('hidden');

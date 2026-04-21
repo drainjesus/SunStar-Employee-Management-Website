@@ -1,6 +1,7 @@
 (function () {
   const TRAINING_KEY = "sunstar_trainings";
   const LEAVE_KEY = "sunstar_leaves";
+  const LEAVE_ATTACHMENT_TABLE = "leave_attachments";
   const ATTENDANCE_KEY = "sunstar_attendance";
   const DEFAULT_SHIFT_SCHEDULE = "Newsroom Day Shift (08:00 AM - 05:00 PM)";
   const ATTENDANCE_EXTENDED_COLUMNS = [
@@ -40,6 +41,57 @@
     return `${year}-${month}-${day}`;
   }
 
+  function normalizeLeaveDocuments(documents) {
+    if (!Array.isArray(documents)) return [];
+
+    return documents
+      .map((doc, index) => {
+        if (!doc || typeof doc !== "object") return null;
+
+        const dataUrl = String(doc.dataUrl || doc.url || doc.fileUrl || "").trim();
+        if (!dataUrl) return null;
+
+        return {
+          name: String(doc.name || `Document ${index + 1}`),
+          mimeType: String(doc.mimeType || ""),
+          size: Number(doc.size || 0),
+          dataUrl,
+          uploadedAt: doc.uploadedAt || null
+        };
+      })
+      .filter(Boolean);
+  }
+
+  function mapLeaveAttachmentDbToLocal(row) {
+    const dataUrl = String(row.file_url || "").trim();
+    if (!dataUrl) return null;
+
+    return {
+      name: String(row.file_name || "Document"),
+      dataUrl,
+      uploadedAt: row.uploaded_at || ""
+    };
+  }
+
+  function buildLeaveAttachmentPayloads(leaveId, documents) {
+    const numericLeaveId = Number(leaveId);
+    if (!Number.isFinite(numericLeaveId)) return [];
+
+    return normalizeLeaveDocuments(documents).map((doc) => ({
+      leave_request_id: numericLeaveId,
+      file_url: doc.dataUrl,
+      file_name: doc.name || "Document"
+    }));
+  }
+
+  function isLeaveAttachmentTableMissing(error) {
+    const message = [error && error.message, error && error.details, error && error.hint]
+      .filter(Boolean)
+      .join(" ");
+
+    return /leave_attachments/i.test(message);
+  }
+
   function mapTrainingDbToLocal(row) {
     return {
       id: row.id,
@@ -65,7 +117,6 @@
       enrollees: Array.isArray(training.enrollees) ? training.enrollees : []
     };
   }
-
   function mapLeaveLocalToDb(leave) {
     return {
       id: leave.id,
@@ -249,7 +300,50 @@
       return null;
     }
 
-    return (data || []).map(mapLeaveDbToLocal);
+    const leaves = (data || []).map(mapLeaveDbToLocal);
+    const leaveIds = leaves
+      .map((leave) => Number(leave.id))
+      .filter((id) => Number.isFinite(id));
+
+    if (leaveIds.length === 0) {
+      return leaves;
+    }
+
+    const { data: attachmentRows, error: attachmentError } = await window.supabaseClient
+      .from(LEAVE_ATTACHMENT_TABLE)
+      .select("leave_request_id,file_url,file_name,uploaded_at")
+      .in("leave_request_id", leaveIds);
+
+    if (attachmentError) {
+      if (!isLeaveAttachmentTableMissing(attachmentError)) {
+        console.error("fetchLeaves attachments failed", attachmentError);
+      }
+      return leaves;
+    }
+
+    const attachmentMap = new Map();
+    (attachmentRows || []).forEach((row) => {
+      const doc = mapLeaveAttachmentDbToLocal(row);
+      if (!doc) return;
+
+      const key = String(row.leave_request_id);
+      if (!attachmentMap.has(key)) {
+        attachmentMap.set(key, []);
+      }
+      attachmentMap.get(key).push(doc);
+    });
+
+    return leaves.map((leave) => {
+      const fromAttachmentTable = attachmentMap.get(String(leave.id));
+      const fromLeaveRow = normalizeLeaveDocuments(leave.documents);
+
+      return {
+        ...leave,
+        documents: Array.isArray(fromAttachmentTable) && fromAttachmentTable.length > 0
+          ? fromAttachmentTable
+          : fromLeaveRow
+      };
+    });
   }
 
   async function upsertLeave(leave) {
@@ -263,6 +357,33 @@
     if (error) {
       console.error("upsertLeave failed", error);
       return false;
+    }
+
+    if (Array.isArray(leave.documents)) {
+      const leaveId = Number(leave.id);
+      if (Number.isFinite(leaveId)) {
+        const { error: deleteError } = await window.supabaseClient
+          .from(LEAVE_ATTACHMENT_TABLE)
+          .delete()
+          .eq("leave_request_id", leaveId);
+
+        if (deleteError && !isLeaveAttachmentTableMissing(deleteError)) {
+          console.error("upsertLeave attachments delete failed", deleteError);
+          return false;
+        }
+
+        const attachmentPayloads = buildLeaveAttachmentPayloads(leaveId, leave.documents);
+        if (attachmentPayloads.length > 0) {
+          const { error: insertError } = await window.supabaseClient
+            .from(LEAVE_ATTACHMENT_TABLE)
+            .insert(attachmentPayloads);
+
+          if (insertError && !isLeaveAttachmentTableMissing(insertError)) {
+            console.error("upsertLeave attachments insert failed", insertError);
+            return false;
+          }
+        }
+      }
     }
 
     return true;
