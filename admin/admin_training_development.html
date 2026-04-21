@@ -665,7 +665,9 @@
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
         .forEach(entry => {
           const employee = employees.find(emp => String(emp.id) === String(entry.employeeId));
-          const employeeName = employee ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim() : 'Unknown Employee';
+          const employeeName = employee
+            ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim()
+            : (entry.employeeName || 'Unknown Employee');
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-zinc-50 transition';
           tr.innerHTML = `

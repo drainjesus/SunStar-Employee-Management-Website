@@ -138,6 +138,7 @@
     return {
       id: row.id,
       employeeId: row.employee_id,
+      employeeName: row.employee_name || "",
       title: row.training_title || "",
       dateFrom: row.date_from || "",
       dateTo: row.date_to || "",
@@ -148,9 +149,11 @@
   }
 
   function mapTrainingDevLocalToDb(entry) {
+    const numericEmployeeId = Number(entry.employeeId);
     return {
       id: entry.id,
-      employee_id: Number(entry.employeeId),
+      employee_id: Number.isFinite(numericEmployeeId) ? numericEmployeeId : null,
+      employee_name: entry.employeeName || null,
       training_title: entry.title || "",
       date_from: safeDateString(entry.dateFrom),
       date_to: safeDateString(entry.dateTo),

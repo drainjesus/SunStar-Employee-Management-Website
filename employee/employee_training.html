@@ -576,6 +576,7 @@
         const newEntry = {
           id: Date.now(),
           employeeId: activeUserId,
+          employeeName: activeUserName || '',
           title: document.getElementById('trainingTitle').value.trim(),
           dateFrom,
           dateTo,
@@ -586,12 +587,6 @@
         const entries = getTrainingDevEntries();
         entries.push(newEntry);
         setTrainingDevEntries(entries);
-
-        // Ensure employee exists remotely before saving FK-linked training entry.
-        const activeEmployee = getActiveEmployee();
-        if (activeEmployee && window.EmployeeDataService && typeof window.EmployeeDataService.upsertEmployee === 'function') {
-          await window.EmployeeDataService.upsertEmployee(activeEmployee);
-        }
 
         if (window.HRDataService && typeof window.HRDataService.upsertTrainingDevEntry === 'function') {
           const ok = await window.HRDataService.upsertTrainingDevEntry(newEntry);
