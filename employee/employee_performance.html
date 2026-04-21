@@ -210,36 +210,7 @@
                  <h4 class="text-sm font-semibold uppercase tracking-widest text-zinc-800">Review Breakdown</h4>
               </div>
               <div class="p-8 space-y-8 flex-1">
-                 <!-- Metric 1 -->
-                 <div>
-                    <div class="flex justify-between items-center mb-2">
-                       <span class="text-xs font-semibold uppercase text-zinc-400 tracking-widest">Quality of Output</span>
-                       <span class="text-sm font-black" id="breakdownWork">--</span>
-                    </div>
-                    <div class="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                       <div id="barWork" class="h-full bg-sun-yellow transition-all duration-1000" style="width: 0%"></div>
-                    </div>
-                 </div>
-                 <!-- Metric 2 -->
-                 <div>
-                    <div class="flex justify-between items-center mb-2">
-                       <span class="text-xs font-semibold uppercase text-zinc-400 tracking-widest">Collaboration</span>
-                       <span class="text-sm font-black" id="breakdownTeam">--</span>
-                    </div>
-                    <div class="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                       <div id="barTeam" class="h-full bg-sun-yellow transition-all duration-1000" style="width: 0%"></div>
-                    </div>
-                 </div>
-                 <!-- Metric 3 -->
-                 <div>
-                    <div class="flex justify-between items-center mb-2">
-                       <span class="text-xs font-semibold uppercase text-zinc-400 tracking-widest">Punctuality</span>
-                       <span class="text-sm font-black" id="breakdownTime">--</span>
-                    </div>
-                    <div class="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                       <div id="barTime" class="h-full bg-sun-yellow transition-all duration-1000" style="width: 0%"></div>
-                    </div>
-                 </div>
+                 <div id="dynamicBreakdownList" class="space-y-8"></div>
 
                  <div class="mt-12 bg-zinc-50 rounded-2xl p-6 border border-dashed border-zinc-200">
                     <p class="text-[10px] font-semibold uppercase text-zinc-400 mb-3 tracking-widest">Manager's General Note</p>
@@ -372,8 +343,14 @@
       const EMPLOYEE_KEY = 'sunstar_employees';
       const PERFORMANCE_KEY = 'sunstar_performances';
       const PEER_REVIEW_KEY = 'sunstar_peer_reviews';
+      const APPRAISAL_TEMPLATE_KEY = 'sunstar_performance_appraisal_template';
       const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
       const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
+      const DEFAULT_APPRAISAL_TEMPLATE = [
+         { key: 'work', criterion: 'Quality of Work', question: 'Rate the accuracy, completeness, and value of the output.' },
+         { key: 'team', criterion: 'Teamwork & Collaboration', question: 'Rate their ability to communicate and work respectfully with peers.' },
+         { key: 'time', criterion: 'Punctuality', question: 'Rate their attendance and deadline reliability.' }
+      ];
 
       let activeUserId = null;
       let activeUserName = '';
@@ -404,6 +381,26 @@
 
       function setPeerReviews(reviews) {
          localStorage.setItem(PEER_REVIEW_KEY, JSON.stringify(reviews));
+      }
+
+      function getAppraisalTemplate() {
+         const parsed = safeParse(localStorage.getItem(APPRAISAL_TEMPLATE_KEY), null);
+         if (!Array.isArray(parsed) || !parsed.length) return DEFAULT_APPRAISAL_TEMPLATE;
+         return parsed.map((item, index) => ({
+            key: item && item.key ? item.key : `criterion_${index + 1}`,
+            criterion: item && item.criterion ? item.criterion : `Criterion ${index + 1}`,
+            question: item && item.question ? item.question : 'Rate this criterion.'
+         }));
+      }
+
+      function normalizeBreakdown(breakdownRaw) {
+         if (!breakdownRaw || typeof breakdownRaw !== 'object') return {};
+         const breakdown = { ...breakdownRaw };
+         // Backward compatibility with earlier fixed keys.
+         if (breakdown.work !== undefined && breakdown.Quality_of_Work_1 === undefined) breakdown.Quality_of_Work_1 = breakdown.work;
+         if (breakdown.team !== undefined && breakdown.Teamwork_Collaboration_2 === undefined) breakdown.Teamwork_Collaboration_2 = breakdown.team;
+         if (breakdown.time !== undefined && breakdown.Punctuality_3 === undefined) breakdown.Punctuality_3 = breakdown.time;
+         return breakdown;
       }
 
       function redirectToLogin() {
@@ -491,17 +488,42 @@
          return myRecord || null;
       }
 
+      function renderBreakdownList(template, breakdown, fallbackScore) {
+         const list = document.getElementById('dynamicBreakdownList');
+         if (!list) return;
+         list.innerHTML = '';
+
+         template.forEach((item, index) => {
+            const rawValue = Number(breakdown[item.key]);
+            const score = Number.isFinite(rawValue) && rawValue > 0
+               ? rawValue
+               : (Number.isFinite(fallbackScore) && fallbackScore > 0 ? fallbackScore : 0);
+            const pct = Math.min(100, Math.max(0, score * 20));
+
+            const row = document.createElement('div');
+            row.innerHTML = `
+               <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs font-semibold uppercase text-zinc-400 tracking-widest">${item.criterion}</span>
+                  <span class="text-sm font-black">${score > 0 ? `${score.toFixed(1)} / 5.0` : '--'}</span>
+               </div>
+               <div class="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-sun-yellow transition-all duration-1000" style="width: ${pct}%"></div>
+               </div>
+            `;
+            list.appendChild(row);
+         });
+      }
+
       function renderMyPerformance() {
          const records = getPerformances();
          const myRecord = findMyPerformanceRecord(records);
+         const template = getAppraisalTemplate();
 
          document.getElementById('displayManagerRating').textContent = '--';
          document.getElementById('ratingStatus').textContent = 'Awaiting Review';
          document.getElementById('ratingStatus').className = 'text-xs text-sun-yellow font-bold mt-2 uppercase tracking-widest italic';
          document.getElementById('managerComment').textContent = 'Your appraisal is currently pending manager review.';
-         updateProgressBar('Work', 0);
-         updateProgressBar('Team', 0);
-         updateProgressBar('Time', 0);
+         renderBreakdownList(template, {}, 0);
 
          if (myRecord) {
             const parsedScore = Number(myRecord.managerRating);
@@ -512,15 +534,7 @@
                document.getElementById('ratingStatus').textContent = statusDisplay;
                document.getElementById('ratingStatus').className = 'text-xs text-green-400 font-bold mt-2 uppercase tracking-widest italic';
 
-               if (myRecord.breakdown) {
-                  updateProgressBar('Work', Number(myRecord.breakdown.work) * 20);
-                  updateProgressBar('Team', Number(myRecord.breakdown.team) * 20);
-                  updateProgressBar('Time', Number(myRecord.breakdown.time) * 20);
-               } else {
-                  updateProgressBar('Work', parsedScore * 20);
-                  updateProgressBar('Team', (parsedScore * 20) - 5);
-                  updateProgressBar('Time', (parsedScore * 20) + 3);
-               }
+               renderBreakdownList(template, normalizeBreakdown(myRecord.breakdown), parsedScore);
 
                document.getElementById('managerComment').textContent = myRecord.comments || 'No manager comment provided yet.';
             }
@@ -535,12 +549,6 @@
             selfBadge.textContent = 'Not Started';
             selfBadge.className = 'text-[10px] font-black uppercase px-2 py-1 bg-zinc-100 text-zinc-400 rounded';
          }
-      }
-
-      function updateProgressBar(id, value) {
-         const clamped = Math.min(100, Math.max(0, Number(value) || 0));
-         document.getElementById(`breakdown${id}`).textContent = `${(clamped / 20).toFixed(1)} / 5.0`;
-         document.getElementById(`bar${id}`).style.width = `${clamped}%`;
       }
 
       function populatePeerSelect() {
