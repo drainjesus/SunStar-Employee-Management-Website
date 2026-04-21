@@ -1,3 +1,23 @@
+const MANAGER_REVIEW_KEY = "sunstar_manager_reviews";
+let managerReviewTableMissingInSession = false;
+
+function getCachedManagerReviews() {
+  try {
+    const raw = localStorage.getItem(MANAGER_REVIEW_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function isManagerReviewsTableMissing(error) {
+  const message = [error && error.message, error && error.details, error && error.hint]
+    .filter(Boolean)
+    .join(" ");
+  return /manager_reviews/i.test(message);
+}
+
 window.PerformanceDataService = {
   async fetchPerformances() {
     if (!window.supabaseClient) return null;
@@ -91,6 +111,7 @@ window.PerformanceDataService = {
 
   async fetchManagerReviews() {
     if (!window.supabaseClient) return null;
+    if (managerReviewTableMissingInSession) return getCachedManagerReviews();
 
     const { data, error } = await window.supabaseClient
       .from("manager_reviews")
@@ -98,10 +119,15 @@ window.PerformanceDataService = {
       .order("updated_at", { ascending: false });
 
     if (error) {
+      if (isManagerReviewsTableMissing(error)) {
+        managerReviewTableMissingInSession = true;
+        return getCachedManagerReviews();
+      }
       console.error("fetchManagerReviews failed", error);
       return null;
     }
 
+    managerReviewTableMissingInSession = false;
     return (data || []).map((row) => ({
       employeeId: row.employee_id,
       employeeName: row.employee_name || "",
@@ -118,6 +144,7 @@ window.PerformanceDataService = {
 
   async upsertManagerReview(review) {
     if (!window.supabaseClient || !review) return false;
+    if (managerReviewTableMissingInSession) return true;
 
     const payload = {
       employee_id: review.employeeId,
@@ -135,10 +162,15 @@ window.PerformanceDataService = {
       .upsert(payload, { onConflict: "employee_id" });
 
     if (error) {
+      if (isManagerReviewsTableMissing(error)) {
+        managerReviewTableMissingInSession = true;
+        return true;
+      }
       console.error("upsertManagerReview failed", error);
       return false;
     }
 
+    managerReviewTableMissingInSession = false;
     return true;
   }
 };

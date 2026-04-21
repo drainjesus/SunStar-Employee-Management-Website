@@ -588,7 +588,9 @@
         const [perfRows, peerRows, managerRows] = await Promise.all([
           window.PerformanceDataService.fetchPerformances(),
           window.PerformanceDataService.fetchPeerReviews(),
-          window.PerformanceDataService.fetchManagerReviews()
+          (typeof window.PerformanceDataService.fetchManagerReviews === 'function'
+            ? window.PerformanceDataService.fetchManagerReviews()
+            : Promise.resolve([]))
         ]);
 
         if (Array.isArray(perfRows)) {
