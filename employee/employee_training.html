@@ -647,12 +647,29 @@
           return;
         }
 
+        let certificateUrl = '';
+        let certificateStoragePath = '';
         let certificateDataUrl = '';
-        try {
-          certificateDataUrl = await fileToDataUrl(selectedFile);
-        } catch {
-          alert('Unable to read the certificate file. Please try another file.');
-          return;
+
+        if (window.HRDataService && typeof window.HRDataService.uploadTrainingCertificate === 'function') {
+          const uploadResult = await window.HRDataService.uploadTrainingCertificate(selectedFile, {
+            employeeId: activeUserId,
+            entryId: Date.now()
+          });
+          if (uploadResult) {
+            certificateUrl = uploadResult.publicUrl || '';
+            certificateStoragePath = uploadResult.storagePath || '';
+          }
+        }
+
+        // Fallback only when storage upload is unavailable/failed.
+        if (!certificateUrl) {
+          try {
+            certificateDataUrl = await fileToDataUrl(selectedFile);
+          } catch {
+            alert('Unable to read/upload the certificate file. Please try another file.');
+            return;
+          }
         }
 
         const submissionType = submissionTypeInput.value === 'external' ? 'external' : 'catalog';
@@ -684,6 +701,8 @@
           dateFrom,
           dateTo,
           certificateName: selectedFile.name,
+          certificateUrl,
+          certificateStoragePath,
           certificateDataUrl,
           status: 'Pending',
           reviewNote: '',

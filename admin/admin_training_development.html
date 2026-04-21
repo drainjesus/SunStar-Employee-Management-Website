@@ -768,6 +768,19 @@
     }
 
     function resolveCertificateUrl(entry) {
+      const directUrl = String(entry && entry.certificateUrl ? entry.certificateUrl : '').trim();
+      if (/^https?:\/\//i.test(directUrl) || /^data:/i.test(directUrl) || /^blob:/i.test(directUrl)) {
+        return directUrl;
+      }
+
+      const storagePath = String(entry && entry.certificateStoragePath ? entry.certificateStoragePath : '').trim();
+      if (storagePath && window.HRDataService && typeof window.HRDataService.getTrainingCertificatePublicUrl === 'function') {
+        const derived = window.HRDataService.getTrainingCertificatePublicUrl(storagePath);
+        if (/^https?:\/\//i.test(derived) || /^data:/i.test(derived) || /^blob:/i.test(derived)) {
+          return derived;
+        }
+      }
+
       const raw = String(entry && entry.certificateDataUrl ? entry.certificateDataUrl : '').trim();
       if (!raw || raw === 'undefined' || raw === 'null') return '';
       if (/^data:/i.test(raw)) return raw;

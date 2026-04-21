@@ -1,6 +1,7 @@
 (function () {
   const TRAINING_KEY = "sunstar_trainings";
   const TRAINING_DEV_KEY = "sunstar_training_development_entries";
+  const TRAINING_CERTIFICATE_BUCKET = "training-certificates";
   const LEAVE_KEY = "sunstar_leaves";
   const LEAVE_ATTACHMENT_TABLE = "leave_attachments";
   const ATTENDANCE_KEY = "sunstar_attendance";
@@ -146,6 +147,8 @@
       dateFrom: row.date_from || "",
       dateTo: row.date_to || "",
       certificateName: row.certificate_name || "",
+      certificateUrl: row.certificate_url || "",
+      certificateStoragePath: row.certificate_storage_path || "",
       certificateDataUrl: row.certificate_data_url || "",
       status: row.status || "Pending",
       reviewNote: row.review_note || "",
@@ -169,6 +172,8 @@
       date_from: safeDateString(entry.dateFrom),
       date_to: safeDateString(entry.dateTo),
       certificate_name: entry.certificateName || "",
+      certificate_url: entry.certificateUrl || null,
+      certificate_storage_path: entry.certificateStoragePath || null,
       certificate_data_url: entry.certificateDataUrl || null,
       status: entry.status || "Pending",
       review_note: entry.reviewNote || null,
@@ -552,6 +557,14 @@
         delete fallbackPayload.status;
         shouldRetry = true;
       }
+      if (/certificate_url/i.test(errorText)) {
+        delete fallbackPayload.certificate_url;
+        shouldRetry = true;
+      }
+      if (/certificate_storage_path/i.test(errorText)) {
+        delete fallbackPayload.certificate_storage_path;
+        shouldRetry = true;
+      }
       if (/certificate_data_url/i.test(errorText)) {
         delete fallbackPayload.certificate_data_url;
         shouldRetry = true;
@@ -577,6 +590,56 @@
 
     clearTrainingDevLastError();
     return true;
+  }
+
+  function sanitizePathSegment(value, fallback = "unknown") {
+    const cleaned = String(value || "")
+      .trim()
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .replace(/_+/g, "_")
+      .slice(0, 80);
+    return cleaned || fallback;
+  }
+
+  function getTrainingCertificatePublicUrl(storagePath) {
+    if (!hasClient() || !storagePath) return "";
+    const { data } = window.supabaseClient
+      .storage
+      .from(TRAINING_CERTIFICATE_BUCKET)
+      .getPublicUrl(storagePath);
+    return data && data.publicUrl ? data.publicUrl : "";
+  }
+
+  async function uploadTrainingCertificate(file, options = {}) {
+    if (!hasClient() || !file) return null;
+
+    const employeeId = sanitizePathSegment(options.employeeId, "employee");
+    const entryId = sanitizePathSegment(options.entryId, "entry");
+    const originalName = sanitizePathSegment(file.name || "certificate");
+    const extension = originalName.includes(".")
+      ? originalName.split(".").pop()
+      : "bin";
+    const uniquePath = `training-dev/${employeeId}/${entryId}_${Date.now()}.${extension}`;
+
+    const { error: uploadError } = await window.supabaseClient
+      .storage
+      .from(TRAINING_CERTIFICATE_BUCKET)
+      .upload(uniquePath, file, {
+        upsert: true,
+        contentType: file.type || undefined
+      });
+
+    if (uploadError) {
+      setTrainingDevLastError(uploadError);
+      return null;
+    }
+
+    clearTrainingDevLastError();
+    const certificateUrl = getTrainingCertificatePublicUrl(uniquePath);
+    return {
+      storagePath: uniquePath,
+      publicUrl: certificateUrl
+    };
   }
 
   async function fetchLeaves() {
@@ -899,7 +962,9 @@
     syncTrainingDevEntriesLocalFromRemote,
     syncLeavesLocalFromRemote,
     syncAttendanceLocalFromRemote,
-    syncAttendanceRequestsLocalFromRemote
+    syncAttendanceRequestsLocalFromRemote,
+    uploadTrainingCertificate,
+    getTrainingCertificatePublicUrl
     ,
     getTrainingDevLastError: () => trainingDevLastError
   };
