@@ -314,7 +314,8 @@
     }
 
     function getTrainingDevEntries() {
-      return safeParse(localStorage.getItem(TRAINING_DEV_KEY), []);
+      const parsed = safeParse(localStorage.getItem(TRAINING_DEV_KEY), []);
+      return Array.isArray(parsed) ? parsed : [];
     }
 
     function setTrainingDevEntries(entries) {
@@ -352,6 +353,11 @@
 
       if (trainingChanged) {
         setTrainings(trainings);
+      }
+
+      const entries = getTrainingDevEntries();
+      if (!Array.isArray(entries)) {
+        setTrainingDevEntries([]);
       }
     }
 

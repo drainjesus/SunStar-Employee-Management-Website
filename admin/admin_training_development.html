@@ -125,6 +125,9 @@
             <button onclick="switchTab('certs')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-certs">
               Certifications
             </button>
+            <button onclick="switchTab('entries')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-entries">
+              Employee Entries
+            </button>
           </nav>
         </div>
 
@@ -182,6 +185,31 @@
           </div>
           <div id="certsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Employee Training Entries Section -->
+        <div id="content-entries" class="tab-content hidden animate-in fade-in duration-300 space-y-6">
+          <div class="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-zinc-100 bg-zinc-50/50">
+              <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Employee Training & Development Submissions</h2>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                  <tr>
+                    <th class="px-6 py-4">Employee</th>
+                    <th class="px-6 py-4">Training Title</th>
+                    <th class="px-6 py-4">Date From</th>
+                    <th class="px-6 py-4">Date To</th>
+                    <th class="px-6 py-4">Certificate</th>
+                  </tr>
+                </thead>
+                <tbody id="entriesTableBody" class="divide-y divide-zinc-100">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -368,6 +396,8 @@
   <script src="../backend-database/supabase-hr-service.js"></script>
 
   <script>
+    const TRAINING_DEV_KEY = 'sunstar_training_development_entries';
+
     document.addEventListener('DOMContentLoaded', async () => {
       await syncEmployeesFromSupabase();
       await syncTrainingsFromSupabase();
@@ -375,6 +405,7 @@
       renderPrograms();
       renderSkills();
       renderCerts();
+      renderTrainingDevEntries();
     });
 
     async function syncEmployeesFromSupabase() {
@@ -410,6 +441,17 @@
       if (!data) return [];
       try {
         return JSON.parse(data);
+      } catch {
+        return [];
+      }
+    }
+
+    function getTrainingDevEntries() {
+      const data = localStorage.getItem(TRAINING_DEV_KEY);
+      if (!data) return [];
+      try {
+        const parsed = JSON.parse(data);
+        return Array.isArray(parsed) ? parsed : [];
       } catch {
         return [];
       }
@@ -652,6 +694,36 @@
       }
     });
 
+    function renderTrainingDevEntries() {
+      const tbody = document.getElementById('entriesTableBody');
+      const entries = getTrainingDevEntries();
+      const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
+      tbody.innerHTML = '';
+
+      if (!entries.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-zinc-400 italic">No training entries submitted yet.</td></tr>';
+        return;
+      }
+
+      entries
+        .slice()
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+        .forEach(entry => {
+          const employee = employees.find(emp => String(emp.id) === String(entry.employeeId));
+          const employeeName = employee ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim() : 'Unknown Employee';
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-zinc-50 transition';
+          tr.innerHTML = `
+            <td class="px-6 py-4 font-medium text-zinc-900">${employeeName}</td>
+            <td class="px-6 py-4 text-zinc-700">${entry.title || '-'}</td>
+            <td class="px-6 py-4 text-zinc-600">${entry.dateFrom || '-'}</td>
+            <td class="px-6 py-4 text-zinc-600">${entry.dateTo || '-'}</td>
+            <td class="px-6 py-4 text-zinc-600">${entry.certificateName || '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+    }
+
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -663,16 +735,18 @@
       document.getElementById('tab-' + tabId).classList.remove('border-transparent', 'text-zinc-500');
       if (tabId === 'skills') renderSkills();
       if (tabId === 'certs') renderCerts();
+      if (tabId === 'entries') renderTrainingDevEntries();
     }
 
     window.addEventListener('storage', async function(event) {
-      if (event.key && event.key !== 'sunstar_employees' && event.key !== 'sunstar_trainings') return;
+      if (event.key && event.key !== 'sunstar_employees' && event.key !== 'sunstar_trainings' && event.key !== TRAINING_DEV_KEY) return;
       await syncEmployeesFromSupabase();
       await syncTrainingsFromSupabase();
       syncEmployeeFields();
       renderPrograms();
       renderSkills();
       renderCerts();
+      renderTrainingDevEntries();
     });
   </script>
 </body>
