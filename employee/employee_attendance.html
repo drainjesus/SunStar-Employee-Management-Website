@@ -501,7 +501,7 @@
       const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
       const MANILA_TIME_ZONE = 'Asia/Manila';
       const CLOCK_IN_START_MINUTES = 8 * 60;
-      const CLOCK_IN_END_MINUTES = 17 * 60;
+      const DEFAULT_SHIFT_END_MINUTES = 17 * 60;
       const DEFAULT_SHIFT_SCHEDULE = 'Newsroom Day Shift (08:00 AM - 05:00 PM)';
       let currentActionType = '';
       let activeUser = null;
@@ -590,10 +590,10 @@
 
       function getShiftEndMinutes(shiftLabel) {
          const match = String(shiftLabel || '').match(/-\s*(\d{1,2}:\d{2}\s*[AP]M)\s*\)/i);
-         if (!match) return CLOCK_IN_END_MINUTES;
+         if (!match) return DEFAULT_SHIFT_END_MINUTES;
 
          const parsed = parseClockTimeToMinutes(match[1]);
-         return parsed === null ? CLOCK_IN_END_MINUTES : parsed;
+         return parsed === null ? DEFAULT_SHIFT_END_MINUTES : parsed;
       }
 
       function formatOvertimeHours(value) {
@@ -617,11 +617,6 @@
          const shiftSelect = document.getElementById('shiftScheduleSelect');
          if (!shiftSelect || !shiftSelect.value) return DEFAULT_SHIFT_SCHEDULE;
          return shiftSelect.value;
-      }
-
-      function isClockInWindowOpen() {
-         const minutes = getManilaMinutesNow();
-         return minutes >= CLOCK_IN_START_MINUTES && minutes <= CLOCK_IN_END_MINUTES;
       }
 
       function formatManilaTime(referenceDate = new Date(), includeSeconds = true) {
@@ -884,17 +879,8 @@
                shiftSelect.disabled = false;
                shiftSelect.value = shiftSelect.value || DEFAULT_SHIFT_SCHEDULE;
             }
-
-            const canClockInNow = isClockInWindowOpen();
-            inBtn.disabled = !canClockInNow;
-            if (!canClockInNow) {
-               inBtn.classList.add('opacity-50', 'pointer-events-none');
-               inBtn.innerHTML = 'Clock In (PST Window Closed)';
-               indicator.classList.remove('hidden');
-               statusText.textContent = 'Clock in is allowed only from 08:00 AM to 05:00 PM (PST).';
-            } else {
-               indicator.classList.add('hidden');
-            }
+            inBtn.disabled = false;
+            indicator.classList.add('hidden');
             outBtn.disabled = true;
          }
 
