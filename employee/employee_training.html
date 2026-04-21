@@ -146,52 +146,43 @@
 
       <div class="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
 
-        <!-- Tabs (Mirroring Admin) -->
-        <div class="border-b border-zinc-200">
-          <nav class="flex space-x-8" aria-label="Tabs">
-            <button onclick="switchTab('programs')" class="tab-btn border-sun-yellow text-sun-ink border-b-2 py-4 px-1 text-sm font-bold" id="tab-programs">
-              Training Programs
-            </button>
-            <button onclick="switchTab('skills')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-skills">
-              My Skills
-            </button>
-            <button onclick="switchTab('certs')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-certs">
-              My Certifications
-            </button>
-          </nav>
-        </div>
-
-        <!-- Tab 1: Training Programs -->
-        <div id="content-programs" class="tab-content">
-          <div id="programsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Dynamically populated -->
+        <div class="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-zinc-100 bg-zinc-50/50">
+            <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Training & Development Entry</h2>
+            <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Submit one training record with certificate attachment</p>
           </div>
-        </div>
-
-        <!-- Tab 2: My Skills -->
-        <div id="content-skills" class="tab-content hidden space-y-6">
-          <div class="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
-            <div class="p-6 border-b border-zinc-100 bg-zinc-50/50 flex justify-between items-center">
+          <form id="trainingDevForm" class="p-6 space-y-5">
+            <div>
+              <label for="trainingTitle" class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Training Title</label>
+              <input id="trainingTitle" type="text" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow focus:ring-2 focus:ring-sun-yellow/20 outline-none">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                 <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">My Skill Inventory</h2>
-                 <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Skills verified by HR after training completion</p>
+                <label for="dateFrom" class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Date from</label>
+                <input id="dateFrom" type="date" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow focus:ring-2 focus:ring-sun-yellow/20 outline-none">
               </div>
-              <div class="bg-sun-yellow/10 border border-sun-yellow/20 px-4 py-2 rounded-xl">
-                 <span class="text-2xl font-black text-zinc-900" id="skillCountDisplay">0</span>
-                 <span class="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">verified</span>
+              <div>
+                <label for="dateTo" class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Date to</label>
+                <input id="dateTo" type="date" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow focus:ring-2 focus:ring-sun-yellow/20 outline-none">
               </div>
             </div>
-            <div class="p-6">
-               <div id="skillsContainer" class="flex flex-wrap gap-2 min-h-[60px]">
-                  <!-- Skills populated by JS -->
-               </div>
+            <div>
+              <label for="certificateFile" class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Upload Certificate</label>
+              <input id="certificateFile" type="file" accept=".pdf,.png,.jpg,.jpeg" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-sun-yellow file:px-3 file:py-2 file:text-xs file:font-bold file:text-black hover:file:bg-sun-yellowDark">
             </div>
-          </div>
+            <div class="flex justify-end pt-2">
+              <button type="submit" class="inline-flex items-center justify-center rounded-md bg-sun-yellow px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-sun-yellowDark transition">
+                Save Entry
+              </button>
+            </div>
+          </form>
         </div>
 
-        <!-- Tab 3: My Certifications -->
-        <div id="content-certs" class="tab-content hidden space-y-6">
-          <div id="certsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-zinc-100 bg-zinc-50/50">
+            <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Submitted Entries</h2>
+          </div>
+          <div id="trainingRecords" class="p-6 space-y-3">
             <!-- Dynamically populated -->
           </div>
         </div>
@@ -281,6 +272,7 @@
   <script>
     const TRAINING_KEY = 'sunstar_trainings';
     const EMPLOYEE_KEY = 'sunstar_employees';
+    const TRAINING_DEV_KEY = 'sunstar_training_development_entries';
     const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
     const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
 
@@ -319,6 +311,14 @@
 
     function setTrainings(trainings) {
       localStorage.setItem(TRAINING_KEY, JSON.stringify(trainings));
+    }
+
+    function getTrainingDevEntries() {
+      return safeParse(localStorage.getItem(TRAINING_DEV_KEY), []);
+    }
+
+    function setTrainingDevEntries(entries) {
+      localStorage.setItem(TRAINING_DEV_KEY, JSON.stringify(entries));
     }
 
     function normalizeDataModels() {
@@ -431,179 +431,32 @@
       await syncTrainingsFromSupabase();
       normalizeDataModels();
       resolveActiveUser();
-      renderPrograms();
-      renderSkills();
-      renderCerts();
+      renderTrainingEntries();
       refreshProfilePic();
     }
 
-    function renderPrograms() {
-      const trainings = getTrainings();
-      const grid = document.getElementById('programsGrid');
+    function renderTrainingEntries() {
+      const records = document.getElementById('trainingRecords');
+      const entries = getTrainingDevEntries().filter(entry => String(entry.employeeId) === String(activeUserId));
 
-      if (trainings.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full text-center py-20 bg-white rounded-3xl border border-zinc-100">
-            <div class="h-12 w-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-300"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
-            </div>
-            <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No training programs available</p>
+      if (entries.length === 0) {
+        records.innerHTML = `
+          <div class="text-center py-10 border border-dashed border-zinc-200 rounded-xl">
+            <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No entries yet</p>
           </div>`;
         return;
       }
 
-      grid.innerHTML = '';
-      trainings.forEach(program => {
-        const enrolled = isUserEnrolled(program);
-        const dateObj = new Date(program.date);
-        const formattedDate = Number.isNaN(dateObj.getTime())
-          ? 'TBA'
-          : dateObj.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
-        const statusColor = program.status === 'Active' ? 'bg-sun-yellow' : 'bg-zinc-100 text-zinc-500';
-        const enrolleeCount = Array.isArray(program.enrollees) ? program.enrollees.length : 0;
-
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden hover:border-sun-yellow transition duration-300 flex flex-col';
-        card.innerHTML = `
-          <div class="${statusColor} px-4 py-3 flex justify-between items-center">
-            <span class="text-[10px] font-black uppercase text-black bg-white/30 px-2 py-0.5 rounded tracking-tighter">${program.status || 'Upcoming'}</span>
-            <span class="text-xs font-bold italic opacity-80">${formattedDate}</span>
+      records.innerHTML = entries
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .map(entry => `
+          <div class="rounded-xl border border-zinc-200 p-4">
+            <p class="text-sm font-bold text-zinc-900">${entry.title}</p>
+            <p class="mt-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">${entry.dateFrom} to ${entry.dateTo}</p>
+            <p class="mt-2 text-xs text-zinc-500">Certificate: <span class="font-semibold text-zinc-700">${entry.certificateName}</span></p>
           </div>
-          <div class="p-5 flex-1 flex flex-col">
-            <h3 class="text-lg font-black text-zinc-900 leading-tight">${program.name || 'Untitled Program'}</h3>
-            <p class="mt-2 text-sm text-zinc-500 line-clamp-2 flex-1">${program.desc || 'No description provided.'}</p>
-            <div class="mt-5 pb-1 flex items-center justify-between border-t border-zinc-50 pt-4">
-              <div class="flex flex-col">
-                <span class="text-[10px] font-black uppercase tracking-widest text-sun-yellowDark">${program.dept || 'General'}</span>
-                <span class="text-[11px] font-bold text-zinc-400 mt-0.5">${enrolleeCount} Enrolled</span>
-              </div>
-              <button onclick="${enrolled ? '' : `enroll(${program.id})`}" class="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all active:scale-[0.98] border ${enrolled ? 'bg-green-50 text-green-700 border-green-100 cursor-default ring-1 ring-inset ring-green-600/20' : 'bg-sun-yellow text-zinc-900 border-sun-yellowDark hover:bg-sun-yellowLight shadow-sm'}">
-                ${enrolled ? '✓ Enrolled' : 'Enroll Now'}
-              </button>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    async function enroll(programId) {
-      if (activeUserId === null) {
-        alert('No employee profile found. Please ask admin to create your profile first.');
-        return;
-      }
-
-      const trainings = getTrainings();
-      const programIndex = trainings.findIndex(program => String(program.id) === String(programId));
-      if (programIndex === -1) {
-        return;
-      }
-
-      const targetProgram = trainings[programIndex];
-      if (!Array.isArray(targetProgram.enrollees)) {
-        targetProgram.enrollees = [];
-      }
-
-      if (!targetProgram.enrollees.some(id => String(id) === String(activeUserId))) {
-        targetProgram.enrollees.push(activeUserId);
-        setTrainings(trainings);
-        if (window.HRDataService) {
-          await window.HRDataService.upsertTraining(targetProgram);
-        }
-        renderPrograms();
-        setTimeout(() => {
-          document.getElementById('successModal').classList.remove('hidden');
-        }, 200);
-      }
-    }
-
-    function renderSkills() {
-      const me = getActiveEmployee() || { skills: [] };
-      const skills = Array.isArray(me.skills) ? me.skills : [];
-      const container = document.getElementById('skillsContainer');
-
-      document.getElementById('skillCountDisplay').textContent = skills.length;
-
-      if (skills.length === 0) {
-        container.innerHTML = `
-          <div class="w-full text-center py-10">
-            <div class="h-12 w-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-300"><path d="M12 2v8"/><path d="m4.93 4.93 5.66 5.66"/><path d="M2 12h8"/><path d="m4.93 19.07 5.66-5.66"/></svg>
-            </div>
-            <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No skills verified yet</p>
-            <p class="text-[10px] text-zinc-300 mt-1">Complete a training program to earn skill badges</p>
-          </div>`;
-        return;
-      }
-
-      container.innerHTML = '';
-      skills.forEach(skill => {
-        const badge = document.createElement('span');
-        badge.className = 'bg-zinc-100 text-zinc-700 px-3 py-1.5 rounded-md border border-zinc-200 text-[10px] font-bold uppercase tracking-tighter';
-        badge.textContent = skill;
-        container.appendChild(badge);
-      });
-    }
-
-    function renderCerts() {
-      const me = getActiveEmployee() || { certs: [] };
-      const certs = Array.isArray(me.certs) ? me.certs : [];
-      const grid = document.getElementById('certsGrid');
-
-      if (certs.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full text-center py-20 bg-white rounded-3xl border border-zinc-100">
-            <div class="h-12 w-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-300"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-            </div>
-            <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No certifications on file</p>
-            <p class="text-[10px] text-zinc-300 mt-1">Certifications added by HR will appear here</p>
-          </div>`;
-        return;
-      }
-
-      grid.innerHTML = '';
-      certs.forEach(cert => {
-        const expiryDate = new Date(cert.expiry);
-        const isExpired = !Number.isNaN(expiryDate.getTime()) && expiryDate < new Date();
-        const card = document.createElement('div');
-        card.className = 'bg-white p-6 rounded-xl border border-zinc-200 shadow-sm flex items-start gap-4 hover:border-sun-yellow hover:shadow-lg transition-all duration-300';
-        card.innerHTML = `
-          <div class="h-12 w-12 rounded-xl bg-sun-yellow flex items-center justify-center text-black flex-shrink-0 border border-sun-yellowDark shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-          </div>
-          <div class="flex-1">
-            <div class="flex justify-between items-start">
-              <h3 class="font-black text-zinc-900 uppercase tracking-tight text-base">${cert.name || 'Certification'}</h3>
-              <span class="text-[10px] font-black ${isExpired ? 'bg-red-50 text-red-600 border-red-200' : 'bg-sun-yellow text-black border-sun-yellowDark'} border px-2 py-0.5 rounded tracking-tighter shadow-sm">${isExpired ? 'EXPIRED' : 'VERIFIED'}</span>
-            </div>
-            <div class="mt-4 pt-3 border-t border-zinc-50 flex items-center justify-between text-[10px] font-bold text-zinc-500 uppercase italic">
-              <span>By ${cert.issuer || 'Unknown Issuer'}</span>
-              <span class="${isExpired ? 'text-red-500' : ''}">Exp: ${cert.expiry || 'N/A'}</span>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(button => {
-        button.classList.remove('border-sun-yellow', 'text-sun-ink');
-        button.classList.add('border-transparent', 'text-zinc-500');
-      });
-
-      document.getElementById('content-' + tabId).classList.remove('hidden');
-      document.getElementById('tab-' + tabId).classList.add('border-sun-yellow', 'text-sun-ink');
-      document.getElementById('tab-' + tabId).classList.remove('border-transparent', 'text-zinc-500');
-
-      if (tabId === 'skills') {
-        renderSkills();
-      }
-      if (tabId === 'certs') {
-        renderCerts();
-      }
+        `)
+        .join('');
     }
 
     function refreshProfilePic() {
@@ -681,7 +534,47 @@
       }, 300);
     }
 
-    document.addEventListener('DOMContentLoaded', initPage);
+    document.addEventListener('DOMContentLoaded', () => {
+      initPage();
+
+      document.getElementById('trainingDevForm').addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (activeUserId === null) {
+          alert('No employee profile found. Please log in again.');
+          return;
+        }
+
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        if (dateFrom > dateTo) {
+          alert('Date from cannot be later than date to.');
+          return;
+        }
+
+        const fileInput = document.getElementById('certificateFile');
+        const selectedFile = fileInput.files && fileInput.files[0];
+        if (!selectedFile) {
+          alert('Please upload a certificate.');
+          return;
+        }
+
+        const newEntry = {
+          id: Date.now(),
+          employeeId: activeUserId,
+          title: document.getElementById('trainingTitle').value.trim(),
+          dateFrom,
+          dateTo,
+          certificateName: selectedFile.name,
+          createdAt: new Date().toISOString()
+        };
+
+        const entries = getTrainingDevEntries();
+        entries.push(newEntry);
+        setTrainingDevEntries(entries);
+        document.getElementById('trainingDevForm').reset();
+        renderTrainingEntries();
+      });
+    });
 
     window.addEventListener('storage', async function() {
       await initPage();
