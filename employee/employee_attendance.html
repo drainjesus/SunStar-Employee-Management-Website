@@ -958,9 +958,10 @@
             tr.className = 'hover:bg-zinc-50 transition border-b border-zinc-100 last:border-0';
 
             const dateLabel = formatIsoDateInManila(request.requestDate, { month: 'short', day: '2-digit', year: 'numeric' });
+            const shiftLabel = request.shiftSchedule || DEFAULT_SHIFT_SCHEDULE;
             const details = request.requestType === 'Overtime'
-               ? `${formatOvertimeHours(request.requestedHours)}h requested`
-               : '--';
+               ? `${formatOvertimeHours(request.requestedHours)}h OT • ${shiftLabel}`
+               : shiftLabel;
             const adminNote = request.decisionNote || '--';
 
             tr.innerHTML = `
@@ -976,10 +977,18 @@
       }
 
       function createAttendanceRequestId() {
-         return `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+         if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+            return window.crypto.randomUUID();
+         }
+
+         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+            const randomValue = Math.floor(Math.random() * 16);
+            const mapped = char === 'x' ? randomValue : ((randomValue & 0x3) | 0x8);
+            return mapped.toString(16);
+         });
       }
 
-      async function submitAttendanceRequest(requestType, requestDate, reason, requestedHours = '0.0') {
+      async function submitAttendanceRequest(requestType, requestDate, reason, requestedHours = '0.0', shiftSchedule = DEFAULT_SHIFT_SCHEDULE) {
          const requests = getAttendanceRequests();
          const nowIso = new Date().toISOString();
 
@@ -990,6 +999,7 @@
             requestDate,
             requestType,
             requestedHours: formatOvertimeHours(requestedHours),
+            shiftSchedule: shiftSchedule || DEFAULT_SHIFT_SCHEDULE,
             reason,
             status: 'Pending',
             decisionNote: '',
@@ -1004,6 +1014,7 @@
 
          if (window.HRDataService && window.HRDataService.upsertAttendanceRequest) {
             await window.HRDataService.upsertAttendanceRequest(payload);
+            saveAttendanceRequests(requests);
          }
 
          renderAttendanceRequestHistory();
@@ -1175,7 +1186,7 @@
             return;
          }
 
-         await submitAttendanceRequest('Official Business', dateStr, reason, '0.0');
+         await submitAttendanceRequest('Official Business', dateStr, reason, '0.0', getSelectedShiftSchedule());
 
          document.getElementById('officialBusinessModal').classList.add('hidden');
          alert('Official Business request submitted successfully.');
@@ -1221,7 +1232,7 @@
             return;
          }
 
-         await submitAttendanceRequest('Overtime', dateStr, reason, numericHours);
+         await submitAttendanceRequest('Overtime', dateStr, reason, numericHours, record.shift || getSelectedShiftSchedule());
 
          document.getElementById('overtimeApplicationModal').classList.add('hidden');
          alert('Overtime application submitted. Awaiting admin approval.');
@@ -1249,7 +1260,7 @@
             return;
          }
 
-         await submitAttendanceRequest('Special Work', dateStr, reason, '0.0');
+         await submitAttendanceRequest('Special Work', dateStr, reason, '0.0', getSelectedShiftSchedule());
 
          document.getElementById('specialWorkModal').classList.add('hidden');
          alert('Special Work request submitted. Awaiting admin approval.');

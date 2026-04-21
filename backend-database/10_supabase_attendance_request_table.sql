@@ -7,6 +7,7 @@ create table if not exists public.attendance_special_requests (
   request_date date not null,
   request_type text not null check (request_type in ('Overtime', 'Special Work', 'Official Business')),
   requested_hours numeric(6,2) not null default 0,
+  shift_schedule text not null default 'Newsroom Day Shift (08:00 AM - 05:00 PM)',
   reason text not null,
   status text not null default 'Pending' check (status in ('Pending', 'Approved', 'Rejected')),
   decision_note text,

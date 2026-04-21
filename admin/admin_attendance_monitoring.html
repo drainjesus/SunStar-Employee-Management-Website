@@ -609,9 +609,10 @@
 
           const requestedHours = Number.parseFloat(request.requestedHours);
           const safeRequestedHours = Number.isFinite(requestedHours) && requestedHours > 0 ? requestedHours.toFixed(1) : '0.0';
+          const shiftLabel = request.shiftSchedule || DEFAULT_SHIFT_SCHEDULE;
           const details = request.requestType === 'Overtime'
-            ? `${safeRequestedHours}h requested`
-            : '--';
+            ? `${safeRequestedHours}h OT • ${shiftLabel}`
+            : shiftLabel;
           const reasonText = escapeHtml(request.reason || '--');
           const dateText = formatReadableDate(request.requestDate);
           const decisionMeta = request.decisionAt
@@ -657,6 +658,7 @@
         saveAttendanceRequests(requests);
         if (window.HRDataService && window.HRDataService.upsertAttendanceRequest) {
           await window.HRDataService.upsertAttendanceRequest(target);
+          saveAttendanceRequests(requests);
         }
 
         renderAttendanceRequestTable();

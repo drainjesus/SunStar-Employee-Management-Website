@@ -186,6 +186,7 @@
       requestDate: row.request_date || "",
       requestType: row.request_type || "Official Business",
       requestedHours: formatOvertimeHours(row.requested_hours),
+      shiftSchedule: row.shift_schedule || DEFAULT_SHIFT_SCHEDULE,
       reason: row.reason || "",
       status: row.status || "Pending",
       decisionNote: row.decision_note || "",
@@ -207,6 +208,7 @@
       request_date: safeDateString(request.requestDate),
       request_type: request.requestType || "Official Business",
       requested_hours: Number.isFinite(parsedHours) && parsedHours > 0 ? parsedHours : 0,
+      shift_schedule: request.shiftSchedule || DEFAULT_SHIFT_SCHEDULE,
       reason: request.reason || null,
       status: request.status || "Pending",
       decision_note: request.decisionNote || null,
@@ -243,6 +245,22 @@
 
   function clearAttendanceRequestTableMissingMark() {
     attendanceRequestTableMissingInSession = false;
+  }
+
+  function isUuid(value) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ""));
+  }
+
+  function createRequestUuid() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
+      const randomValue = Math.floor(Math.random() * 16);
+      const mapped = char === "x" ? randomValue : ((randomValue & 0x3) | 0x8);
+      return mapped.toString(16);
+    });
   }
 
   function hasExtendedAttendanceColumns(rows) {
@@ -554,10 +572,14 @@
   }
 
   async function upsertAttendanceRequest(request) {
-    if (!hasClient() || !request || !request.id) return false;
+    if (!hasClient() || !request) return false;
 
     if (isAttendanceRequestTableMarkedMissing()) {
       return true;
+    }
+
+    if (!isUuid(request.id)) {
+      request.id = createRequestUuid();
     }
 
     const payload = mapAttendanceRequestLocalToDb(request);
@@ -569,6 +591,23 @@
       if (isAttendanceRequestTableMissing(error)) {
         markAttendanceRequestTableMissing();
         return true;
+      }
+
+      const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
+      const hasMissingShiftColumn = /shift_schedule/i.test(errorText);
+      if (hasMissingShiftColumn) {
+        const fallbackPayload = { ...payload };
+        delete fallbackPayload.shift_schedule;
+
+        const fallback = await window.supabaseClient
+          .from(ATTENDANCE_REQUEST_TABLE)
+          .upsert(fallbackPayload, { onConflict: "id" });
+
+        if (!fallback.error) {
+          return true;
+        }
+
+        error = fallback.error;
       }
 
       console.error("upsertAttendanceRequest failed", error);
