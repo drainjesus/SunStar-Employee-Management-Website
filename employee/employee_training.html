@@ -589,7 +589,10 @@
         if (window.HRDataService && typeof window.HRDataService.upsertTrainingDevEntry === 'function') {
           const ok = await window.HRDataService.upsertTrainingDevEntry(newEntry);
           if (!ok) {
-            alert('Entry saved locally but failed to sync to database.');
+            const detail = typeof window.HRDataService.getTrainingDevLastError === 'function'
+              ? window.HRDataService.getTrainingDevLastError()
+              : '';
+            alert(`Entry saved locally but failed to sync to database.${detail ? `\n\n${detail}` : ''}`);
           }
         }
         document.getElementById('trainingDevForm').reset();

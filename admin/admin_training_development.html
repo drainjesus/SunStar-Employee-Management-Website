@@ -119,6 +119,7 @@
             <p class="mt-1 text-[10px] font-black uppercase tracking-widest text-zinc-400">Merged module view reflecting employee-side entries</p>
           </div>
           <div class="overflow-x-auto">
+            <div id="entriesSyncError" class="hidden mx-4 mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700"></div>
             <table class="w-full text-left text-sm">
               <thead class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-black uppercase tracking-widest text-zinc-500">
                 <tr>
@@ -327,6 +328,7 @@
       await syncTrainingDevEntriesFromSupabase();
       syncEmployeeFields();
       renderTrainingDevEntries();
+      showTrainingDevSyncError();
     });
 
     async function syncEmployeesFromSupabase() {
@@ -351,6 +353,21 @@
       if (Array.isArray(remote)) {
         localStorage.setItem(TRAINING_DEV_KEY, JSON.stringify(remote));
       }
+    }
+
+    function showTrainingDevSyncError() {
+      const box = document.getElementById('entriesSyncError');
+      if (!box) return;
+      const detail = window.HRDataService && typeof window.HRDataService.getTrainingDevLastError === 'function'
+        ? window.HRDataService.getTrainingDevLastError()
+        : '';
+      if (!detail) {
+        box.classList.add('hidden');
+        box.textContent = '';
+        return;
+      }
+      box.textContent = `Database sync issue: ${detail}`;
+      box.classList.remove('hidden');
     }
 
     function syncEmployeeFields() {
@@ -669,6 +686,7 @@
       await syncTrainingDevEntriesFromSupabase();
       syncEmployeeFields();
       renderTrainingDevEntries();
+      showTrainingDevSyncError();
     });
   </script>
 </body>

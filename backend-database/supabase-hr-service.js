@@ -7,6 +7,7 @@
   const ATTENDANCE_REQUEST_KEY = "sunstar_attendance_requests";
   const ATTENDANCE_REQUEST_TABLE = "attendance_special_requests";
   const DEFAULT_SHIFT_SCHEDULE = "Newsroom Day Shift (08:00 AM - 05:00 PM)";
+  let trainingDevLastError = "";
   let attendanceRequestTableMissingInSession = false;
   const ATTENDANCE_EXTENDED_COLUMNS = [
     "is_verified",
@@ -29,6 +30,17 @@
 
   function hasClient() {
     return !!window.supabaseClient;
+  }
+
+  function setTrainingDevLastError(error) {
+    const message = [error && error.message, error && error.details, error && error.hint]
+      .filter(Boolean)
+      .join(" ");
+    trainingDevLastError = String(message || "").trim();
+  }
+
+  function clearTrainingDevLastError() {
+    trainingDevLastError = "";
   }
 
   function safeDateString(input) {
@@ -448,9 +460,11 @@
 
     if (error) {
       console.error("fetchTrainingDevEntries failed", error);
+      setTrainingDevLastError(error);
       return null;
     }
 
+    clearTrainingDevLastError();
     return (data || []).map(mapTrainingDevDbToLocal);
   }
 
@@ -464,9 +478,11 @@
 
     if (error) {
       console.error("upsertTrainingDevEntry failed", error);
+      setTrainingDevLastError(error);
       return false;
     }
 
+    clearTrainingDevLastError();
     return true;
   }
 
@@ -767,5 +783,7 @@
     syncLeavesLocalFromRemote,
     syncAttendanceLocalFromRemote,
     syncAttendanceRequestsLocalFromRemote
+    ,
+    getTrainingDevLastError: () => trainingDevLastError
   };
 })();
