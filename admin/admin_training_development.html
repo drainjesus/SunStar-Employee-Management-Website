@@ -113,103 +113,26 @@
 
       <div class="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
         
-        <!-- Tabs Implementation -->
-        <div class="border-b border-zinc-200">
-          <nav class="flex space-x-8" aria-label="Tabs">
-            <button onclick="switchTab('programs')" class="tab-btn border-sun-yellow text-sun-ink border-b-2 py-4 px-1 text-sm font-bold" id="tab-programs">
-              Training Programs
-            </button>
-            <button onclick="switchTab('skills')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-skills">
-              Employee Skills
-            </button>
-            <button onclick="switchTab('certs')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-certs">
-              Certifications
-            </button>
-            <button onclick="switchTab('entries')" class="tab-btn border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 border-b-2 py-4 px-1 text-sm font-bold" id="tab-entries">
-              Employee Entries
-            </button>
-          </nav>
-        </div>
-
-        <!-- Training Programs Section -->
-        <div id="content-programs" class="tab-content space-y-6">
-          <div class="flex justify-end">
-            <button onclick="document.getElementById('addTrainingModal').classList.remove('hidden')" class="inline-flex items-center justify-center rounded-md bg-sun-yellow px-4 py-2 text-sm font-bold text-black shadow-sm hover:bg-sun-yellowDark transition group">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 group-hover:rotate-12 transition">
-                <path d="M5 12h14"/><path d="M12 5v14"/>
-              </svg>
-              New Training Program
-            </button>
+        <div class="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-zinc-100 bg-zinc-50/50">
+            <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Employee Training & Development Submissions</h2>
+            <p class="mt-1 text-[10px] font-black uppercase tracking-widest text-zinc-400">Merged module view reflecting employee-side entries</p>
           </div>
-          <div id="programsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-
-        <!-- Employee Skills Section -->
-        <div id="content-skills" class="tab-content hidden animate-in fade-in duration-300 space-y-6">
-          <div class="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
-            <div class="p-4 border-b border-zinc-100 bg-zinc-50/50 flex justify-between items-center">
-              <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Skill Inventory</h2>
-              <div class="flex items-center gap-3">
-                 <input type="text" id="skillSearch" oninput="renderSkills()" placeholder="Filter employee..." class="text-xs border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-sun-yellow w-48">
-              </div>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-sm">
-                <thead class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                  <tr>
-                    <th class="px-6 py-4">Employee</th>
-                    <th class="px-6 py-4">Department</th>
-                    <th class="px-6 py-4">Key Skills</th>
-                    <th class="px-6 py-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="skillsTableBody" class="divide-y divide-zinc-100 italic">
-                  <!-- Dynamically populated -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Certifications Section -->
-        <div id="content-certs" class="tab-content hidden animate-in fade-in duration-300 space-y-6">
-          <div class="flex justify-end">
-            <button onclick="openAddCertModal()" class="inline-flex items-center justify-center rounded-md bg-sun-yellow px-4 py-2 text-sm font-bold text-black shadow-sm hover:bg-sun-yellowDark transition group">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 group-hover:rotate-12 transition">
-                <path d="M5 12h14"/><path d="M12 5v14"/>
-              </svg>
-              Add Certification
-            </button>
-          </div>
-          <div id="certsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-
-        <!-- Employee Training Entries Section -->
-        <div id="content-entries" class="tab-content hidden animate-in fade-in duration-300 space-y-6">
-          <div class="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
-            <div class="p-4 border-b border-zinc-100 bg-zinc-50/50">
-              <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Employee Training & Development Submissions</h2>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-sm">
-                <thead class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                  <tr>
-                    <th class="px-6 py-4">Employee</th>
-                    <th class="px-6 py-4">Training Title</th>
-                    <th class="px-6 py-4">Date From</th>
-                    <th class="px-6 py-4">Date To</th>
-                    <th class="px-6 py-4">Certificate</th>
-                  </tr>
-                </thead>
-                <tbody id="entriesTableBody" class="divide-y divide-zinc-100">
-                  <!-- Dynamically populated -->
-                </tbody>
-              </table>
-            </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                <tr>
+                  <th class="px-6 py-4">Employee</th>
+                  <th class="px-6 py-4">Training Title</th>
+                  <th class="px-6 py-4">Date From</th>
+                  <th class="px-6 py-4">Date To</th>
+                  <th class="px-6 py-4">Certificate</th>
+                </tr>
+              </thead>
+              <tbody id="entriesTableBody" class="divide-y divide-zinc-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -402,9 +325,6 @@
       await syncEmployeesFromSupabase();
       await syncTrainingsFromSupabase();
       syncEmployeeFields();
-      renderPrograms();
-      renderSkills();
-      renderCerts();
       renderTrainingDevEntries();
     });
 
@@ -724,28 +644,11 @@
         });
     }
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('border-sun-yellow', 'text-sun-ink');
-        btn.classList.add('border-transparent', 'text-zinc-500');
-      });
-      document.getElementById('content-' + tabId).classList.remove('hidden');
-      document.getElementById('tab-' + tabId).classList.add('border-sun-yellow', 'text-sun-ink');
-      document.getElementById('tab-' + tabId).classList.remove('border-transparent', 'text-zinc-500');
-      if (tabId === 'skills') renderSkills();
-      if (tabId === 'certs') renderCerts();
-      if (tabId === 'entries') renderTrainingDevEntries();
-    }
-
     window.addEventListener('storage', async function(event) {
       if (event.key && event.key !== 'sunstar_employees' && event.key !== 'sunstar_trainings' && event.key !== TRAINING_DEV_KEY) return;
       await syncEmployeesFromSupabase();
       await syncTrainingsFromSupabase();
       syncEmployeeFields();
-      renderPrograms();
-      renderSkills();
-      renderCerts();
       renderTrainingDevEntries();
     });
   </script>
