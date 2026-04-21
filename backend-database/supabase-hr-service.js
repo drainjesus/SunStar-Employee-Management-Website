@@ -1,5 +1,6 @@
 (function () {
   const TRAINING_KEY = "sunstar_trainings";
+  const TRAINING_DEV_KEY = "sunstar_training_development_entries";
   const LEAVE_KEY = "sunstar_leaves";
   const LEAVE_ATTACHMENT_TABLE = "leave_attachments";
   const ATTENDANCE_KEY = "sunstar_attendance";
@@ -118,6 +119,31 @@
       description: training.desc || null,
       status: training.status || "Upcoming",
       enrollees: Array.isArray(training.enrollees) ? training.enrollees : []
+    };
+  }
+
+  function mapTrainingDevDbToLocal(row) {
+    return {
+      id: row.id,
+      employeeId: row.employee_id,
+      title: row.training_title || "",
+      dateFrom: row.date_from || "",
+      dateTo: row.date_to || "",
+      certificateName: row.certificate_name || "",
+      createdAt: row.created_at || "",
+      updatedAt: row.updated_at || ""
+    };
+  }
+
+  function mapTrainingDevLocalToDb(entry) {
+    return {
+      id: entry.id,
+      employee_id: Number(entry.employeeId),
+      training_title: entry.title || "",
+      date_from: safeDateString(entry.dateFrom),
+      date_to: safeDateString(entry.dateTo),
+      certificate_name: entry.certificateName || "",
+      created_at: entry.createdAt || null
     };
   }
   function mapLeaveLocalToDb(leave) {
@@ -412,6 +438,38 @@
     return true;
   }
 
+  async function fetchTrainingDevEntries() {
+    if (!hasClient()) return null;
+
+    const { data, error } = await window.supabaseClient
+      .from("training_development_entries")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("fetchTrainingDevEntries failed", error);
+      return null;
+    }
+
+    return (data || []).map(mapTrainingDevDbToLocal);
+  }
+
+  async function upsertTrainingDevEntry(entry) {
+    if (!hasClient()) return false;
+
+    const payload = mapTrainingDevLocalToDb(entry);
+    const { error } = await window.supabaseClient
+      .from("training_development_entries")
+      .upsert(payload, { onConflict: "id" });
+
+    if (error) {
+      console.error("upsertTrainingDevEntry failed", error);
+      return false;
+    }
+
+    return true;
+  }
+
   async function fetchLeaves() {
     if (!hasClient()) return null;
 
@@ -672,6 +730,13 @@
     return true;
   }
 
+  async function syncTrainingDevEntriesLocalFromRemote() {
+    const remote = await fetchTrainingDevEntries();
+    if (!Array.isArray(remote)) return false;
+    localStorage.setItem(TRAINING_DEV_KEY, JSON.stringify(remote));
+    return true;
+  }
+
   async function syncAttendanceLocalFromRemote() {
     const remote = await fetchAttendanceGrouped();
     if (!remote || typeof remote !== "object") return false;
@@ -689,6 +754,8 @@
   window.HRDataService = {
     fetchTrainings,
     upsertTraining,
+    fetchTrainingDevEntries,
+    upsertTrainingDevEntry,
     fetchLeaves,
     upsertLeave,
     fetchAttendanceGrouped,
@@ -696,6 +763,7 @@
     fetchAttendanceRequests,
     upsertAttendanceRequest,
     syncTrainingsLocalFromRemote,
+    syncTrainingDevEntriesLocalFromRemote,
     syncLeavesLocalFromRemote,
     syncAttendanceLocalFromRemote,
     syncAttendanceRequestsLocalFromRemote

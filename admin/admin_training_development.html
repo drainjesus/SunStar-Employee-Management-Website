@@ -324,6 +324,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
       await syncEmployeesFromSupabase();
       await syncTrainingsFromSupabase();
+      await syncTrainingDevEntriesFromSupabase();
       syncEmployeeFields();
       renderTrainingDevEntries();
     });
@@ -341,6 +342,14 @@
       const remote = await window.HRDataService.fetchTrainings();
       if (Array.isArray(remote)) {
         localStorage.setItem('sunstar_trainings', JSON.stringify(remote));
+      }
+    }
+
+    async function syncTrainingDevEntriesFromSupabase() {
+      if (!window.HRDataService || typeof window.HRDataService.fetchTrainingDevEntries !== 'function') return;
+      const remote = await window.HRDataService.fetchTrainingDevEntries();
+      if (Array.isArray(remote)) {
+        localStorage.setItem(TRAINING_DEV_KEY, JSON.stringify(remote));
       }
     }
 
@@ -408,28 +417,31 @@
       });
     }
 
-    document.getElementById('trainingForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const newProg = {
-        id: Date.now(),
-        name: document.getElementById('progName').value,
-        category: document.getElementById('progCategory').value,
-        date: document.getElementById('progDate').value,
-        dept: document.getElementById('progDept').value,
-        desc: document.getElementById('progDesc').value,
-        status: 'Upcoming',
-        enrollees: []
-      };
-      const trainings = getTrainings();
-      trainings.unshift(newProg);
-      localStorage.setItem('sunstar_trainings', JSON.stringify(trainings));
-      if (window.HRDataService) {
-        await window.HRDataService.upsertTraining(newProg);
-      }
-      document.getElementById('addTrainingModal').classList.add('hidden');
-      document.getElementById('trainingForm').reset();
-      renderPrograms();
-    });
+    const trainingForm = document.getElementById('trainingForm');
+    if (trainingForm) {
+      trainingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newProg = {
+          id: Date.now(),
+          name: document.getElementById('progName').value,
+          category: document.getElementById('progCategory').value,
+          date: document.getElementById('progDate').value,
+          dept: document.getElementById('progDept').value,
+          desc: document.getElementById('progDesc').value,
+          status: 'Upcoming',
+          enrollees: []
+        };
+        const trainings = getTrainings();
+        trainings.unshift(newProg);
+        localStorage.setItem('sunstar_trainings', JSON.stringify(trainings));
+        if (window.HRDataService) {
+          await window.HRDataService.upsertTraining(newProg);
+        }
+        document.getElementById('addTrainingModal').classList.add('hidden');
+        trainingForm.reset();
+        renderPrograms();
+      });
+    }
 
     /* Participant Management */
     let activeProgramId = null;
@@ -524,22 +536,25 @@
       document.getElementById('manageSkillsModal').classList.remove('hidden');
     }
 
-    document.getElementById('skillForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const empId = document.getElementById('skillEmployeeId').value;
-      const skills = document.getElementById('skillInput').value.split(',').map(s => s.trim()).filter(s => s);
-      let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const idx = employees.findIndex(emp => emp.id == empId);
-      if (idx !== -1) {
-        employees[idx].skills = skills;
-        localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-        if (window.EmployeeDataService) {
-          await window.EmployeeDataService.upsertEmployee(employees[idx]);
+    const skillForm = document.getElementById('skillForm');
+    if (skillForm) {
+      skillForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const empId = document.getElementById('skillEmployeeId').value;
+        const skills = document.getElementById('skillInput').value.split(',').map(s => s.trim()).filter(s => s);
+        let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
+        const idx = employees.findIndex(emp => emp.id == empId);
+        if (idx !== -1) {
+          employees[idx].skills = skills;
+          localStorage.setItem('sunstar_employees', JSON.stringify(employees));
+          if (window.EmployeeDataService) {
+            await window.EmployeeDataService.upsertEmployee(employees[idx]);
+          }
         }
-      }
-      document.getElementById('manageSkillsModal').classList.add('hidden');
-      renderSkills();
-    });
+        document.getElementById('manageSkillsModal').classList.add('hidden');
+        renderSkills();
+      });
+    }
 
     /* 3. Certifications Logic */
     function renderCerts() {
@@ -589,30 +604,33 @@
       document.getElementById('addCertModal').classList.remove('hidden');
     }
 
-    document.getElementById('certForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const empId = document.getElementById('certEmpId').value;
-      const newCert = {
-        id: Date.now(),
-        name: document.getElementById('certName').value,
-        date: document.getElementById('certDate').value,
-        expiry: document.getElementById('certExpiry').value,
-        issuer: document.getElementById('certIssuer').value
-      };
-      
-      let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const idx = employees.findIndex(emp => emp.id == empId);
-      if (idx !== -1) {
-        employees[idx].certs.push(newCert);
-        localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-        if (window.EmployeeDataService) {
-          await window.EmployeeDataService.upsertEmployee(employees[idx]);
+    const certForm = document.getElementById('certForm');
+    if (certForm) {
+      certForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const empId = document.getElementById('certEmpId').value;
+        const newCert = {
+          id: Date.now(),
+          name: document.getElementById('certName').value,
+          date: document.getElementById('certDate').value,
+          expiry: document.getElementById('certExpiry').value,
+          issuer: document.getElementById('certIssuer').value
+        };
+        
+        let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
+        const idx = employees.findIndex(emp => emp.id == empId);
+        if (idx !== -1) {
+          employees[idx].certs.push(newCert);
+          localStorage.setItem('sunstar_employees', JSON.stringify(employees));
+          if (window.EmployeeDataService) {
+            await window.EmployeeDataService.upsertEmployee(employees[idx]);
+          }
+          document.getElementById('addCertModal').classList.add('hidden');
+          certForm.reset();
+          renderCerts();
         }
-        document.getElementById('addCertModal').classList.add('hidden');
-        document.getElementById('certForm').reset();
-        renderCerts();
-      }
-    });
+      });
+    }
 
     function renderTrainingDevEntries() {
       const tbody = document.getElementById('entriesTableBody');
@@ -648,6 +666,7 @@
       if (event.key && event.key !== 'sunstar_employees' && event.key !== 'sunstar_trainings' && event.key !== TRAINING_DEV_KEY) return;
       await syncEmployeesFromSupabase();
       await syncTrainingsFromSupabase();
+      await syncTrainingDevEntriesFromSupabase();
       syncEmployeeFields();
       renderTrainingDevEntries();
     });

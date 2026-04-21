@@ -432,9 +432,18 @@
       }
     }
 
+    async function syncTrainingDevEntriesFromSupabase() {
+      if (!window.HRDataService || typeof window.HRDataService.fetchTrainingDevEntries !== 'function') return;
+      const remote = await window.HRDataService.fetchTrainingDevEntries();
+      if (Array.isArray(remote)) {
+        localStorage.setItem(TRAINING_DEV_KEY, JSON.stringify(remote));
+      }
+    }
+
     async function initPage() {
       await syncEmployeesFromSupabase();
       await syncTrainingsFromSupabase();
+      await syncTrainingDevEntriesFromSupabase();
       normalizeDataModels();
       resolveActiveUser();
       renderTrainingEntries();
@@ -543,7 +552,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       initPage();
 
-      document.getElementById('trainingDevForm').addEventListener('submit', (event) => {
+      document.getElementById('trainingDevForm').addEventListener('submit', async (event) => {
         event.preventDefault();
         if (activeUserId === null) {
           alert('No employee profile found. Please log in again.');
@@ -577,7 +586,14 @@
         const entries = getTrainingDevEntries();
         entries.push(newEntry);
         setTrainingDevEntries(entries);
+        if (window.HRDataService && typeof window.HRDataService.upsertTrainingDevEntry === 'function') {
+          const ok = await window.HRDataService.upsertTrainingDevEntry(newEntry);
+          if (!ok) {
+            alert('Entry saved locally but failed to sync to database.');
+          }
+        }
         document.getElementById('trainingDevForm').reset();
+        await syncTrainingDevEntriesFromSupabase();
         renderTrainingEntries();
       });
     });
