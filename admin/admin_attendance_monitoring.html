@@ -155,7 +155,7 @@
         <section>
           <div class="mb-4">
             <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Attendance Requests</h2>
-            <p class="text-xs text-zinc-500 font-medium mt-1">Approve or reject Overtime, Special Work, and Official Business requests.</p>
+            <p class="text-xs text-zinc-500 font-medium mt-1">Approve or decline Overtime, Special Holiday Work, and Official Business requests.</p>
           </div>
 
           <div class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
@@ -173,6 +173,43 @@
                   </tr>
                 </thead>
                 <tbody id="attendanceRequestBody" class="divide-y divide-zinc-100">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Employee DTR History</h2>
+              <p class="text-xs text-zinc-500 font-medium mt-1">View monthly Daily Time Record and print to PDF.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <select id="dtrEmployeeSelect" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white"></select>
+              <input type="month" id="dtrMonthInput" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white">
+              <button id="printDtrBtn" class="h-9 rounded-md border border-zinc-300 bg-white px-3 text-xs font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition">Print PDF</button>
+            </div>
+          </div>
+          <div class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+            <div class="border-b border-zinc-200 bg-zinc-50 px-6 py-3">
+              <p class="text-[11px] font-black uppercase tracking-widest text-zinc-500">Present Days This Month: <span id="dtrPresentCount" class="text-zinc-900">0</span></p>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                  <tr>
+                    <th class="px-6 py-4">Date</th>
+                    <th class="px-6 py-4">Shift</th>
+                    <th class="px-6 py-4">Clock In</th>
+                    <th class="px-6 py-4">Clock Out</th>
+                    <th class="px-6 py-4">OT Hours</th>
+                    <th class="px-6 py-4">Holiday Work</th>
+                    <th class="px-6 py-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dtrTableBody" class="divide-y divide-zinc-100">
                   <!-- Dynamically populated -->
                 </tbody>
               </table>
@@ -299,6 +336,11 @@
       const tbody = document.getElementById('attendanceTableBody');
       const requestBody = document.getElementById('attendanceRequestBody');
       const controlBody = document.getElementById('employeeControlBody');
+      const dtrEmployeeSelect = document.getElementById('dtrEmployeeSelect');
+      const dtrMonthInput = document.getElementById('dtrMonthInput');
+      const dtrTableBody = document.getElementById('dtrTableBody');
+      const dtrPresentCount = document.getElementById('dtrPresentCount');
+      const printDtrBtn = document.getElementById('printDtrBtn');
 
       function safeParse(value, fallback) {
         try {
@@ -425,6 +467,12 @@
         })} PST`;
       }
 
+      function formatOvertimeHours(value) {
+        const parsed = Number.parseFloat(value);
+        if (!Number.isFinite(parsed) || parsed <= 0) return '0.0';
+        return parsed.toFixed(1);
+      }
+
       function markRecordVerified(record) {
         record.isVerified = true;
         record.verifiedBy = getVerifierName();
@@ -473,8 +521,51 @@
         if (!window.HRDataService || !window.HRDataService.fetchAttendanceRequests) return;
         const remote = await window.HRDataService.fetchAttendanceRequests();
         if (Array.isArray(remote)) {
-          localStorage.setItem(ATTENDANCE_REQUEST_KEY, JSON.stringify(remote));
+          // Merge remote data with existing localStorage data instead of overwriting
+          const cached = safeParse(localStorage.getItem(ATTENDANCE_REQUEST_KEY), []);
+          const merged = mergeAttendanceRequestsForSync(cached, remote);
+          localStorage.setItem(ATTENDANCE_REQUEST_KEY, JSON.stringify(merged));
         }
+      }
+
+      function mergeAttendanceRequestsForSync(cachedRequests, remoteRequests) {
+        const mergedMap = new Map();
+        
+        // Add all cached requests
+        cachedRequests.forEach((request) => {
+          if (request && request.id) {
+            mergedMap.set(String(request.id), request);
+          }
+        });
+        
+        // Merge remote requests - remote data takes precedence if newer
+        remoteRequests.forEach((remoteRequest) => {
+          if (!remoteRequest || !remoteRequest.id) return;
+          const key = String(remoteRequest.id);
+          const existing = mergedMap.get(key);
+          
+          if (!existing) {
+            // New request from remote
+            mergedMap.set(key, remoteRequest);
+          } else {
+            // Request exists in cache - use remote if newer
+            const existingTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
+            const remoteTime = new Date(remoteRequest.updatedAt || remoteRequest.createdAt || 0).getTime();
+            
+            if (remoteTime >= existingTime) {
+              mergedMap.set(key, { ...existing, ...remoteRequest });
+            }
+          }
+        });
+        
+        // Sort by date descending
+        return Array.from(mergedMap.values()).sort((a, b) => {
+          const dateDiff = String(b.requestDate || '').localeCompare(String(a.requestDate || ''));
+          if (dateDiff !== 0) return dateDiff;
+          const timeB = new Date(b.createdAt || 0).getTime();
+          const timeA = new Date(a.createdAt || 0).getTime();
+          return timeB - timeA;
+        });
       }
 
       await syncEmployeesFromSupabase();
@@ -580,10 +671,26 @@
         if (normalized === 'Approved') {
           return '<span class="inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset bg-green-50 text-green-700 ring-green-600/20">Approved</span>';
         }
-        if (normalized === 'Rejected') {
-          return '<span class="inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20">Rejected</span>';
+        if (normalized === 'Rejected' || normalized === 'Declined') {
+          return '<span class="inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20">Declined</span>';
         }
         return '<span class="inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset bg-amber-50 text-amber-700 ring-amber-600/20">Pending</span>';
+      }
+
+      function buildRequestDetailsLabel(request) {
+        const details = request.requestDetails || {};
+        if (request.requestType === 'Overtime') {
+          if (details.dateFrom || details.timeFrom || details.timeTo || details.dateTo) {
+            return `${details.dateFrom || '--'} to ${details.dateTo || '--'} • ${details.timeFrom || '--'}-${details.timeTo || '--'}`;
+          }
+          const requestedHours = Number.parseFloat(request.requestedHours);
+          const safeRequestedHours = Number.isFinite(requestedHours) && requestedHours > 0 ? requestedHours.toFixed(1) : '0.0';
+          return `${safeRequestedHours}h OT • ${request.shiftSchedule || DEFAULT_SHIFT_SCHEDULE}`;
+        }
+        if (request.requestType === 'Special Holiday Work' || request.requestType === 'Special Work') {
+          return `${details.date || request.requestDate || '--'} • ${details.specialHoliday || request.reason || '--'}`;
+        }
+        return `${details.dateFrom || request.requestDate || '--'} to ${details.dateTo || details.dateFrom || request.requestDate || '--'}`;
       }
 
       function renderAttendanceRequestTable() {
@@ -607,13 +714,10 @@
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-zinc-50 transition duration-150';
 
-          const requestedHours = Number.parseFloat(request.requestedHours);
-          const safeRequestedHours = Number.isFinite(requestedHours) && requestedHours > 0 ? requestedHours.toFixed(1) : '0.0';
-          const shiftLabel = request.shiftSchedule || DEFAULT_SHIFT_SCHEDULE;
-          const details = request.requestType === 'Overtime'
-            ? `${safeRequestedHours}h OT • ${shiftLabel}`
-            : shiftLabel;
-          const reasonText = escapeHtml(request.reason || '--');
+          const detailsText = buildRequestDetailsLabel(request);
+          const reasonText = request.requestType === 'Official Business'
+            ? escapeHtml((request.requestDetails && request.requestDetails.businessType) || '--')
+            : escapeHtml(request.reason || '--');
           const dateText = formatReadableDate(request.requestDate);
           const decisionMeta = request.decisionAt
             ? `<div class="text-[9px] text-zinc-400 font-bold mt-1">${formatVerifiedAtLabel(request.decisionAt)}${request.decisionBy ? ` by ${escapeHtml(request.decisionBy)}` : ''}</div>`
@@ -623,7 +727,7 @@
             ? `
                 <div class="inline-flex gap-2 justify-end">
                   <button onclick="updateAttendanceRequestStatus('${request.id}', 'Approved')" class="text-[10px] font-black uppercase text-emerald-700 border border-emerald-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-emerald-50 transition-colors">Approve</button>
-                  <button onclick="updateAttendanceRequestStatus('${request.id}', 'Rejected')" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Reject</button>
+                  <button onclick="updateAttendanceRequestStatus('${request.id}', 'Declined')" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Decline</button>
                 </div>
               `
             : `<span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Completed</span>`;
@@ -632,7 +736,7 @@
             <td class="px-6 py-4 text-sm font-bold text-zinc-900">${escapeHtml(request.employeeName || 'Employee')}</td>
             <td class="px-6 py-4 text-xs font-bold text-zinc-600">${dateText}</td>
             <td class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-700">${escapeHtml(request.requestType || 'Request')}</td>
-            <td class="px-6 py-4 text-xs font-bold text-zinc-600">${escapeHtml(details)}</td>
+            <td class="px-6 py-4 text-xs font-bold text-zinc-600">${escapeHtml(detailsText)}</td>
             <td class="px-6 py-4 text-xs text-zinc-700">${reasonText}</td>
             <td class="px-6 py-4">${getRequestStatusBadge(request.status)}${request.decisionNote ? `<div class="mt-1 text-[10px] text-zinc-600 font-medium">${escapeHtml(request.decisionNote)}</div>` : ''}${decisionMeta}</td>
             <td class="px-6 py-4 text-right">${actionCell}</td>
@@ -830,6 +934,110 @@
         });
       }
 
+      function renderDtrEmployeeOptions() {
+        const employees = getEmployees();
+        dtrEmployeeSelect.innerHTML = employees.length
+          ? employees.map(emp => `<option value="${emp.id}">${escapeHtml(`${emp.firstName || ''} ${emp.lastName || ''}`.trim())}</option>`).join('')
+          : '<option value="">No employees</option>';
+      }
+
+      function getCurrentMonthValue() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        return `${year}-${month}`;
+      }
+
+      function renderDtrTable() {
+        const employeeId = dtrEmployeeSelect.value;
+        const selectedMonth = dtrMonthInput.value || getCurrentMonthValue();
+        const [year, month] = selectedMonth.split('-').map(Number);
+        const attendances = getAttendances();
+        const rows = [];
+
+        Object.keys(attendances).forEach(dateIso => {
+          const parsed = parseIsoDate(dateIso);
+          if (!parsed) return;
+          if (parsed.year !== year || parsed.month !== month) return;
+          const dayRecords = Array.isArray(attendances[dateIso]) ? attendances[dateIso] : [];
+          const record = dayRecords.find(rec => String(rec.empId) === String(employeeId));
+          if (!record) return;
+          rows.push({ dateIso, record });
+        });
+
+        rows.sort((a, b) => String(a.dateIso).localeCompare(String(b.dateIso)));
+        dtrTableBody.innerHTML = '';
+
+        if (!rows.length) {
+          dtrTableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-sm text-zinc-400 italic">No DTR records for selected employee/month.</td></tr>';
+          dtrPresentCount.textContent = '0';
+          return;
+        }
+
+        let presentCounter = 0;
+        rows.forEach(item => {
+          const rec = item.record;
+          const status = String(rec.status || 'Absent');
+          if (status === 'Present' || status === 'Late') presentCounter += 1;
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-zinc-50 transition duration-150';
+          tr.innerHTML = `
+            <td class="px-6 py-4 text-xs font-bold text-zinc-700">${formatReadableDate(item.dateIso)}</td>
+            <td class="px-6 py-4 text-xs font-bold text-zinc-600">${escapeHtml(rec.shift || DEFAULT_SHIFT_SCHEDULE)}</td>
+            <td class="px-6 py-4 text-xs font-bold text-zinc-700">${rec.clockIn || '--'}</td>
+            <td class="px-6 py-4 text-xs font-bold text-zinc-700">${rec.clockOut || '--'}</td>
+            <td class="px-6 py-4 text-xs font-bold text-zinc-700">${formatOvertimeHours(rec.ot)}</td>
+            <td class="px-6 py-4 text-xs font-bold text-zinc-700">${rec.isHoliday ? 'Yes' : 'No'}</td>
+            <td class="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-700">${escapeHtml(status)}</td>
+          `;
+          dtrTableBody.appendChild(tr);
+        });
+
+        dtrPresentCount.textContent = String(presentCounter);
+      }
+
+      function printDtrReport() {
+        const employeeLabel = dtrEmployeeSelect.options[dtrEmployeeSelect.selectedIndex]?.text || 'Employee';
+        const monthLabel = dtrMonthInput.value || getCurrentMonthValue();
+        const tableContent = dtrTableBody.innerHTML;
+        const presentLabel = dtrPresentCount.textContent || '0';
+
+        const printWindow = window.open('', '_blank', 'width=1000,height=800');
+        if (!printWindow) return;
+
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>DTR Report - ${employeeLabel}</title>
+              <style>
+                body { font-family: Arial, sans-serif; padding: 24px; }
+                h1, h2, p { margin: 0 0 10px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+                th, td { border: 1px solid #ddd; padding: 8px; font-size: 12px; text-align: left; }
+                th { background: #f5f5f5; text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
+              </style>
+            </head>
+            <body>
+              <h1>SunStar Davao - DTR History</h1>
+              <h2>${employeeLabel}</h2>
+              <p>Month: ${monthLabel}</p>
+              <p>Present Days: ${presentLabel}</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th><th>Shift</th><th>Clock In</th><th>Clock Out</th><th>OT Hours</th><th>Holiday Work</th><th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>${tableContent}</tbody>
+              </table>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+      }
+
       window.markLate = async function(name, employeeId) {
         const dateIso = dateInput.value;
         await upsertManualStatus(name, employeeId, dateIso, 'Late');
@@ -862,6 +1070,9 @@
       prevDateBtn.addEventListener('click', () => updateDateObj(-1));
       nextDateBtn.addEventListener('click', () => updateDateObj(1));
       dateInput.addEventListener('change', (e) => renderTable(e.target.value));
+      dtrEmployeeSelect.addEventListener('change', renderDtrTable);
+      dtrMonthInput.addEventListener('change', renderDtrTable);
+      printDtrBtn.addEventListener('click', printDtrReport);
 
       window.addEventListener('storage', async function(event) {
         if (event.key && event.key !== 'sunstar_attendance' && event.key !== 'sunstar_employees' && event.key !== ATTENDANCE_REQUEST_KEY) return;
@@ -872,14 +1083,19 @@
         renderTable(activeDate);
         renderAttendanceRequestTable();
         renderControl();
+        renderDtrEmployeeOptions();
+        renderDtrTable();
       });
 
       // Init logic
       const todayIso = getManilaIsoDate();
       dateInput.value = todayIso;
+      dtrMonthInput.value = getCurrentMonthValue();
+      renderDtrEmployeeOptions();
       renderTable(todayIso);
       renderAttendanceRequestTable();
       renderControl();
+      renderDtrTable();
     });
   </script>
 </body>

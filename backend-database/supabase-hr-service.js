@@ -220,16 +220,31 @@
   }
 
   function mapAttendanceRequestDbToLocal(row) {
+    const dbStatus = row.status || "Pending";
+    const normalizedStatus = dbStatus === "Rejected" ? "Declined" : dbStatus;
+    const dbType = row.request_type || "Official Business";
+    const normalizedType = dbType === "Special Work" ? "Special Holiday Work" : dbType;
+    const requestDateTo = row.request_date_to || row.request_date || "";
+
     return {
       id: row.id,
       empId: row.employee_id,
       employeeName: row.employee_name || "",
       requestDate: row.request_date || "",
-      requestType: row.request_type || "Official Business",
+      requestType: normalizedType,
       requestedHours: formatOvertimeHours(row.requested_hours),
       shiftSchedule: row.shift_schedule || DEFAULT_SHIFT_SCHEDULE,
       reason: row.reason || "",
-      status: row.status || "Pending",
+      status: normalizedStatus,
+      requestDetails: {
+        dateFrom: row.request_date || "",
+        dateTo: requestDateTo,
+        timeFrom: row.time_from || "",
+        timeTo: row.time_to || "",
+        businessType: row.business_type || "",
+        date: row.request_date || "",
+        specialHoliday: row.special_holiday || ""
+      },
       decisionNote: row.decision_note || "",
       decisionBy: row.decided_by || "",
       decisionAt: row.decided_at || "",
@@ -241,17 +256,26 @@
   function mapAttendanceRequestLocalToDb(request) {
     const parsedEmployeeId = Number(request.empId);
     const parsedHours = Number.parseFloat(request.requestedHours);
+    const requestDetails = request.requestDetails || {};
+    const normalizedStatus = request.status === "Declined" ? "Rejected" : (request.status || "Pending");
+    const normalizedType = request.requestType === "Special Holiday Work" ? "Special Work" : (request.requestType || "Official Business");
+    const requestDateTo = requestDetails.dateTo || request.requestDate;
 
     return {
       id: request.id,
       employee_id: Number.isFinite(parsedEmployeeId) ? parsedEmployeeId : null,
       employee_name: request.employeeName || "Unknown Employee",
       request_date: safeDateString(request.requestDate),
-      request_type: request.requestType || "Official Business",
+      request_date_to: safeDateString(requestDateTo),
+      request_type: normalizedType,
       requested_hours: Number.isFinite(parsedHours) && parsedHours > 0 ? parsedHours : 0,
       shift_schedule: request.shiftSchedule || DEFAULT_SHIFT_SCHEDULE,
       reason: request.reason || null,
-      status: request.status || "Pending",
+      time_from: requestDetails.timeFrom || null,
+      time_to: requestDetails.timeTo || null,
+      business_type: requestDetails.businessType || null,
+      special_holiday: requestDetails.specialHoliday || null,
+      status: normalizedStatus,
       decision_note: request.decisionNote || null,
       decided_by: request.decisionBy || null,
       decided_at: request.decisionAt || null
@@ -710,11 +734,35 @@
       }
 
       const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
-      const hasMissingShiftColumn = /shift_schedule/i.test(errorText);
-      if (hasMissingShiftColumn) {
-        const fallbackPayload = { ...payload };
-        delete fallbackPayload.shift_schedule;
+      const fallbackPayload = { ...payload };
+      let shouldRetry = false;
 
+      if (/shift_schedule/i.test(errorText)) {
+        delete fallbackPayload.shift_schedule;
+        shouldRetry = true;
+      }
+      if (/request_date_to/i.test(errorText)) {
+        delete fallbackPayload.request_date_to;
+        shouldRetry = true;
+      }
+      if (/time_from/i.test(errorText)) {
+        delete fallbackPayload.time_from;
+        shouldRetry = true;
+      }
+      if (/time_to/i.test(errorText)) {
+        delete fallbackPayload.time_to;
+        shouldRetry = true;
+      }
+      if (/business_type/i.test(errorText)) {
+        delete fallbackPayload.business_type;
+        shouldRetry = true;
+      }
+      if (/special_holiday/i.test(errorText)) {
+        delete fallbackPayload.special_holiday;
+        shouldRetry = true;
+      }
+
+      if (shouldRetry) {
         const fallback = await window.supabaseClient
           .from(ATTENDANCE_REQUEST_TABLE)
           .upsert(fallbackPayload, { onConflict: "id" });
