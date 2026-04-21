@@ -5,8 +5,8 @@
   const ATTENDANCE_KEY = "sunstar_attendance";
   const ATTENDANCE_REQUEST_KEY = "sunstar_attendance_requests";
   const ATTENDANCE_REQUEST_TABLE = "attendance_special_requests";
-  const ATTENDANCE_REQUEST_TABLE_MISSING_FLAG = "sunstar_attendance_requests_table_missing";
   const DEFAULT_SHIFT_SCHEDULE = "Newsroom Day Shift (08:00 AM - 05:00 PM)";
+  let attendanceRequestTableMissingInSession = false;
   const ATTENDANCE_EXTENDED_COLUMNS = [
     "is_verified",
     "verified_by",
@@ -234,15 +234,15 @@
   }
 
   function isAttendanceRequestTableMarkedMissing() {
-    return localStorage.getItem(ATTENDANCE_REQUEST_TABLE_MISSING_FLAG) === "1";
+    return attendanceRequestTableMissingInSession;
   }
 
   function markAttendanceRequestTableMissing() {
-    localStorage.setItem(ATTENDANCE_REQUEST_TABLE_MISSING_FLAG, "1");
+    attendanceRequestTableMissingInSession = true;
   }
 
   function clearAttendanceRequestTableMissingMark() {
-    localStorage.removeItem(ATTENDANCE_REQUEST_TABLE_MISSING_FLAG);
+    attendanceRequestTableMissingInSession = false;
   }
 
   function hasExtendedAttendanceColumns(rows) {
