@@ -424,8 +424,12 @@
       let activeUserName = '';
 
       function safeParse(value, fallback) {
+         if (typeof value !== 'string' || value.trim() === '') {
+            return fallback;
+         }
          try {
-            return JSON.parse(value);
+            const parsed = JSON.parse(value);
+            return parsed ?? fallback;
          } catch {
             return fallback;
          }
@@ -452,7 +456,8 @@
       }
 
       function getManagerReviews() {
-         return safeParse(localStorage.getItem(MANAGER_REVIEW_KEY), []);
+         const parsed = safeParse(localStorage.getItem(MANAGER_REVIEW_KEY), []);
+         return Array.isArray(parsed) ? parsed : [];
       }
 
       function setManagerReviews(reviews) {
