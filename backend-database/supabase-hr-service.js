@@ -3,6 +3,8 @@
   const LEAVE_KEY = "sunstar_leaves";
   const LEAVE_ATTACHMENT_TABLE = "leave_attachments";
   const ATTENDANCE_KEY = "sunstar_attendance";
+  const ATTENDANCE_REQUEST_KEY = "sunstar_attendance_requests";
+  const ATTENDANCE_REQUEST_TABLE = "attendance_special_requests";
   const DEFAULT_SHIFT_SCHEDULE = "Newsroom Day Shift (08:00 AM - 05:00 PM)";
   const ATTENDANCE_EXTENDED_COLUMNS = [
     "is_verified",
@@ -173,6 +175,51 @@
       sanctionBy: row.sanction_by || "",
       sanctionAt: row.sanction_at || ""
     };
+  }
+
+  function mapAttendanceRequestDbToLocal(row) {
+    return {
+      id: row.id,
+      empId: row.employee_id,
+      employeeName: row.employee_name || "",
+      requestDate: row.request_date || "",
+      requestType: row.request_type || "Official Business",
+      requestedHours: formatOvertimeHours(row.requested_hours),
+      reason: row.reason || "",
+      status: row.status || "Pending",
+      decisionNote: row.decision_note || "",
+      decisionBy: row.decided_by || "",
+      decisionAt: row.decided_at || "",
+      createdAt: row.created_at || "",
+      updatedAt: row.updated_at || ""
+    };
+  }
+
+  function mapAttendanceRequestLocalToDb(request) {
+    const parsedEmployeeId = Number(request.empId);
+    const parsedHours = Number.parseFloat(request.requestedHours);
+
+    return {
+      id: request.id,
+      employee_id: Number.isFinite(parsedEmployeeId) ? parsedEmployeeId : null,
+      employee_name: request.employeeName || "Unknown Employee",
+      request_date: safeDateString(request.requestDate),
+      request_type: request.requestType || "Official Business",
+      requested_hours: Number.isFinite(parsedHours) && parsedHours > 0 ? parsedHours : 0,
+      reason: request.reason || null,
+      status: request.status || "Pending",
+      decision_note: request.decisionNote || null,
+      decided_by: request.decisionBy || null,
+      decided_at: request.decisionAt || null
+    };
+  }
+
+  function isAttendanceRequestTableMissing(error) {
+    const message = [error && error.message, error && error.details, error && error.hint]
+      .filter(Boolean)
+      .join(" ");
+
+    return /attendance_special_requests/i.test(message);
   }
 
   function hasExtendedAttendanceColumns(rows) {
@@ -455,6 +502,47 @@
     return true;
   }
 
+  async function fetchAttendanceRequests() {
+    if (!hasClient()) return null;
+
+    const { data, error } = await window.supabaseClient
+      .from(ATTENDANCE_REQUEST_TABLE)
+      .select("*")
+      .order("request_date", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      if (isAttendanceRequestTableMissing(error)) {
+        return [];
+      }
+
+      console.error("fetchAttendanceRequests failed", error);
+      return null;
+    }
+
+    return (data || []).map(mapAttendanceRequestDbToLocal);
+  }
+
+  async function upsertAttendanceRequest(request) {
+    if (!hasClient() || !request || !request.id) return false;
+
+    const payload = mapAttendanceRequestLocalToDb(request);
+    let { error } = await window.supabaseClient
+      .from(ATTENDANCE_REQUEST_TABLE)
+      .upsert(payload, { onConflict: "id" });
+
+    if (error) {
+      if (isAttendanceRequestTableMissing(error)) {
+        return true;
+      }
+
+      console.error("upsertAttendanceRequest failed", error);
+      return false;
+    }
+
+    return true;
+  }
+
   async function syncTrainingsLocalFromRemote() {
     const remote = await fetchTrainings();
     if (!Array.isArray(remote)) return false;
@@ -476,6 +564,13 @@
     return true;
   }
 
+  async function syncAttendanceRequestsLocalFromRemote() {
+    const remote = await fetchAttendanceRequests();
+    if (!Array.isArray(remote)) return false;
+    localStorage.setItem(ATTENDANCE_REQUEST_KEY, JSON.stringify(remote));
+    return true;
+  }
+
   window.HRDataService = {
     fetchTrainings,
     upsertTraining,
@@ -483,8 +578,11 @@
     upsertLeave,
     fetchAttendanceGrouped,
     upsertAttendanceRecord,
+    fetchAttendanceRequests,
+    upsertAttendanceRequest,
     syncTrainingsLocalFromRemote,
     syncLeavesLocalFromRemote,
-    syncAttendanceLocalFromRemote
+    syncAttendanceLocalFromRemote,
+    syncAttendanceRequestsLocalFromRemote
   };
 })();

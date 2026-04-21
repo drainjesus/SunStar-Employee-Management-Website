@@ -212,17 +212,13 @@
                     <option value="Digital Desk Shift (08:00 AM - 05:00 PM)">Digital Desk Shift (08:00 AM - 05:00 PM)</option>
                  </select>
 
-                 <label class="mt-4 flex items-start gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3">
-                    <input id="holidayWorkCheckbox" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-zinc-300 text-sun-yellow focus:ring-sun-yellow">
-                    <span class="text-xs font-bold text-zinc-700">Special Work on Holiday</span>
-                 </label>
-
-                 <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                 <div class="mt-4 grid grid-cols-1 gap-3">
                     <button onclick="openOfficialBusinessModal()" class="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-3 text-xs font-bold text-blue-700 hover:bg-blue-100 transition uppercase tracking-widest">📋 File Official Business</button>
                     <button onclick="openOvertimeApplicationModal()" class="w-full rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-xs font-bold text-amber-700 hover:bg-amber-100 transition uppercase tracking-widest">⏱️ Apply for Overtime</button>
+                    <button onclick="openSpecialWorkModal()" class="w-full rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-xs font-bold text-violet-700 hover:bg-violet-100 transition uppercase tracking-widest">🛠️ File Special Work</button>
                  </div>
 
-                 <p class="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Overtime and special work require admin approval. File Official Business if unable to clock in due to business reasons.</p>
+                 <p class="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Overtime, special work, and official business are submitted as requests for admin approval and tracked below.</p>
               </div>
 
               <!-- Quick Info Card -->
@@ -249,7 +245,6 @@
                           <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">Shift Details</th>
                           <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] text-center border-r border-zinc-100/50">Entry Time</th>
                           <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] text-center border-r border-zinc-100/50">Exit Time</th>
-                          <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] border-r border-zinc-100/50">OT/Special</th>
                           <th class="px-8 py-5 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] text-right">Verdict</th>
                        </tr>
                     </thead>
@@ -266,6 +261,34 @@
               </div>
            </div>
         </div>
+
+        <section class="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+           <div class="border-b border-zinc-100 bg-zinc-50/60 px-6 py-4 sm:px-8 flex items-center justify-between gap-3">
+              <div>
+                 <p class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Approval Workflow</p>
+                 <h2 class="mt-1 text-lg font-black uppercase tracking-tight text-zinc-900">Request Tracker</h2>
+              </div>
+              <span class="rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-500">OT / Special Work / OB</span>
+           </div>
+           <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse min-w-[760px]">
+                 <thead>
+                    <tr class="border-b border-zinc-100 bg-white">
+                       <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em]">Date</th>
+                       <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em]">Type</th>
+                       <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em]">Details</th>
+                       <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em]">Reason</th>
+                       <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em]">Status</th>
+                       <th class="px-6 py-4 text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em]">Admin Note</th>
+                    </tr>
+                 </thead>
+                 <tbody id="attendanceRequestHistory" class="divide-y divide-zinc-50"></tbody>
+              </table>
+           </div>
+           <div id="noAttendanceRequestMsg" class="hidden px-8 py-14 text-center">
+              <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No pending or completed attendance requests yet.</p>
+           </div>
+        </section>
 
       </div>
     </main>
@@ -425,6 +448,33 @@
     </div>
   </div>
 
+   <!-- Special Work Modal -->
+   <div id="specialWorkModal" class="relative z-50 hidden">
+      <div class="fixed inset-0 bg-zinc-900/10 backdrop-blur-md"></div>
+      <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+         <div class="relative max-w-sm w-full rounded-2xl bg-white p-8 shadow-2xl border border-zinc-200 animate-modal-in">
+            <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-1">Special Work</h3>
+            <p class="text-[10px] text-zinc-400 mb-6 font-black uppercase tracking-[0.2em]">Request special work approval</p>
+
+            <div class="space-y-4 mb-6">
+               <div>
+                  <label class="block text-[10px] font-black uppercase text-zinc-600 mb-2">Date</label>
+                  <input type="date" id="specialWorkDate" class="w-full px-4 py-3 border-2 border-zinc-200 rounded-xl focus:border-sun-yellow focus:outline-none text-sm">
+               </div>
+               <div>
+                  <label class="block text-[10px] font-black uppercase text-zinc-600 mb-2">Reason for Special Work</label>
+                  <textarea id="specialWorkReason" placeholder="Enter the reason..." class="w-full px-4 py-3 border-2 border-zinc-200 rounded-xl focus:border-sun-yellow focus:outline-none text-sm placeholder-zinc-300 h-24 resize-none"></textarea>
+               </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+               <button onclick="submitSpecialWork()" class="w-full bg-sun-yellow py-4 text-sm font-bold text-zinc-900 rounded-xl shadow-lg uppercase tracking-widest hover:bg-sun-yellowLight transition-all active:scale-[0.98] border border-sun-yellowDark">Submit Request</button>
+               <button onclick="document.getElementById('specialWorkModal').classList.add('hidden')" class="w-full bg-white text-zinc-400 py-3 text-xs font-black uppercase tracking-widest hover:text-zinc-900 transition active:scale-95">Cancel</button>
+            </div>
+         </div>
+      </div>
+   </div>
+
    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
    <script src="../backend-database/supabase-config.js"></script>
    <script src="../backend-database/supabase-client.js"></script>
@@ -433,6 +483,7 @@
 
    <script>
       const STORAGE_KEY = 'sunstar_attendance';
+      const ATTENDANCE_REQUEST_KEY = 'sunstar_attendance_requests';
       const EMPLOYEE_KEY = 'sunstar_employees';
       const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
       const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
@@ -608,6 +659,14 @@
          return safeParse(localStorage.getItem(STORAGE_KEY), {});
       }
 
+      function getAttendanceRequests() {
+         return safeParse(localStorage.getItem(ATTENDANCE_REQUEST_KEY), []);
+      }
+
+      function saveAttendanceRequests(requests) {
+         localStorage.setItem(ATTENDANCE_REQUEST_KEY, JSON.stringify(requests));
+      }
+
       function redirectToLogin() {
          window.location.replace('../index.html');
       }
@@ -636,6 +695,14 @@
          const remote = await window.HRDataService.fetchAttendanceGrouped();
          if (remote && typeof remote === 'object') {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(remote));
+         }
+      }
+
+      async function syncAttendanceRequestsFromSupabase() {
+         if (!window.HRDataService || !window.HRDataService.fetchAttendanceRequests) return;
+         const remote = await window.HRDataService.fetchAttendanceRequests();
+         if (Array.isArray(remote)) {
+            saveAttendanceRequests(remote);
          }
       }
 
@@ -698,7 +765,6 @@
          const sanctionPreviewText = document.getElementById('sanctionPreviewText');
          const sanctionViewBtn = document.getElementById('sanctionViewBtn');
          const shiftSelect = document.getElementById('shiftScheduleSelect');
-         const holidayCheckbox = document.getElementById('holidayWorkCheckbox');
 
          inBtn.classList.remove('opacity-50', 'pointer-events-none');
          outBtn.classList.remove('opacity-50', 'pointer-events-none');
@@ -715,10 +781,10 @@
             inBtn.disabled = true;
             outBtn.disabled = true;
             if (shiftSelect) shiftSelect.disabled = true;
-            if (holidayCheckbox) holidayCheckbox.disabled = true;
             indicator.classList.remove('hidden');
             statusText.textContent = 'No employee profile found. Ask admin to create your account.';
             renderHistory();
+            renderAttendanceRequestHistory();
             return;
          }
 
@@ -734,19 +800,12 @@
                shiftSelect.disabled = true;
             }
 
-            if (holidayCheckbox) {
-               holidayCheckbox.checked = !!myRecord.isHoliday;
-               holidayCheckbox.disabled = true;
-            }
-
             inBtn.disabled = true;
             inBtn.classList.add('opacity-50', 'pointer-events-none');
             inBtn.innerHTML = `✓ Clocked In at ${myRecord.clockIn}`;
 
             indicator.classList.remove('hidden');
-            const overtimeLabel = Number.parseFloat(myRecord.ot) > 0 ? ` • OT ${myRecord.ot}h` : '';
-            const specialLabel = myRecord.isHoliday ? ' • Holiday Work' : '';
-            statusText.textContent = `${myRecord.status} • ${myRecord.shift}${myRecord.clockOut !== '--' ? ` (Clocked Out: ${myRecord.clockOut})` : ''}${overtimeLabel}${specialLabel}`;
+            statusText.textContent = `${myRecord.status} • ${myRecord.shift}${myRecord.clockOut !== '--' ? ` (Clocked Out: ${myRecord.clockOut})` : ''}`;
 
             if (myRecord.sanctionMessage) {
                sanctionPreview.classList.remove('hidden');
@@ -771,11 +830,6 @@
                shiftSelect.value = shiftSelect.value || DEFAULT_SHIFT_SCHEDULE;
             }
 
-            if (holidayCheckbox) {
-               holidayCheckbox.disabled = false;
-               holidayCheckbox.checked = false;
-            }
-
             const canClockInNow = isClockInWindowOpen();
             inBtn.disabled = !canClockInNow;
             if (!canClockInNow) {
@@ -790,6 +844,7 @@
          }
 
          renderHistory();
+         renderAttendanceRequestHistory();
       }
 
       function renderHistory() {
@@ -827,10 +882,6 @@
                statusClasses += ' bg-green-50 text-green-700 ring-green-600/20';
             } else if (rec.status === 'Late') {
                statusClasses += ' bg-yellow-50 text-yellow-700 ring-yellow-600/20';
-            } else if (rec.status === 'Official Business') {
-               statusClasses += ' bg-blue-50 text-blue-700 ring-blue-600/20';
-            } else if (rec.otRequested) {
-               statusClasses += ' bg-amber-50 text-amber-700 ring-amber-600/20';
             } else {
                statusClasses += ' bg-red-50 text-red-700 ring-red-600/20';
             }
@@ -838,8 +889,6 @@
             const dayName = formatIsoDateInManila(rec.dateIso, { weekday: 'short' });
             const dateName = formatIsoDateInManila(rec.dateIso, { month: 'short', day: '2-digit' });
             const shiftLabel = rec.shift || DEFAULT_SHIFT_SCHEDULE;
-            const overtimeLabel = formatOvertimeHours(rec.ot);
-            const specialLabel = rec.isHoliday ? 'Holiday Work' : 'Regular Day';
             const sanctionButton = rec.sanctionMessage
                ? `<button type="button" onclick='showSanctionNote(${JSON.stringify(rec.sanctionMessage || '')}, ${JSON.stringify(rec.sanctionBy || '')}, ${JSON.stringify(rec.sanctionAt || '')}, ${JSON.stringify(rec.dateIso || '')})' class="mt-1 text-[10px] font-black uppercase tracking-widest text-red-700 underline underline-offset-2">View Sanction</button>`
                : '';
@@ -858,14 +907,106 @@
                  </td>
                   <td class="px-6 py-5 text-center font-bold text-sm text-zinc-600">${rec.clockIn || '--'}</td>
                   <td class="px-6 py-5 text-center font-bold text-sm text-zinc-600">${rec.clockOut || '--'}</td>
-                 <td class="px-6 py-5">
-                    <p class="text-xs font-black text-zinc-700">${overtimeLabel}h OT</p>
-                    <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">${specialLabel}</p>
-                 </td>
                  <td class="px-6 py-5 text-right"><span class="${statusClasses}">${rec.status || 'Absent'}</span>${sanctionRow}</td>
              `;
             tbody.appendChild(tr);
          });
+      }
+
+      function getRequestStatusTag(status) {
+         const normalized = String(status || 'Pending');
+         if (normalized === 'Approved') {
+            return '<span class="inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset bg-green-50 text-green-700 ring-green-600/20">Approved</span>';
+         }
+         if (normalized === 'Rejected') {
+            return '<span class="inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20">Rejected</span>';
+         }
+         return '<span class="inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset bg-amber-50 text-amber-700 ring-amber-600/20">Pending</span>';
+      }
+
+      function renderAttendanceRequestHistory() {
+         const tbody = document.getElementById('attendanceRequestHistory');
+         const noData = document.getElementById('noAttendanceRequestMsg');
+         if (!tbody || !noData) return;
+
+         tbody.innerHTML = '';
+         if (!activeUser) {
+            noData.classList.remove('hidden');
+            return;
+         }
+
+         const userName = getActiveUserName().toLowerCase();
+         const allRequests = getAttendanceRequests().filter((request) => {
+            if (String(request.empId || '') === String(activeUser.id)) return true;
+            return String(request.employeeName || '').trim().toLowerCase() === userName;
+         });
+
+         allRequests.sort((a, b) => {
+            const dateDiff = String(b.requestDate || '').localeCompare(String(a.requestDate || ''));
+            if (dateDiff !== 0) return dateDiff;
+            return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+         });
+
+         if (allRequests.length === 0) {
+            noData.classList.remove('hidden');
+            return;
+         }
+
+         noData.classList.add('hidden');
+         allRequests.forEach((request) => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-zinc-50 transition border-b border-zinc-100 last:border-0';
+
+            const dateLabel = formatIsoDateInManila(request.requestDate, { month: 'short', day: '2-digit', year: 'numeric' });
+            const details = request.requestType === 'Overtime'
+               ? `${formatOvertimeHours(request.requestedHours)}h requested`
+               : '--';
+            const adminNote = request.decisionNote || '--';
+
+            tr.innerHTML = `
+               <td class="px-6 py-4 text-xs font-black text-zinc-900">${dateLabel}</td>
+               <td class="px-6 py-4 text-xs font-black text-zinc-700 uppercase tracking-widest">${escapeHtml(request.requestType || 'Request')}</td>
+               <td class="px-6 py-4 text-xs font-bold text-zinc-600">${escapeHtml(details)}</td>
+               <td class="px-6 py-4 text-xs font-medium text-zinc-700">${escapeHtml(request.reason || '--')}</td>
+               <td class="px-6 py-4">${getRequestStatusTag(request.status)}</td>
+               <td class="px-6 py-4 text-xs font-medium text-zinc-600">${escapeHtml(adminNote)}</td>
+            `;
+            tbody.appendChild(tr);
+         });
+      }
+
+      function createAttendanceRequestId() {
+         return `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      }
+
+      async function submitAttendanceRequest(requestType, requestDate, reason, requestedHours = '0.0') {
+         const requests = getAttendanceRequests();
+         const nowIso = new Date().toISOString();
+
+         const payload = {
+            id: createAttendanceRequestId(),
+            empId: activeUser.id,
+            employeeName: getActiveUserName(),
+            requestDate,
+            requestType,
+            requestedHours: formatOvertimeHours(requestedHours),
+            reason,
+            status: 'Pending',
+            decisionNote: '',
+            decisionBy: '',
+            decisionAt: '',
+            createdAt: nowIso,
+            updatedAt: nowIso
+         };
+
+         requests.unshift(payload);
+         saveAttendanceRequests(requests);
+
+         if (window.HRDataService && window.HRDataService.upsertAttendanceRequest) {
+            await window.HRDataService.upsertAttendanceRequest(payload);
+         }
+
+         renderAttendanceRequestHistory();
       }
 
       function clockAction(type) {
@@ -889,7 +1030,6 @@
          const todayIso = getManilaIsoDate();
          const nowTime = formatManilaTime(new Date(), false);
          const selectedShift = getSelectedShiftSchedule();
-         const holidayWork = !!document.getElementById('holidayWorkCheckbox')?.checked;
          let data = getAttendances();
 
          if (!data[todayIso]) data[todayIso] = [];
@@ -922,7 +1062,7 @@
                status,
                shift: selectedShift,
                ot: '0.0',
-               isHoliday: holidayWork,
+               isHoliday: false,
                isVerified: false,
                verifiedBy: '',
                verifiedAt: '',
@@ -933,11 +1073,7 @@
             myRecord.clockOut = nowTime;
             myRecord.shift = myRecord.shift || selectedShift;
             myRecord.ot = '0.0';
-            myRecord.otRequested = false;
-            myRecord.otApproved = false;
-            if (typeof myRecord.isHoliday !== 'boolean') {
-               myRecord.isHoliday = holidayWork;
-            }
+            myRecord.isHoliday = false;
          }
 
          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -1039,41 +1175,7 @@
             return;
          }
 
-         const data = getAttendances();
-         if (!data[dateStr]) data[dateStr] = [];
-
-         let record = data[dateStr].find(r => String(r.empId) === String(activeUser.id));
-
-         if (!record) {
-            record = {
-               empId: activeUser.id,
-               name: getActiveUserName(),
-               clockIn: '--',
-               clockOut: '--',
-               status: 'Official Business',
-               shift: 'Official Business',
-               ot: '0.0',
-               isHoliday: false,
-               isOfficialBusiness: true,
-               officialBusinessReason: reason,
-               otRequested: false,
-               otApproved: false,
-               statusSource: 'employee',
-               isVerified: false,
-               verifiedBy: '',
-               verifiedAt: ''
-            };
-            data[dateStr].push(record);
-         } else {
-            record.isOfficialBusiness = true;
-            record.officialBusinessReason = reason;
-            record.status = 'Official Business';
-         }
-
-         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-         if (window.HRDataService && record) {
-            await window.HRDataService.upsertAttendanceRecord(dateStr, record);
-         }
+         await submitAttendanceRequest('Official Business', dateStr, reason, '0.0');
 
          document.getElementById('officialBusinessModal').classList.add('hidden');
          alert('Official Business request submitted successfully.');
@@ -1103,34 +1205,60 @@
             return;
          }
 
+         const numericHours = Number.parseFloat(hours);
+         if (!Number.isFinite(numericHours) || numericHours <= 0) {
+            alert('Please enter a valid overtime hour value.');
+            return;
+         }
+
          const data = getAttendances();
          if (!data[dateStr]) data[dateStr] = [];
 
-         let record = data[dateStr].find(r => String(r.empId) === String(activeUser.id));
+         const record = data[dateStr].find(r => String(r.empId) === String(activeUser.id));
 
          if (!record) {
             alert('You must clock in first before applying for overtime.');
             return;
          }
 
-         record.otRequested = true;
-         record.otRequestedHours = parseFloat(hours);
-         record.otReason = reason;
-         record.otApproved = false;
-         record.otApprovedHours = '0.0';
-
-         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-         if (window.HRDataService) {
-            await window.HRDataService.upsertAttendanceRecord(dateStr, record);
-         }
+         await submitAttendanceRequest('Overtime', dateStr, reason, numericHours);
 
          document.getElementById('overtimeApplicationModal').classList.add('hidden');
          alert('Overtime application submitted. Awaiting admin approval.');
       }
 
+      function openSpecialWorkModal() {
+         if (!activeUser) {
+            alert('No employee profile found. Please contact admin.');
+            return;
+         }
+         const today = new Date();
+         document.getElementById('specialWorkDate').valueAsDate = today;
+         document.getElementById('specialWorkReason').value = '';
+         document.getElementById('specialWorkModal').classList.remove('hidden');
+      }
+
+      async function submitSpecialWork() {
+         if (!activeUser) return;
+
+         const dateStr = document.getElementById('specialWorkDate').value;
+         const reason = document.getElementById('specialWorkReason').value.trim();
+
+         if (!dateStr || !reason) {
+            alert('Please fill in all fields.');
+            return;
+         }
+
+         await submitAttendanceRequest('Special Work', dateStr, reason, '0.0');
+
+         document.getElementById('specialWorkModal').classList.add('hidden');
+         alert('Special Work request submitted. Awaiting admin approval.');
+      }
+
       document.addEventListener('DOMContentLoaded', async () => {
          await syncEmployeesFromSupabase();
          await syncAttendanceFromSupabase();
+         await syncAttendanceRequestsFromSupabase();
          updateDateTime();
          initAttendance();
          refreshProfilePic();
@@ -1145,6 +1273,7 @@
       window.addEventListener('focus', async function() {
          await syncEmployeesFromSupabase();
          await syncAttendanceFromSupabase();
+         await syncAttendanceRequestsFromSupabase();
          initAttendance();
          refreshProfilePic();
       });
