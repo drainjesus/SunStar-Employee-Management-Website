@@ -14,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../backend-database/supabase-config.js"></script>
   <script src="../backend-database/supabase-client.js"></script>
+  <script src="../backend-database/supabase-employee-service.js"></script>
   <script src="../backend-database/supabase-performance-service.js"></script>
 
   <script>
@@ -126,17 +127,17 @@
 
       <div class="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
         
-        <!-- Appraisal Enrollment Section -->
+        <!-- Appraisal Table Section -->
         <div class="shad-card p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <h2 class="text-lg font-semibold text-zinc-900">Performance Management</h2>
-            <p class="text-sm text-zinc-500 mt-1">Select an employee to initiate or update a performance appraisal record.</p>
+            <p class="text-sm text-zinc-500 mt-1">All employees are automatically listed for rating. Configure appraisal criteria and questions below.</p>
           </div>
-          <button onclick="openEnrollModal()" class="inline-flex items-center justify-center rounded-md bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 whitespace-nowrap">
+          <button onclick="openTemplateModal()" class="inline-flex items-center justify-center rounded-md bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 whitespace-nowrap">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="mr-2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            Create Appraisal
+            Create Performance Appraisal Table
           </button>
         </div>
 
@@ -198,44 +199,7 @@
 
           <div class="px-6 py-6 overflow-y-auto max-h-[60vh] space-y-6">
             
-            <!-- Metric 1 -->
-            <div>
-              <label class="block text-sm font-bold text-zinc-900 mb-1">Quality of Work</label>
-              <p class="text-xs text-zinc-500 mb-3">Rate the accuracy, completeness, and value of the output.</p>
-              <select id="rateWork" class="w-full rounded-md border border-zinc-300 py-2.5 px-3 text-sm font-medium text-zinc-700 bg-white shadow-sm focus:border-sun-yellow focus:ring-sun-yellow focus:outline-none">
-                <option value="5">5 - Excellent</option>
-                <option value="4">4 - Good</option>
-                <option value="3" selected>3 - Satisfactory</option>
-                <option value="2">2 - Needs Improvement</option>
-                <option value="1">1 - Unsatisfactory</option>
-              </select>
-            </div>
-
-            <!-- Metric 2 -->
-            <div>
-              <label class="block text-sm font-bold text-zinc-900 mb-1">Teamwork & Collaboration</label>
-              <p class="text-xs text-zinc-500 mb-3">Rate their ability to communicate and work respectfully with peers.</p>
-              <select id="rateTeam" class="w-full rounded-md border border-zinc-300 py-2.5 px-3 text-sm font-medium text-zinc-700 bg-white shadow-sm focus:border-sun-yellow focus:ring-sun-yellow focus:outline-none">
-                <option value="5">5 - Excellent</option>
-                <option value="4" selected>4 - Good</option>
-                <option value="3">3 - Satisfactory</option>
-                <option value="2">2 - Needs Improvement</option>
-                <option value="1">1 - Unsatisfactory</option>
-              </select>
-            </div>
-
-            <!-- Metric 3 -->
-            <div>
-              <label class="block text-sm font-bold text-zinc-900 mb-1">Punctuality</label>
-              <p class="text-xs text-zinc-500 mb-3">Rate their attendance and deadline reliability.</p>
-              <select id="rateTime" class="w-full rounded-md border border-zinc-300 py-2.5 px-3 text-sm font-medium text-zinc-700 bg-white shadow-sm focus:border-sun-yellow focus:ring-sun-yellow focus:outline-none">
-                <option value="5">5 - Excellent</option>
-                <option value="4">4 - Good</option>
-                <option value="3" selected>3 - Satisfactory</option>
-                <option value="2">2 - Needs Improvement</option>
-                <option value="1">1 - Unsatisfactory</option>
-              </select>
-            </div>
+            <div id="evaluationCriteriaFields" class="space-y-6"></div>
 
             <!-- General Comments -->
             <div>
@@ -312,39 +276,35 @@
     </div>
   </div>
 
-  <!-- Enroll Employee in Appraisal Modal -->
-  <div id="enrollModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <!-- Create Performance Appraisal Table Modal -->
+  <div id="templateModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-zinc-900/50 bg-opacity-75 transition-opacity backdrop-blur-sm"></div>
     <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-zinc-200">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-zinc-200">
           
           <div class="border-b border-zinc-100 bg-zinc-50/50 px-6 py-4 flex items-center justify-between">
             <div>
-               <h3 class="text-lg font-black text-zinc-900 tracking-tight">Select Employee</h3>
-               <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Start New Performance Review</p>
+               <h3 class="text-lg font-black text-zinc-900 tracking-tight">Create Performance Appraisal Table</h3>
+               <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Add custom criteria and rating questions</p>
             </div>
-            <button onclick="closeEnrollModal()" class="text-zinc-400 hover:text-black transition-colors">
+            <button onclick="closeTemplateModal()" class="text-zinc-400 hover:text-black transition-colors">
                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
           </div>
 
-          <div class="p-6">
-            <!-- Search -->
-            <div class="relative mb-6">
-               <input type="text" id="enrollSearch" onkeyup="filterEnrollList()" placeholder="Search employee name..." class="w-full pl-9 pr-4 py-2.5 text-sm border border-zinc-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-sun-yellow/10 focus:border-sun-yellow transition-all bg-zinc-50/50">
-               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <div class="p-6 space-y-4">
+            <div id="templateCriteriaList" class="max-h-[360px] overflow-y-auto space-y-3 pr-1">
+              <!-- Populated by JS -->
             </div>
-
-            <!-- Employee List -->
-            <div id="enrollList" class="max-h-[350px] overflow-y-auto space-y-1 pr-1 custom-scrollbar">
-               <!-- Populated by JS -->
-            </div>
+            <button onclick="addTemplateCriterionRow()" class="inline-flex items-center rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition">
+              + Add Criterion
+            </button>
           </div>
 
-          <div class="bg-zinc-50 border-t border-zinc-100 px-6 py-4 flex items-center justify-between">
-             <p class="text-[10px] text-zinc-500 font-medium italic">Only employees without active appraisals are selectable.</p>
-             <button onclick="closeEnrollModal()" class="text-xs font-bold text-zinc-500 hover:text-zinc-900 uppercase tracking-widest transition">Cancel</button>
+          <div class="bg-zinc-50 border-t border-zinc-100 px-6 py-4 flex items-center justify-end gap-2">
+             <button onclick="closeTemplateModal()" class="text-xs font-bold text-zinc-500 hover:text-zinc-900 uppercase tracking-widest transition">Cancel</button>
+             <button onclick="saveAppraisalTemplate()" class="rounded-md bg-zinc-900 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white hover:bg-zinc-800 transition">Save Table</button>
           </div>
 
         </div>
@@ -354,21 +314,57 @@
 
   <script>
     let activeEvalId = null;
+    const APPRAISAL_TEMPLATE_KEY = 'sunstar_performance_appraisal_template';
+    const DEFAULT_APPRAISAL_TEMPLATE = [
+      { key: 'work', criterion: 'Quality of Work', question: 'Rate the accuracy, completeness, and value of the output.' },
+      { key: 'team', criterion: 'Teamwork & Collaboration', question: 'Rate their ability to communicate and work respectfully with peers.' },
+      { key: 'time', criterion: 'Punctuality', question: 'Rate their attendance and deadline reliability.' }
+    ];
 
     document.addEventListener("DOMContentLoaded", function () {
       const tbody = document.getElementById('appraisalTableBody');
-      const enrollListContainer = document.getElementById('enrollList');
+      const templateCriteriaList = document.getElementById('templateCriteriaList');
+      const evaluationCriteriaFields = document.getElementById('evaluationCriteriaFields');
+
+      function safeParse(raw, fallback) {
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return fallback;
+        }
+      }
 
       function getEmployees() {
-         return JSON.parse(localStorage.getItem('sunstar_employees')) || [];
+         return safeParse(localStorage.getItem('sunstar_employees'), []);
       }
 
       function getPerformances() {
-         return JSON.parse(localStorage.getItem('sunstar_performances')) || [];
+         return safeParse(localStorage.getItem('sunstar_performances'), []);
       }
 
       function getPeerReviews() {
-         return JSON.parse(localStorage.getItem('sunstar_peer_reviews')) || [];
+         return safeParse(localStorage.getItem('sunstar_peer_reviews'), []);
+      }
+
+      function slugify(text) {
+        return String(text || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '_')
+          .replace(/^_+|_+$/g, '') || 'criterion';
+      }
+
+      function getAppraisalTemplate() {
+        const parsed = safeParse(localStorage.getItem(APPRAISAL_TEMPLATE_KEY), null);
+        if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_APPRAISAL_TEMPLATE;
+        return parsed.map((item, index) => ({
+          key: item && item.key ? item.key : `${slugify(item && item.criterion)}_${index + 1}`,
+          criterion: item && item.criterion ? item.criterion : `Criterion ${index + 1}`,
+          question: item && item.question ? item.question : 'Rate this criterion.'
+        }));
+      }
+
+      function setAppraisalTemplate(template) {
+        localStorage.setItem(APPRAISAL_TEMPLATE_KEY, JSON.stringify(template));
       }
 
       function recomputePeerAverages(records) {
@@ -379,6 +375,65 @@
 
           const avg = (targetReviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / targetReviews.length).toFixed(1);
           return { ...record, peerAvg: avg };
+        });
+      }
+
+      async function syncEmployeesFromSupabase() {
+        if (!window.EmployeeDataService) return;
+        const remote = await window.EmployeeDataService.fetchEmployees();
+        if (Array.isArray(remote)) {
+          localStorage.setItem('sunstar_employees', JSON.stringify(remote));
+        }
+      }
+
+      function synchronizePerformanceRecords() {
+        const employees = getEmployees();
+        const existing = getPerformances();
+        const byId = new Map(existing.map(record => [String(record.id), record]));
+
+        const normalized = employees.map(emp => {
+          const id = String(emp.id);
+          const prior = byId.get(id) || {};
+          return {
+            id: emp.id,
+            name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim(),
+            role: emp.role || 'Personnel',
+            profilePic: emp.profilePic || null,
+            managerRating: prior.managerRating ?? null,
+            peerAvg: prior.peerAvg ?? null,
+            breakdown: prior.breakdown ?? null,
+            comments: prior.comments ?? ''
+          };
+        });
+
+        localStorage.setItem('sunstar_performances', JSON.stringify(normalized));
+        if (window.PerformanceDataService) {
+          normalized.forEach(record => window.PerformanceDataService.upsertPerformance(record));
+        }
+        return normalized;
+      }
+
+      function renderEvaluationCriteriaFields(record) {
+        const template = getAppraisalTemplate();
+        const currentBreakdown = (record && record.breakdown && typeof record.breakdown === 'object') ? record.breakdown : {};
+        evaluationCriteriaFields.innerHTML = '';
+
+        template.forEach(item => {
+          const currentValue = Number(currentBreakdown[item.key]);
+          const selectedValue = Number.isFinite(currentValue) && currentValue >= 1 && currentValue <= 5 ? String(currentValue) : '3';
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = `
+            <label class="block text-sm font-bold text-zinc-900 mb-1">${item.criterion}</label>
+            <p class="text-xs text-zinc-500 mb-3">${item.question}</p>
+            <select data-rating-key="${item.key}" class="w-full rounded-md border border-zinc-300 py-2.5 px-3 text-sm font-medium text-zinc-700 bg-white shadow-sm focus:border-sun-yellow focus:ring-sun-yellow focus:outline-none">
+              <option value="5" ${selectedValue === '5' ? 'selected' : ''}>5 - Excellent</option>
+              <option value="4" ${selectedValue === '4' ? 'selected' : ''}>4 - Good</option>
+              <option value="3" ${selectedValue === '3' ? 'selected' : ''}>3 - Satisfactory</option>
+              <option value="2" ${selectedValue === '2' ? 'selected' : ''}>2 - Needs Improvement</option>
+              <option value="1" ${selectedValue === '1' ? 'selected' : ''}>1 - Unsatisfactory</option>
+            </select>
+          `;
+          evaluationCriteriaFields.appendChild(wrapper);
         });
       }
 
@@ -403,12 +458,12 @@
       function renderAppraisals() {
         if (!tbody) return;
         tbody.innerHTML = '';
-        const records = recomputePeerAverages(getPerformances());
+        const records = recomputePeerAverages(synchronizePerformanceRecords());
         localStorage.setItem('sunstar_performances', JSON.stringify(records));
         renderStats(records);
 
         if (records.length === 0) {
-           tbody.innerHTML = `<tr><td colspan="5" class="py-20 text-center text-zinc-400 italic font-medium">No active appraisals. Click "Create Appraisal" to begin.</td></tr>`;
+           tbody.innerHTML = `<tr><td colspan="5" class="py-20 text-center text-zinc-400 italic font-medium">No employees available yet.</td></tr>`;
            return;
         }
 
@@ -430,8 +485,8 @@
              : `<span class="text-zinc-400 italic text-xs font-semibold">Awaiting Peers</span>`;
 
           const btnUI = emp.managerRating 
-             ? `<button type="button" onclick="openEvaluationModal(${emp.id}, '${emp.name}')" class="text-xs font-semibold text-zinc-700 hover:bg-zinc-100 px-3 py-1.5 rounded-md transition-all shadow-sm border border-zinc-200">Update Rating</button>`
-             : `<button type="button" onclick="openEvaluationModal(${emp.id}, '${emp.name}')" class="text-xs font-semibold text-white hover:bg-zinc-800 bg-zinc-900 px-4 py-2 rounded-md transition duration-200 shadow-sm active:scale-95">Evaluate</button>`;
+             ? `<button type="button" onclick='openEvaluationModal(${JSON.stringify(emp.id)}, ${JSON.stringify(emp.name)})' class="text-xs font-semibold text-zinc-700 hover:bg-zinc-100 px-3 py-1.5 rounded-md transition-all shadow-sm border border-zinc-200">Update Rating</button>`
+             : `<button type="button" onclick='openEvaluationModal(${JSON.stringify(emp.id)}, ${JSON.stringify(emp.name)})' class="text-xs font-semibold text-white hover:bg-zinc-800 bg-zinc-900 px-4 py-2 rounded-md transition duration-200 shadow-sm active:scale-95">Evaluate</button>`;
 
           tr.innerHTML = `
             <td class="px-6 py-4">
@@ -450,6 +505,7 @@
       }
 
       async function syncFromSupabase() {
+        await syncEmployeesFromSupabase();
         if (!window.PerformanceDataService) return;
 
         const [perfRows, peerRows] = await Promise.all([
@@ -470,107 +526,91 @@
         }
       }
 
-      window.openEnrollModal = function() {
-         renderEnrollList();
-         document.getElementById('enrollModal').classList.remove('hidden');
-      };
-
-      window.closeEnrollModal = () => document.getElementById('enrollModal').classList.add('hidden');
-
-      window.renderEnrollList = function(filterStr = '') {
-         const employees = getEmployees();
-         const performances = getPerformances();
-         enrollListContainer.innerHTML = '';
-
-         const filtered = employees.filter(emp => 
-            (emp.firstName + ' ' + emp.lastName).toLowerCase().includes(filterStr.toLowerCase())
-         );
-
-         if (filtered.length === 0) {
-            enrollListContainer.innerHTML = `<div class="py-10 text-center text-xs text-zinc-400 font-medium">No results found.</div>`;
-            return;
-         }
-
-         filtered.forEach(emp => {
-            const isEnrolled = performances.some(p => p.id === emp.id);
-            const name = `${emp.firstName} ${emp.lastName}`;
-            const initials = emp.firstName[0] + emp.lastName[0];
-            
-            const div = document.createElement('div');
-            div.className = `flex items-center justify-between p-3 rounded-xl transition-all ${isEnrolled ? 'bg-zinc-50 opacity-60 grayscale' : 'hover:bg-sun-yellow/10 cursor-pointer group border border-transparent hover:border-sun-yellow/20'}`;
-            
-            if (!isEnrolled) {
-               div.onclick = () => enrollEmployee(emp);
-            }
-
-            div.innerHTML = `
-               <div class="flex items-center gap-3">
-                  <div class="h-8 w-8 rounded-full bg-zinc-900 flex items-center justify-center text-[8px] font-black text-sun-yellow uppercase border border-zinc-700">
-                     ${initials}
-                  </div>
-                  <div class="flex flex-col">
-                     <span class="text-sm font-bold text-zinc-900">${name}</span>
-                     <span class="text-[10px] text-zinc-500 font-medium">${emp.role || 'Personnel'}</span>
-                  </div>
-               </div>
-               ${isEnrolled ? 
-                  `<span class="text-[8px] font-black uppercase tracking-widest text-zinc-400 bg-zinc-100 px-2 py-1 rounded">Enrolled</span>` : 
-                  `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-300 group-hover:text-sun-yellow transition-colors"><path d="M5 12h14"/><path d="M12 5v14"/></svg>`
-               }
-            `;
-            enrollListContainer.appendChild(div);
-         });
-      };
-
-      window.filterEnrollList = function() {
-         const val = document.getElementById('enrollSearch').value;
-         renderEnrollList(val);
-      };
-
-      function enrollEmployee(emp) {
-         const performances = getPerformances();
-         const newRecord = {
-            id: emp.id,
-            name: `${emp.firstName} ${emp.lastName}`,
-            role: emp.role || 'Personnel',
-            profilePic: emp.profilePic || null,
-            managerRating: null,
-            peerAvg: null,
-            breakdown: null,
-            comments: ""
-         };
-
-         performances.push(newRecord);
-         localStorage.setItem('sunstar_performances', JSON.stringify(performances));
-         if (window.PerformanceDataService) {
-           window.PerformanceDataService.upsertPerformance(newRecord);
-         }
-         
-         closeEnrollModal();
-         renderAppraisals();
-         
-         document.getElementById('successMessage').textContent = `New appraisal record created for ${emp.firstName} ${emp.lastName}.`;
-         document.getElementById('successModal').classList.remove('hidden');
+      function renderTemplateEditorRows() {
+        const template = getAppraisalTemplate();
+        templateCriteriaList.innerHTML = '';
+        template.forEach((item, index) => {
+          const row = document.createElement('div');
+          row.className = 'rounded-xl border border-zinc-200 bg-zinc-50/50 p-4';
+          row.innerHTML = `
+            <div class="flex items-center justify-between">
+              <p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Criterion ${index + 1}</p>
+              <button type="button" onclick="removeTemplateCriterionRow(${index})" class="text-[10px] font-black uppercase tracking-widest text-red-600 hover:text-red-700">Remove</button>
+            </div>
+            <label class="mt-3 block text-[10px] font-black uppercase tracking-widest text-zinc-500">Criteria</label>
+            <input type="text" data-template-criterion="${index}" value="${item.criterion.replace(/"/g, '&quot;')}" class="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-sun-yellow">
+            <label class="mt-3 block text-[10px] font-black uppercase tracking-widest text-zinc-500">Question</label>
+            <input type="text" data-template-question="${index}" value="${item.question.replace(/"/g, '&quot;')}" class="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-sun-yellow">
+          `;
+          templateCriteriaList.appendChild(row);
+        });
       }
+
+      window.openTemplateModal = function() {
+        renderTemplateEditorRows();
+        document.getElementById('templateModal').classList.remove('hidden');
+      };
+
+      window.closeTemplateModal = function() {
+        document.getElementById('templateModal').classList.add('hidden');
+      };
+
+      window.addTemplateCriterionRow = function() {
+        const template = getAppraisalTemplate();
+        const index = template.length + 1;
+        template.push({
+          key: `criterion_${index}`,
+          criterion: `New Criterion ${index}`,
+          question: 'Add the rating question for this criterion.'
+        });
+        setAppraisalTemplate(template);
+        renderTemplateEditorRows();
+      };
+
+      window.removeTemplateCriterionRow = function(index) {
+        const template = getAppraisalTemplate();
+        if (template.length <= 1) {
+          alert('At least one criterion is required.');
+          return;
+        }
+        template.splice(index, 1);
+        setAppraisalTemplate(template);
+        renderTemplateEditorRows();
+      };
+
+      window.saveAppraisalTemplate = function() {
+        const criteriaInputs = Array.from(templateCriteriaList.querySelectorAll('[data-template-criterion]'));
+        const questionInputs = Array.from(templateCriteriaList.querySelectorAll('[data-template-question]'));
+        const nextTemplate = criteriaInputs.map((input, index) => {
+          const criterion = String(input.value || '').trim();
+          const question = String(questionInputs[index].value || '').trim();
+          return {
+            key: `${slugify(criterion || `criterion_${index + 1}`)}_${index + 1}`,
+            criterion: criterion || `Criterion ${index + 1}`,
+            question: question || 'Rate this criterion.'
+          };
+        });
+
+        if (!nextTemplate.length) {
+          alert('Please add at least one criterion.');
+          return;
+        }
+
+        setAppraisalTemplate(nextTemplate);
+        closeTemplateModal();
+        renderEvaluationCriteriaFields(null);
+        document.getElementById('successMessage').textContent = 'Performance appraisal table saved successfully.';
+        document.getElementById('successModal').classList.remove('hidden');
+      };
 
       window.openEvaluationModal = function(id, name) {
          activeEvalId = id;
          document.getElementById('evalEmployeeName').textContent = "Rating: " + name;
          
          const records = getPerformances();
-         const emp = records.find(r => r.id === id);
-         
-         if(emp && emp.breakdown) {
-            document.getElementById('rateWork').value = emp.breakdown.work;
-            document.getElementById('rateTeam').value = emp.breakdown.team;
-            document.getElementById('rateTime').value = emp.breakdown.time;
-            document.getElementById('evalComments').value = emp.comments || "";
-         } else {
-            document.getElementById('rateWork').value = "3";
-            document.getElementById('rateTeam').value = "4";
-            document.getElementById('rateTime').value = "3";
-            document.getElementById('evalComments').value = "";
-         }
+         const emp = records.find(r => String(r.id) === String(id));
+         renderEvaluationCriteriaFields(emp || null);
+         document.getElementById('evalComments').value = emp ? (emp.comments || '') : '';
 
          document.getElementById('evaluationModal').classList.remove('hidden');
       };
@@ -578,16 +618,28 @@
       window.closeEvaluationModal = () => document.getElementById('evaluationModal').classList.add('hidden');
 
       document.getElementById('submitEvaluationBtn').addEventListener('click', async function() {
-         const w = parseInt(document.getElementById('rateWork').value);
-         const t = parseInt(document.getElementById('rateTeam').value);
-         const p = parseInt(document.getElementById('rateTime').value);
-         const average = ((w + t + p) / 3).toFixed(1);
+         const ratingFields = Array.from(evaluationCriteriaFields.querySelectorAll('[data-rating-key]'));
+         if (!ratingFields.length) {
+            alert('Please configure at least one appraisal criterion first.');
+            return;
+         }
+
+         const breakdown = {};
+         let total = 0;
+         ratingFields.forEach(field => {
+            const key = field.getAttribute('data-rating-key');
+            const value = Number.parseInt(field.value, 10);
+            const score = Number.isFinite(value) ? value : 3;
+            breakdown[key] = score;
+            total += score;
+         });
+         const average = (total / ratingFields.length).toFixed(1);
 
          const records = getPerformances();
-         const index = records.findIndex(r => r.id === activeEvalId);
+         const index = records.findIndex(r => String(r.id) === String(activeEvalId));
          if(index !== -1) {
             records[index].managerRating = average;
-            records[index].breakdown = { work: w, team: t, time: p };
+            records[index].breakdown = breakdown;
             records[index].comments = document.getElementById('evalComments').value;
             
             localStorage.setItem('sunstar_performances', JSON.stringify(records));
