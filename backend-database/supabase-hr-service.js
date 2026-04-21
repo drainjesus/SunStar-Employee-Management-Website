@@ -235,6 +235,44 @@
     }
   }
 
+  function toComparableTimestamp(value) {
+    const parsed = new Date(value || "");
+    return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+  }
+
+  function mergeAttendanceRequestsWithCache(remoteRequests) {
+    const cachedRequests = getCachedAttendanceRequests();
+    const mergedMap = new Map();
+
+    cachedRequests.forEach((request) => {
+      if (!request || !request.id) return;
+      mergedMap.set(String(request.id), request);
+    });
+
+    (Array.isArray(remoteRequests) ? remoteRequests : []).forEach((remoteRequest) => {
+      if (!remoteRequest || !remoteRequest.id) return;
+      const key = String(remoteRequest.id);
+      const existing = mergedMap.get(key);
+      if (!existing) {
+        mergedMap.set(key, remoteRequest);
+        return;
+      }
+
+      const existingTs = toComparableTimestamp(existing.updatedAt || existing.createdAt);
+      const remoteTs = toComparableTimestamp(remoteRequest.updatedAt || remoteRequest.createdAt);
+
+      if (remoteTs >= existingTs) {
+        mergedMap.set(key, { ...existing, ...remoteRequest });
+      }
+    });
+
+    return Array.from(mergedMap.values()).sort((a, b) => {
+      const dateDiff = String(b.requestDate || "").localeCompare(String(a.requestDate || ""));
+      if (dateDiff !== 0) return dateDiff;
+      return toComparableTimestamp(b.createdAt) - toComparableTimestamp(a.createdAt);
+    });
+  }
+
   function isAttendanceRequestTableMarkedMissing() {
     return attendanceRequestTableMissingInSession;
   }
@@ -568,7 +606,8 @@
 
     clearAttendanceRequestTableMissingMark();
 
-    return (data || []).map(mapAttendanceRequestDbToLocal);
+    const mappedRemote = (data || []).map(mapAttendanceRequestDbToLocal);
+    return mergeAttendanceRequestsWithCache(mappedRemote);
   }
 
   async function upsertAttendanceRequest(request) {
