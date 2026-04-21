@@ -5,6 +5,7 @@
   const ATTENDANCE_KEY = "sunstar_attendance";
   const ATTENDANCE_REQUEST_KEY = "sunstar_attendance_requests";
   const ATTENDANCE_REQUEST_TABLE = "attendance_special_requests";
+  const ATTENDANCE_REQUEST_TABLE_MISSING_FLAG = "sunstar_attendance_requests_table_missing";
   const DEFAULT_SHIFT_SCHEDULE = "Newsroom Day Shift (08:00 AM - 05:00 PM)";
   const ATTENDANCE_EXTENDED_COLUMNS = [
     "is_verified",
@@ -220,6 +221,28 @@
       .join(" ");
 
     return /attendance_special_requests/i.test(message);
+  }
+
+  function getCachedAttendanceRequests() {
+    try {
+      const raw = localStorage.getItem(ATTENDANCE_REQUEST_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function isAttendanceRequestTableMarkedMissing() {
+    return localStorage.getItem(ATTENDANCE_REQUEST_TABLE_MISSING_FLAG) === "1";
+  }
+
+  function markAttendanceRequestTableMissing() {
+    localStorage.setItem(ATTENDANCE_REQUEST_TABLE_MISSING_FLAG, "1");
+  }
+
+  function clearAttendanceRequestTableMissingMark() {
+    localStorage.removeItem(ATTENDANCE_REQUEST_TABLE_MISSING_FLAG);
   }
 
   function hasExtendedAttendanceColumns(rows) {
@@ -505,6 +528,10 @@
   async function fetchAttendanceRequests() {
     if (!hasClient()) return null;
 
+    if (isAttendanceRequestTableMarkedMissing()) {
+      return getCachedAttendanceRequests();
+    }
+
     const { data, error } = await window.supabaseClient
       .from(ATTENDANCE_REQUEST_TABLE)
       .select("*")
@@ -513,18 +540,25 @@
 
     if (error) {
       if (isAttendanceRequestTableMissing(error)) {
-        return [];
+        markAttendanceRequestTableMissing();
+        return getCachedAttendanceRequests();
       }
 
       console.error("fetchAttendanceRequests failed", error);
       return null;
     }
 
+    clearAttendanceRequestTableMissingMark();
+
     return (data || []).map(mapAttendanceRequestDbToLocal);
   }
 
   async function upsertAttendanceRequest(request) {
     if (!hasClient() || !request || !request.id) return false;
+
+    if (isAttendanceRequestTableMarkedMissing()) {
+      return true;
+    }
 
     const payload = mapAttendanceRequestLocalToDb(request);
     let { error } = await window.supabaseClient
@@ -533,12 +567,15 @@
 
     if (error) {
       if (isAttendanceRequestTableMissing(error)) {
+        markAttendanceRequestTableMissing();
         return true;
       }
 
       console.error("upsertAttendanceRequest failed", error);
       return false;
     }
+
+    clearAttendanceRequestTableMissingMark();
 
     return true;
   }
