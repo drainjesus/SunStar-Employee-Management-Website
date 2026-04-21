@@ -525,9 +525,10 @@
       async function syncFromSupabase() {
          if (!window.PerformanceDataService) return;
 
-         const [perfRows, peerRows] = await Promise.all([
+         const [perfRows, peerRows, managerRows] = await Promise.all([
             window.PerformanceDataService.fetchPerformances(),
-            window.PerformanceDataService.fetchPeerReviews()
+            window.PerformanceDataService.fetchPeerReviews(),
+            window.PerformanceDataService.fetchManagerReviews()
          ]);
 
          if (Array.isArray(perfRows)) {
@@ -535,6 +536,9 @@
          }
          if (Array.isArray(peerRows)) {
             localStorage.setItem(PEER_REVIEW_KEY, JSON.stringify(peerRows));
+         }
+         if (Array.isArray(managerRows)) {
+            localStorage.setItem(MANAGER_REVIEW_KEY, JSON.stringify(managerRows));
          }
       }
 
@@ -837,6 +841,9 @@
          else reviews[index] = payload;
 
          setManagerReviews(reviews);
+         if (window.PerformanceDataService && typeof window.PerformanceDataService.upsertManagerReview === 'function') {
+            window.PerformanceDataService.upsertManagerReview(payload);
+         }
          updateManagerReviewBadge();
          document.getElementById('managerReviewModal').classList.add('hidden');
          alert('Manager review submitted successfully.');

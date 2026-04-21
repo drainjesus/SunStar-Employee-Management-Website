@@ -181,6 +181,28 @@
           </div>
         </div>
 
+        <div>
+          <h3 class="text-base font-semibold text-zinc-900 mb-3">Employee Ratings to Manager</h3>
+          <div class="shad-card overflow-hidden flex flex-col">
+            <table class="w-full text-left text-sm text-zinc-600">
+              <thead class="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                <tr>
+                  <th class="px-6 py-4">Employee</th>
+                  <th class="px-6 py-4 text-center">Leadership</th>
+                  <th class="px-6 py-4 text-center">Communication</th>
+                  <th class="px-6 py-4 text-center">Support</th>
+                  <th class="px-6 py-4 text-center">Average</th>
+                  <th class="px-6 py-4">Comment</th>
+                  <th class="px-6 py-4">Updated</th>
+                </tr>
+              </thead>
+              <tbody id="managerReviewTableBody" class="divide-y divide-zinc-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </main>
   </div>
@@ -315,6 +337,7 @@
   <script>
     let activeEvalId = null;
     const APPRAISAL_TEMPLATE_KEY = 'sunstar_performance_appraisal_template';
+    const MANAGER_REVIEW_KEY = 'sunstar_manager_reviews';
     const DEFAULT_APPRAISAL_TEMPLATE = [
       { key: 'work', criterion: 'Quality of Work', question: 'Rate the accuracy, completeness, and value of the output.' },
       { key: 'team', criterion: 'Teamwork & Collaboration', question: 'Rate their ability to communicate and work respectfully with peers.' },
@@ -323,6 +346,7 @@
 
     document.addEventListener("DOMContentLoaded", function () {
       const tbody = document.getElementById('appraisalTableBody');
+      const managerReviewTableBody = document.getElementById('managerReviewTableBody');
       const templateCriteriaList = document.getElementById('templateCriteriaList');
       const evaluationCriteriaFields = document.getElementById('evaluationCriteriaFields');
 
@@ -344,6 +368,11 @@
 
       function getPeerReviews() {
          return safeParse(localStorage.getItem('sunstar_peer_reviews'), []);
+      }
+
+      function getManagerReviews() {
+        const parsed = safeParse(localStorage.getItem(MANAGER_REVIEW_KEY), []);
+        return Array.isArray(parsed) ? parsed : [];
       }
 
       function slugify(text) {
@@ -455,6 +484,54 @@
         document.getElementById('statAverageScore').textContent = avgScore;
       }
 
+      function formatUpdatedAt(value) {
+        if (!value) return '--';
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return '--';
+        return parsed.toLocaleString('en-US', {
+          month: 'short',
+          day: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+      }
+
+      function renderManagerReviews() {
+        if (!managerReviewTableBody) return;
+        const reviews = getManagerReviews()
+          .slice()
+          .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+        managerReviewTableBody.innerHTML = '';
+
+        if (!reviews.length) {
+          managerReviewTableBody.innerHTML = '<tr><td colspan="7" class="py-12 text-center text-zinc-400 italic font-medium">No manager ratings submitted by employees yet.</td></tr>';
+          return;
+        }
+
+        reviews.forEach((review) => {
+          const criteria = review.criteria || {};
+          const leadership = Number(criteria.leadership || 0);
+          const communication = Number(criteria.communication || 0);
+          const support = Number(criteria.support || 0);
+          const average = Number.parseFloat(review.average);
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-zinc-50 transition-colors';
+          tr.innerHTML = `
+            <td class="px-6 py-4 font-medium text-zinc-900">${review.employeeName || 'Employee'}</td>
+            <td class="px-6 py-4 text-center font-semibold">${leadership || '--'}</td>
+            <td class="px-6 py-4 text-center font-semibold">${communication || '--'}</td>
+            <td class="px-6 py-4 text-center font-semibold">${support || '--'}</td>
+            <td class="px-6 py-4 text-center"><span class="inline-flex items-center rounded-md bg-violet-50 px-2.5 py-1 text-xs font-black uppercase tracking-widest text-violet-700 ring-1 ring-inset ring-violet-600/20">${Number.isFinite(average) ? average.toFixed(1) : '--'}</span></td>
+            <td class="px-6 py-4 text-xs text-zinc-700">${review.comment || '--'}</td>
+            <td class="px-6 py-4 text-xs text-zinc-500 font-medium">${formatUpdatedAt(review.updatedAt)}</td>
+          `;
+          managerReviewTableBody.appendChild(tr);
+        });
+      }
+
       function renderAppraisals() {
         if (!tbody) return;
         tbody.innerHTML = '';
@@ -508,9 +585,10 @@
         await syncEmployeesFromSupabase();
         if (!window.PerformanceDataService) return;
 
-        const [perfRows, peerRows] = await Promise.all([
+        const [perfRows, peerRows, managerRows] = await Promise.all([
           window.PerformanceDataService.fetchPerformances(),
-          window.PerformanceDataService.fetchPeerReviews()
+          window.PerformanceDataService.fetchPeerReviews(),
+          window.PerformanceDataService.fetchManagerReviews()
         ]);
 
         if (Array.isArray(perfRows)) {
@@ -520,9 +598,13 @@
         if (Array.isArray(peerRows)) {
           localStorage.setItem('sunstar_peer_reviews', JSON.stringify(peerRows));
         }
+        if (Array.isArray(managerRows)) {
+          localStorage.setItem(MANAGER_REVIEW_KEY, JSON.stringify(managerRows));
+        }
 
-        if (Array.isArray(perfRows) || Array.isArray(peerRows)) {
+        if (Array.isArray(perfRows) || Array.isArray(peerRows) || Array.isArray(managerRows)) {
           renderAppraisals();
+          renderManagerReviews();
         }
       }
 
@@ -655,12 +737,14 @@
       });
 
       window.addEventListener('storage', async function(event) {
-        if (event.key && event.key !== 'sunstar_performances' && event.key !== 'sunstar_peer_reviews' && event.key !== 'sunstar_employees') return;
+        if (event.key && event.key !== 'sunstar_performances' && event.key !== 'sunstar_peer_reviews' && event.key !== 'sunstar_employees' && event.key !== MANAGER_REVIEW_KEY) return;
         await syncFromSupabase();
         renderAppraisals();
+        renderManagerReviews();
       });
 
       renderAppraisals();
+      renderManagerReviews();
       syncFromSupabase();
     });
   </script>
