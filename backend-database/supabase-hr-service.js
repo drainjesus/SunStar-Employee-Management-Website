@@ -8,6 +8,7 @@
   const ATTENDANCE_REQUEST_KEY = "sunstar_attendance_requests";
   const ATTENDANCE_REQUEST_TABLE = "attendance_special_requests";
   const ATTENDANCE_REQUEST_UNSUPPORTED_COLUMNS_KEY = "__attendance_request_unsupported_columns";
+  const DEFAULT_UNSUPPORTED_ATTENDANCE_REQUEST_COLUMNS = ["business_type"];
   const DEFAULT_SHIFT_SCHEDULE = "Newsroom Day Shift (08:00 AM - 05:00 PM)";
   let trainingDevLastError = "";
   let attendanceRequestTableMissingInSession = false;
@@ -16,9 +17,10 @@
     try {
       const raw = localStorage.getItem(ATTENDANCE_REQUEST_UNSUPPORTED_COLUMNS_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed.map((value) => String(value)) : [];
+      const persisted = Array.isArray(parsed) ? parsed.map((value) => String(value)) : [];
+      return Array.from(new Set([...DEFAULT_UNSUPPORTED_ATTENDANCE_REQUEST_COLUMNS, ...persisted]));
     } catch {
-      return [];
+      return DEFAULT_UNSUPPORTED_ATTENDANCE_REQUEST_COLUMNS;
     }
   })());
   const ATTENDANCE_EXTENDED_COLUMNS = [
