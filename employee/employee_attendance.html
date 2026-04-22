@@ -1306,8 +1306,17 @@
          saveAttendanceRequests(requests);
 
          if (window.HRDataService && window.HRDataService.upsertAttendanceRequest) {
-            await window.HRDataService.upsertAttendanceRequest(request);
-            saveAttendanceRequests(requests);
+            const synced = await window.HRDataService.upsertAttendanceRequest(request);
+            if (!synced) {
+               const reverted = getAttendanceRequests().filter((entry) => String(entry.id) !== String(request.id));
+               saveAttendanceRequests(reverted);
+               alert('Special attendance request was not synced to the database. Please try again and check your connection.');
+               renderAttendanceRequestHistory();
+               return;
+            }
+            await syncAttendanceRequestsFromSupabase();
+         } else {
+            alert('Special attendance request was saved only on this browser because database sync is unavailable.');
          }
 
          renderAttendanceRequestHistory();
