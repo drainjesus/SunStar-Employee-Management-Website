@@ -1,5 +1,5 @@
 const PERFORMANCE_MANAGER_REVIEW_KEY = "sunstar_manager_reviews";
-const APPRAISAL_TEMPLATE_KEY = "sunstar_performance_appraisal_template";
+const PERFORMANCE_APPRAISAL_TEMPLATE_KEY = "sunstar_performance_appraisal_template";
 const APPRAISAL_TEMPLATE_SETTING_KEY = "performance_appraisal_template";
 const SESSION_ADMIN_EMAIL_KEY = "sunstar_logged_in_admin_email";
 let managerReviewTableMissingInSession = false;
@@ -29,7 +29,7 @@ function toNumberOrZero(value) {
 
 function getCachedAppraisalTemplate() {
   try {
-    const raw = localStorage.getItem(APPRAISAL_TEMPLATE_KEY);
+    const raw = localStorage.getItem(PERFORMANCE_APPRAISAL_TEMPLATE_KEY);
     const parsed = raw ? JSON.parse(raw) : null;
     return Array.isArray(parsed) ? parsed : [];
   } catch {
