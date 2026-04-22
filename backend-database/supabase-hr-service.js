@@ -11,6 +11,7 @@
   let trainingDevLastError = "";
   let attendanceRequestTableMissingInSession = false;
   const unsupportedTrainingDevColumns = new Set();
+  const unsupportedAttendanceRequestColumns = new Set();
   const ATTENDANCE_EXTENDED_COLUMNS = [
     "is_verified",
     "verified_by",
@@ -987,7 +988,7 @@
     if (!hasClient() || !request) return false;
 
     if (isAttendanceRequestTableMarkedMissing()) {
-      return true;
+      return false;
     }
 
     if (!isUuid(request.id)) {
@@ -995,6 +996,13 @@
     }
 
     const payload = mapAttendanceRequestLocalToDb(request);
+    if (unsupportedAttendanceRequestColumns.has("shift_schedule")) delete payload.shift_schedule;
+    if (unsupportedAttendanceRequestColumns.has("request_date_to")) delete payload.request_date_to;
+    if (unsupportedAttendanceRequestColumns.has("time_from")) delete payload.time_from;
+    if (unsupportedAttendanceRequestColumns.has("time_to")) delete payload.time_to;
+    if (unsupportedAttendanceRequestColumns.has("business_type")) delete payload.business_type;
+    if (unsupportedAttendanceRequestColumns.has("special_holiday")) delete payload.special_holiday;
+
     let { error } = await window.supabaseClient
       .from(ATTENDANCE_REQUEST_TABLE)
       .upsert(payload, { onConflict: "id" });
@@ -1002,35 +1010,41 @@
     if (error) {
       if (isAttendanceRequestTableMissing(error)) {
         markAttendanceRequestTableMissing();
-        return true;
+        return false;
       }
 
       const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
       const fallbackPayload = { ...payload };
       let shouldRetry = false;
 
-      if (/shift_schedule/i.test(errorText)) {
+      if (/shift[_\s]?schedule/i.test(errorText)) {
         delete fallbackPayload.shift_schedule;
+        unsupportedAttendanceRequestColumns.add("shift_schedule");
         shouldRetry = true;
       }
-      if (/request_date_to/i.test(errorText)) {
+      if (/request[_\s]?date[_\s]?to/i.test(errorText)) {
         delete fallbackPayload.request_date_to;
+        unsupportedAttendanceRequestColumns.add("request_date_to");
         shouldRetry = true;
       }
-      if (/time_from/i.test(errorText)) {
+      if (/time[_\s]?from/i.test(errorText)) {
         delete fallbackPayload.time_from;
+        unsupportedAttendanceRequestColumns.add("time_from");
         shouldRetry = true;
       }
-      if (/time_to/i.test(errorText)) {
+      if (/time[_\s]?to/i.test(errorText)) {
         delete fallbackPayload.time_to;
+        unsupportedAttendanceRequestColumns.add("time_to");
         shouldRetry = true;
       }
-      if (/business_type/i.test(errorText)) {
+      if (/business[_\s]?type/i.test(errorText)) {
         delete fallbackPayload.business_type;
+        unsupportedAttendanceRequestColumns.add("business_type");
         shouldRetry = true;
       }
-      if (/special_holiday/i.test(errorText)) {
+      if (/special[_\s]?holiday/i.test(errorText)) {
         delete fallbackPayload.special_holiday;
+        unsupportedAttendanceRequestColumns.add("special_holiday");
         shouldRetry = true;
       }
       if (/employee_id|foreign key|employees/i.test(errorText)) {
