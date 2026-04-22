@@ -1216,7 +1216,7 @@
             <td class="px-6 py-4 text-right">
               <div class="inline-flex flex-wrap justify-end gap-2">
                 <button
-                  onclick="overrideManualClockOut(${JSON.stringify(name)}, ${emp.id})"
+                  onclick='overrideManualClockOut(${JSON.stringify(name)}, ${JSON.stringify(emp.id)})'
                   class="text-[10px] font-black uppercase border px-3 py-2 rounded-lg transition duration-200 shadow-sm whitespace-nowrap ${canOverrideClockOut ? 'text-blue-700 border-blue-200 bg-white hover:bg-blue-50' : 'text-zinc-400 border-zinc-200 bg-zinc-100 cursor-not-allowed'}"
                   ${canOverrideClockOut ? '' : 'disabled'}>
                   Override Clock Out
