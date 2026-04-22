@@ -1000,13 +1000,22 @@
         const attendances = getAttendances();
         const rows = [];
 
+        const hasCompleteClockPair = (record) => {
+          const clockIn = String(record && record.clockIn ? record.clockIn : '').trim();
+          const clockOut = String(record && record.clockOut ? record.clockOut : '').trim();
+          if (!clockIn || !clockOut) return false;
+          if (clockIn === '--' || clockOut === '--') return false;
+          if (clockIn.includes('--') || clockOut.includes('--')) return false;
+          return true;
+        };
+
         Object.keys(attendances).forEach(dateIso => {
           const parsed = parseIsoDate(dateIso);
           if (!parsed) return;
           if (parsed.year !== year || parsed.month !== month) return;
           const dayRecords = Array.isArray(attendances[dateIso]) ? attendances[dateIso] : [];
           const record = dayRecords.find(rec => String(rec.empId) === String(employeeId));
-          if (!record) return;
+          if (!record || !hasCompleteClockPair(record)) return;
           rows.push({ dateIso, record });
         });
 
