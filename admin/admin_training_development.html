@@ -125,19 +125,6 @@
 
       <div class="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
         <div class="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
-          <div class="p-4 border-b border-zinc-100 bg-zinc-50/50 flex items-center justify-between gap-3">
-            <div>
-              <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Training Catalog</h2>
-              <p class="mt-1 text-[10px] font-black uppercase tracking-widest text-zinc-400">Admin-managed list of company trainings</p>
-            </div>
-            <button onclick="document.getElementById('addTrainingModal').classList.remove('hidden')" class="rounded-md bg-sun-yellow px-4 py-2 text-xs font-black uppercase tracking-wider text-black hover:bg-sun-yellowDark transition">
-              Add Training Program
-            </button>
-          </div>
-          <div id="programsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4"></div>
-        </div>
-
-        <div class="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
           <div class="p-4 border-b border-zinc-100 bg-zinc-50/50">
             <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Employee Training & Development Submissions</h2>
             <p class="mt-1 text-[10px] font-black uppercase tracking-widest text-zinc-400">Validate employee submissions against policy</p>
@@ -148,7 +135,6 @@
               <thead class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-black uppercase tracking-widest text-zinc-500">
                 <tr>
                   <th class="px-6 py-4">Employee</th>
-                  <th class="px-6 py-4">Type</th>
                   <th class="px-6 py-4">Training Title</th>
                   <th class="px-6 py-4">Date From</th>
                   <th class="px-6 py-4">Date To</th>
@@ -166,163 +152,6 @@
 
       </div>
     </main>
-  </div>
-
-  <!-- New Training Modal -->
-  <div id="addTrainingModal" class="relative z-50 hidden">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 overflow-y-auto font-sans">
-      <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-        <div class="relative w-full max-w-lg rounded-xl bg-white p-8 shadow-2xl border border-zinc-200 text-left">
-          <div class="flex items-center justify-between mb-6 text-zinc-900 uppercase font-black tracking-tight">
-            <h2 class="text-xl">Create Program</h2>
-            <button onclick="document.getElementById('addTrainingModal').classList.add('hidden')" class="text-zinc-400 hover:text-zinc-600">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-          </div>
-          
-          <form id="trainingForm" class="space-y-4">
-            <div>
-              <label class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Program Name</label>
-              <input type="text" id="progName" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow focus:ring-2 focus:ring-sun-yellow/20 outline-none">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Category</label>
-                <select id="progCategory" class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-                  <option>Editorial</option>
-                  <option>Ethics</option>
-                  <option>Digital Media</option>
-                  <option>Technical</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Date</label>
-                <input type="date" id="progDate" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Target Department</label>
-              <select id="progDept" class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-                <option>Editorial</option>
-                <option>Marketing</option>
-                <option>IT/Development</option>
-                <option>Finance</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-black uppercase text-zinc-500 mb-1.5">Description</label>
-              <textarea id="progDesc" rows="3" class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none"></textarea>
-            </div>
-            <div class="pt-4 flex gap-3">
-              <button type="button" onclick="document.getElementById('addTrainingModal').classList.add('hidden')" class="flex-1 rounded-md border border-zinc-200 py-3 text-sm font-bold text-zinc-600 hover:bg-zinc-50 transition">Cancel</button>
-              <button type="submit" class="flex-1 rounded-md bg-sun-yellow py-3 text-sm font-bold text-black hover:bg-sun-yellowDark transition shadow-md shadow-sun-yellow/10">Save Program</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Enrollees Management Modal -->
-  <div id="enrolleesModal" class="relative z-50 hidden" aria-labelledby="enrollees-modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-      <div class="flex min-h-full items-center justify-center p-4">
-        <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-zinc-200">
-          <div class="flex items-center justify-between border-b border-zinc-200 bg-zinc-50/50 px-6 py-4">
-            <div>
-              <h3 class="text-lg font-bold text-zinc-900" id="enrolleeProgramName">Program Participants</h3>
-              <p class="text-xs text-zinc-500 font-medium uppercase tracking-widest mt-0.5">Verification & Skill Assignment</p>
-            </div>
-            <button type="button" onclick="document.getElementById('enrolleesModal').classList.add('hidden')" class="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-500 transition-colors">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          </div>
-          <div class="max-h-[60vh] overflow-y-auto p-6">
-            <table class="w-full text-left text-sm">
-              <thead class="border-b border-zinc-100 text-[10px] font-black uppercase text-zinc-400 tracking-widest">
-                <tr>
-                  <th class="px-4 py-3">Employee Name</th>
-                  <th class="px-4 py-3">Dept/Role</th>
-                  <th class="px-4 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="enrolleeTableBody" class="divide-y divide-zinc-50">
-                <!-- Participants injected here -->
-              </tbody>
-            </table>
-            <div id="noEnrolleesMsg" class="hidden text-center py-12 text-zinc-400 italic">No employees have enrolled in this program yet.</div>
-          </div>
-          <div class="bg-zinc-50 px-6 py-4 flex justify-end">
-             <button onclick="document.getElementById('enrolleesModal').classList.add('hidden')" class="px-4 py-2 text-sm font-bold text-zinc-600 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 transition">Close Panel</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Manage Skills Modal -->
-  <div id="manageSkillsModal" class="relative z-50 hidden">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-      <div class="relative w-full max-w-md rounded-xl bg-white p-8 shadow-2xl border border-zinc-200 text-left">
-        <h2 class="text-xl font-black text-zinc-900 uppercase tracking-tight mb-4">Manage Skills</h2>
-        <p id="skillEmployeeName" class="text-sm font-bold text-zinc-500 mb-6 border-l-4 border-sun-yellow pl-3"></p>
-        <form id="skillForm" class="space-y-4">
-          <input type="hidden" id="skillEmployeeId">
-          <div>
-            <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Skills (Comma separated)</label>
-            <input type="text" id="skillInput" placeholder="e.g. SEO, Writing, Photography" class="w-full rounded-md border border-zinc-200 px-3 py-3 text-sm focus:border-sun-yellow outline-none">
-            <p class="mt-2 text-[10px] text-zinc-400 italic font-medium uppercase">Note: skills will be displayed as tags in the matrix.</p>
-          </div>
-          <div class="flex gap-3 pt-4">
-            <button type="button" onclick="document.getElementById('manageSkillsModal').classList.add('hidden')" class="flex-1 py-3 text-sm font-bold text-zinc-500 bg-zinc-100 rounded-md">Cancel</button>
-            <button type="submit" class="flex-1 py-3 text-sm font-bold text-black bg-sun-yellow rounded-md hover:bg-sun-yellowDark transition">Update Skills</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Add Cert Modal -->
-  <div id="addCertModal" class="relative z-50 hidden">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-      <div class="relative w-full max-w-md rounded-xl bg-white p-8 shadow-2xl border border-zinc-200 text-left">
-        <h2 class="text-xl font-black text-zinc-900 uppercase tracking-tight mb-6 text-center">Employee Certification</h2>
-        <form id="certForm" class="space-y-4">
-          <div>
-            <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Employee</label>
-            <select id="certEmpId" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-              <!-- Populated dynamically -->
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Certification Name</label>
-            <input type="text" id="certName" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow outline-none placeholder:text-zinc-300" placeholder="e.g. Google Data Analyst">
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Date Issued</label>
-              <input type="date" id="certDate" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Expiry Date</label>
-              <input type="date" id="certExpiry" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm outline-none">
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-black uppercase text-zinc-400 mb-1.5">Issuer</label>
-            <input type="text" id="certIssuer" required class="w-full rounded-md border border-zinc-200 px-3 py-2.5 text-sm focus:border-sun-yellow outline-none placeholder:text-zinc-300" placeholder="e.g. Coursera">
-          </div>
-          <div class="flex gap-3 pt-6">
-            <button type="button" onclick="document.getElementById('addCertModal').classList.add('hidden')" class="flex-1 py-3 text-sm font-bold text-zinc-500 bg-zinc-100 rounded-md">Cancel</button>
-            <button type="submit" class="flex-1 py-3 text-sm font-bold text-black bg-sun-yellow rounded-md hover:bg-sun-yellowDark transition shadow-md shadow-sun-yellow/10">Add Record</button>
-          </div>
-        </form>
-      </div>
-    </div>
   </div>
 
   <!-- Logout Confirmation -->
@@ -351,10 +180,8 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       await syncEmployeesFromSupabase();
-      await syncTrainingsFromSupabase();
       await syncTrainingDevEntriesFromSupabase();
       syncEmployeeFields();
-      renderPrograms();
       renderTrainingDevEntries();
       showTrainingDevSyncError();
     });
@@ -364,14 +191,6 @@
       const remote = await window.EmployeeDataService.fetchEmployees();
       if (Array.isArray(remote)) {
         localStorage.setItem('sunstar_employees', JSON.stringify(remote));
-      }
-    }
-
-    async function syncTrainingsFromSupabase() {
-      if (!window.HRDataService) return;
-      const remote = await window.HRDataService.fetchTrainings();
-      if (Array.isArray(remote)) {
-        localStorage.setItem('sunstar_trainings', JSON.stringify(remote));
       }
     }
 
@@ -409,17 +228,6 @@
       if (changed) localStorage.setItem('sunstar_employees', JSON.stringify(employees));
     }
 
-    /* 1. Training Programs Logic */
-    function getTrainings() {
-      const data = localStorage.getItem('sunstar_trainings');
-      if (!data) return [];
-      try {
-        return JSON.parse(data);
-      } catch {
-        return [];
-      }
-    }
-
     function getTrainingDevEntries() {
       const data = localStorage.getItem(TRAINING_DEV_KEY);
       if (!data) return [];
@@ -431,252 +239,6 @@
       }
     }
 
-    function renderPrograms() {
-      const trainings = getTrainings();
-      const grid = document.getElementById('programsGrid');
-      grid.innerHTML = trainings.length ? '' : '<p class="col-span-full text-center py-20 text-zinc-400">No training programs scheduled.</p>';
-      trainings.forEach(prog => {
-        const dateObj = new Date(prog.date);
-        const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
-        const card = document.createElement('div');
-        const statusColor = prog.status === 'Active' ? 'bg-sun-yellow' : 'bg-zinc-100 text-zinc-500';
-        card.className = "bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden hover:border-sun-yellow transition duration-300";
-        card.innerHTML = `
-          <div class="${statusColor} px-4 py-3 flex justify-between items-center">
-            <span class="text-[10px] font-black uppercase text-black bg-white/30 px-2 py-0.5 rounded tracking-tighter">${prog.status}</span>
-            <span class="text-xs font-bold italic opacity-80">${formattedDate}</span>
-          </div>
-          <div class="p-5">
-            <h3 class="text-lg font-black text-zinc-900 leading-tight">${prog.name}</h3>
-            <p class="mt-2 text-sm text-zinc-500 line-clamp-2">${prog.desc}</p>
-            <div class="mt-5 pb-1 flex items-center justify-between border-t border-zinc-50 pt-4">
-              <div class="flex flex-col">
-                 <span class="text-[10px] font-black uppercase tracking-widest text-sun-yellowDark">${prog.dept}</span>
-                 <span class="text-[11px] font-bold text-zinc-400 mt-0.5">${(prog.enrollees || []).length} Enrolled</span>
-              </div>
-              <button onclick="openEnrolleesModal(${prog.id})" class="text-[10px] font-black text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 uppercase tracking-widest bg-zinc-50 px-3 py-2 rounded-lg transition duration-200 shadow-sm border border-zinc-200 active:scale-95">View Participants</button>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    const trainingForm = document.getElementById('trainingForm');
-    if (trainingForm) {
-      trainingForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const newProg = {
-          id: Date.now(),
-          name: document.getElementById('progName').value,
-          category: document.getElementById('progCategory').value,
-          date: document.getElementById('progDate').value,
-          dept: document.getElementById('progDept').value,
-          desc: document.getElementById('progDesc').value,
-          status: 'Upcoming',
-          enrollees: []
-        };
-        const trainings = getTrainings();
-        trainings.unshift(newProg);
-        localStorage.setItem('sunstar_trainings', JSON.stringify(trainings));
-        if (window.HRDataService) {
-          await window.HRDataService.upsertTraining(newProg);
-        }
-        document.getElementById('addTrainingModal').classList.add('hidden');
-        trainingForm.reset();
-        renderPrograms();
-      });
-    }
-
-    /* Participant Management */
-    let activeProgramId = null;
-
-    function openEnrolleesModal(progId) {
-       activeProgramId = progId;
-       const trainings = getTrainings();
-       const prog = trainings.find(t => t.id == progId);
-       if (!prog) return;
-
-       document.getElementById('enrolleeProgramName').textContent = prog.name;
-       const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-       const tbody = document.getElementById('enrolleeTableBody');
-       const noData = document.getElementById('noEnrolleesMsg');
-       tbody.innerHTML = '';
-       
-       const participantIds = prog.enrollees || [];
-       if (participantIds.length === 0) {
-          noData.classList.remove('hidden');
-       } else {
-          noData.classList.add('hidden');
-          participantIds.forEach(eid => {
-             const emp = employees.find(e => e.id == eid);
-             if (emp) {
-                const tr = document.createElement('tr');
-                const hasSkill = emp.skills.includes(prog.name);
-                tr.className = "hover:bg-zinc-50 transition";
-                tr.innerHTML = `
-                   <td class="px-4 py-4 font-bold text-zinc-900">${emp.firstName} ${emp.lastName}</td>
-                   <td class="px-4 py-4 text-xs font-medium text-zinc-500 uppercase">${emp.role || 'Staff'}</td>
-                   <td class="px-4 py-4 text-right">
-                      <button onclick="verifyParticipant(${emp.id}, '${prog.name}')" 
-                        class="text-[10px] font-black uppercase px-3 py-1.5 rounded-md transition ${hasSkill ? 'bg-green-50 text-green-600 border border-green-200 cursor-default' : 'bg-sun-yellow text-zinc-900 border border-sun-yellowDark hover:bg-sun-yellowLight active:scale-95 hover:shadow-sm'}">
-                        ${hasSkill ? 'Verified ✓' : 'Verify Skill'}
-                      </button>
-                   </td>
-                `;
-                tbody.appendChild(tr);
-             }
-          });
-       }
-       document.getElementById('enrolleesModal').classList.remove('hidden');
-    }
-
-     async function verifyParticipant(empId, skillName) {
-       let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-       const idx = employees.findIndex(e => e.id == empId);
-       if (idx !== -1) {
-          if (!employees[idx].skills.includes(skillName)) {
-             employees[idx].skills.push(skillName);
-             localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-           if (window.EmployeeDataService) {
-            await window.EmployeeDataService.upsertEmployee(employees[idx]);
-           }
-             alert(`Skill "${skillName}" successfully verified and added to their profile!`);
-             openEnrolleesModal(activeProgramId); // Refresh modal table
-             renderSkills(); // Update skills tab if needed
-          }
-       }
-    }
-
-    /* 2. Employee Skills Logic */
-    function renderSkills() {
-      const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const query = document.getElementById('skillSearch').value.toLowerCase();
-      const tbody = document.getElementById('skillsTableBody');
-      tbody.innerHTML = '';
-
-      employees.filter(emp => `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(query)).forEach(emp => {
-        const skillsHtml = emp.skills.length ? emp.skills.map(s => `<span class="bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded-md border border-zinc-200 text-[10px] font-bold uppercase tracking-tighter">${s}</span>`).join(' ') : '<span class="text-zinc-400 italic text-[11px]">No skills listed...</span>';
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-zinc-50 transition duration-150";
-        tr.innerHTML = `
-          <td class="px-6 py-4 font-medium tracking-tight text-zinc-900 uppercase">${emp.firstName} ${emp.lastName}</td>
-          <td class="px-6 py-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">${emp.role || 'Staff'}</td>
-          <td class="px-6 py-4"><div class="flex flex-wrap gap-1.5">${skillsHtml}</div></td>
-          <td class="px-6 py-4 text-right">
-            <button onclick="openManageSkills(${emp.id})" class="text-[10px] font-black uppercase text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900 transition tracking-widest px-3 py-1.5 bg-zinc-100 rounded-lg shadow-sm border border-zinc-200 active:scale-95">Edit Skills</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function openManageSkills(empId) {
-      const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const emp = employees.find(e => e.id == empId);
-      if (!emp) return;
-      document.getElementById('skillEmployeeId').value = empId;
-      document.getElementById('skillEmployeeName').textContent = `${emp.firstName} ${emp.lastName}`;
-      document.getElementById('skillInput').value = emp.skills.join(', ');
-      document.getElementById('manageSkillsModal').classList.remove('hidden');
-    }
-
-    const skillForm = document.getElementById('skillForm');
-    if (skillForm) {
-      skillForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const empId = document.getElementById('skillEmployeeId').value;
-        const skills = document.getElementById('skillInput').value.split(',').map(s => s.trim()).filter(s => s);
-        let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-        const idx = employees.findIndex(emp => emp.id == empId);
-        if (idx !== -1) {
-          employees[idx].skills = skills;
-          localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-          if (window.EmployeeDataService) {
-            await window.EmployeeDataService.upsertEmployee(employees[idx]);
-          }
-        }
-        document.getElementById('manageSkillsModal').classList.add('hidden');
-        renderSkills();
-      });
-    }
-
-    /* 3. Certifications Logic */
-    function renderCerts() {
-      const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const grid = document.getElementById('certsGrid');
-      grid.innerHTML = '';
-      
-      let allCerts = [];
-      employees.forEach(emp => {
-        emp.certs.forEach(cert => {
-          allCerts.push({ ...cert, empName: `${emp.firstName} ${emp.lastName}` });
-        });
-      });
-
-      if (!allCerts.length) {
-        grid.innerHTML = '<p class="col-span-full text-center text-zinc-400 italic py-16 uppercase tracking-widest font-black text-xs opacity-50">No certifications recorded</p>';
-        return;
-      }
-
-      allCerts.forEach(cert => {
-        const card = document.createElement('div');
-        card.className = "bg-white p-6 rounded-xl border border-zinc-200 shadow-sm flex items-start gap-4 hover:border-sun-yellow hover:shadow-lg transition-all duration-300";
-        card.innerHTML = `
-          <div class="h-12 w-12 rounded-xl bg-sun-yellow flex items-center justify-center text-black flex-shrink-0 border border-sun-yellowDark shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-          </div>
-          <div class="flex-1">
-            <div class="flex justify-between items-start">
-              <h3 class="font-black text-zinc-900 uppercase tracking-tight text-base">${cert.name}</h3>
-              <span class="text-[10px] font-black bg-sun-yellow text-black border border-sun-yellowDark px-2 py-0.5 rounded tracking-tighter shadow-sm">VERIFIED</span>
-            </div>
-            <p class="text-xs font-medium tracking-tight text-zinc-500 mt-1 uppercase">${cert.empName}</p>
-            <div class="mt-4 pt-3 border-t border-zinc-50 flex items-center justify-between text-[10px] font-bold text-zinc-500 uppercase italic">
-              <span>By ${cert.issuer}</span>
-              <span class="${new Date(cert.expiry) < new Date() ? 'text-red-500' : ''}">Exp: ${cert.expiry}</span>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function openAddCertModal() {
-      const employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-      const select = document.getElementById('certEmpId');
-      select.innerHTML = employees.length ? employees.map(emp => `<option value="${emp.id}">${emp.firstName} ${emp.lastName}</option>`).join('') : '<option disabled>No employees registered</option>';
-      document.getElementById('addCertModal').classList.remove('hidden');
-    }
-
-    const certForm = document.getElementById('certForm');
-    if (certForm) {
-      certForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const empId = document.getElementById('certEmpId').value;
-        const newCert = {
-          id: Date.now(),
-          name: document.getElementById('certName').value,
-          date: document.getElementById('certDate').value,
-          expiry: document.getElementById('certExpiry').value,
-          issuer: document.getElementById('certIssuer').value
-        };
-        
-        let employees = JSON.parse(localStorage.getItem('sunstar_employees') || '[]');
-        const idx = employees.findIndex(emp => emp.id == empId);
-        if (idx !== -1) {
-          employees[idx].certs.push(newCert);
-          localStorage.setItem('sunstar_employees', JSON.stringify(employees));
-          if (window.EmployeeDataService) {
-            await window.EmployeeDataService.upsertEmployee(employees[idx]);
-          }
-          document.getElementById('addCertModal').classList.add('hidden');
-          certForm.reset();
-          renderCerts();
-        }
-      });
-    }
-
     function renderTrainingDevEntries() {
       const tbody = document.getElementById('entriesTableBody');
       const entries = getTrainingDevEntries();
@@ -684,11 +246,10 @@
       tbody.innerHTML = '';
 
       if (!entries.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-10 text-center text-zinc-400 italic">No training entries submitted yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-zinc-400 italic">No training entries submitted yet.</td></tr>';
         return;
       }
 
-      const trainings = getTrainings();
       entries
         .slice()
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
@@ -697,8 +258,6 @@
           const employeeName = employee
             ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim()
             : (entry.employeeName || 'Unknown Employee');
-          const submissionType = entry.submissionType === 'external' ? 'External' : 'Catalog';
-          const linkedProgram = trainings.find(training => String(training.id) === String(entry.programId));
           const status = entry.status || 'Pending';
           const certificateUrl = resolveCertificateUrl(entry);
           const hasCertificateToView = Boolean(certificateUrl);
@@ -712,7 +271,6 @@
           tr.className = 'hover:bg-zinc-50 transition';
           tr.innerHTML = `
             <td class="px-6 py-4 font-medium text-zinc-900">${employeeName}</td>
-            <td class="px-6 py-4 text-zinc-600">${submissionType}</td>
             <td class="px-6 py-4 text-zinc-700">${entry.title || '-'}</td>
             <td class="px-6 py-4 text-zinc-600">${entry.dateFrom || '-'}</td>
             <td class="px-6 py-4 text-zinc-600">${entry.dateTo || '-'}</td>
@@ -732,7 +290,6 @@
                 ${status}
               </span>
               ${entry.reviewNote ? `<p class="mt-2 max-w-xs text-[11px] text-zinc-500">${entry.reviewNote}</p>` : ''}
-              ${linkedProgram ? `<p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Program: ${linkedProgram.name || '-'}</p>` : ''}
             </td>
             <td class="px-6 py-4">
               <div class="flex flex-wrap gap-2">
@@ -825,12 +382,10 @@
     }
 
     window.addEventListener('storage', async function(event) {
-      if (event.key && event.key !== 'sunstar_employees' && event.key !== 'sunstar_trainings' && event.key !== TRAINING_DEV_KEY) return;
+      if (event.key && event.key !== 'sunstar_employees' && event.key !== TRAINING_DEV_KEY) return;
       await syncEmployeesFromSupabase();
-      await syncTrainingsFromSupabase();
       await syncTrainingDevEntriesFromSupabase();
       syncEmployeeFields();
-      renderPrograms();
       renderTrainingDevEntries();
       showTrainingDevSyncError();
     });
