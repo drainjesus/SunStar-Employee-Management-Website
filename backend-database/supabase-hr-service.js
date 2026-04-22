@@ -393,6 +393,22 @@
     }
   }
 
+  function getMissingColumnFromError(error) {
+    const combined = [error && error.message, error && error.details, error && error.hint]
+      .filter(Boolean)
+      .join(" ");
+    const patterns = [
+      /Could not find the ['"]([^'"]+)['"] column/i,
+      /column ['"]([^'"]+)['"] does not exist/i,
+      /Unknown column ['"]([^'"]+)['"]/i
+    ];
+    for (const pattern of patterns) {
+      const match = combined.match(pattern);
+      if (match && match[1]) return String(match[1]).trim();
+    }
+    return "";
+  }
+
   function markAttendanceRequestTableMissing() {
     attendanceRequestTableMissingInSession = true;
   }
@@ -1018,13 +1034,11 @@
     }
 
     const payload = mapAttendanceRequestLocalToDb(request);
-    if (unsupportedAttendanceRequestColumns.has("shift_schedule")) delete payload.shift_schedule;
-    if (unsupportedAttendanceRequestColumns.has("request_date_to")) delete payload.request_date_to;
-    if (unsupportedAttendanceRequestColumns.has("time_from")) delete payload.time_from;
-    if (unsupportedAttendanceRequestColumns.has("time_to")) delete payload.time_to;
-    if (unsupportedAttendanceRequestColumns.has("business_type")) delete payload.business_type;
-    if (unsupportedAttendanceRequestColumns.has("special_holiday")) delete payload.special_holiday;
-    if (unsupportedAttendanceRequestColumns.has("employee_id")) delete payload.employee_id;
+    unsupportedAttendanceRequestColumns.forEach((columnName) => {
+      if (Object.prototype.hasOwnProperty.call(payload, columnName)) {
+        delete payload[columnName];
+      }
+    });
 
     let { error } = await window.supabaseClient
       .from(ATTENDANCE_REQUEST_TABLE)
@@ -1080,6 +1094,13 @@
         shouldRetry = true;
       }
 
+      const genericMissingColumn = getMissingColumnFromError(error);
+      if (genericMissingColumn && Object.prototype.hasOwnProperty.call(fallbackPayload, genericMissingColumn)) {
+        delete fallbackPayload[genericMissingColumn];
+        rememberUnsupportedAttendanceRequestColumn(genericMissingColumn);
+        shouldRetry = true;
+      }
+
       if (shouldRetry) {
         const fallback = await window.supabaseClient
           .from(ATTENDANCE_REQUEST_TABLE)
@@ -1090,6 +1111,18 @@
         }
 
         error = fallback.error;
+        const chainedMissingColumn = getMissingColumnFromError(error);
+        if (chainedMissingColumn && Object.prototype.hasOwnProperty.call(fallbackPayload, chainedMissingColumn)) {
+          delete fallbackPayload[chainedMissingColumn];
+          rememberUnsupportedAttendanceRequestColumn(chainedMissingColumn);
+          const secondFallback = await window.supabaseClient
+            .from(ATTENDANCE_REQUEST_TABLE)
+            .upsert(fallbackPayload, { onConflict: "id" });
+          if (!secondFallback.error) {
+            return true;
+          }
+          error = secondFallback.error;
+        }
       }
 
       console.error("upsertAttendanceRequest failed", error);
