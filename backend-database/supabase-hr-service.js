@@ -282,6 +282,12 @@
     const normalizedStatus = request.status === "Declined" ? "Rejected" : (request.status || "Pending");
     const normalizedType = request.requestType === "Special Holiday Work" ? "Special Work" : (request.requestType || "Official Business");
     const requestDateTo = requestDetails.dateTo || request.requestDate;
+    const normalizedReason = String(
+      request.reason
+      || requestDetails.specialHoliday
+      || requestDetails.businessType
+      || "Attendance request"
+    ).trim() || "Attendance request";
 
     return {
       id: request.id,
@@ -292,7 +298,7 @@
       request_type: normalizedType,
       requested_hours: Number.isFinite(parsedHours) && parsedHours > 0 ? parsedHours : 0,
       shift_schedule: request.shiftSchedule || DEFAULT_SHIFT_SCHEDULE,
-      reason: request.reason || null,
+      reason: normalizedReason,
       time_from: requestDetails.timeFrom || null,
       time_to: requestDetails.timeTo || null,
       business_type: requestDetails.businessType || null,
@@ -930,6 +936,14 @@
       }
       if (/special_holiday/i.test(errorText)) {
         delete fallbackPayload.special_holiday;
+        shouldRetry = true;
+      }
+      if (/employee_id|foreign key|employees/i.test(errorText)) {
+        delete fallbackPayload.employee_id;
+        shouldRetry = true;
+      }
+      if (/reason/i.test(errorText)) {
+        fallbackPayload.reason = fallbackPayload.reason || "Attendance request";
         shouldRetry = true;
       }
 
