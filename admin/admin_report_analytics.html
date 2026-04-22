@@ -37,6 +37,13 @@
    <script src="https://cdn.tailwindcss.com"></script>
    <!-- Chart.js for data visualization -->
    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+   <script src="../backend-database/supabase-config.js"></script>
+   <script src="../backend-database/supabase-client.js"></script>
+   <script src="../backend-database/supabase-employee-service.js"></script>
+   <script src="../backend-database/supabase-hr-service.js"></script>
+   <script src="../backend-database/supabase-performance-service.js"></script>
+   <script src="admin-session-display.js"></script>
    <style>
       @media print {
         aside, header, .no-print, nav, .mt-auto {
@@ -133,11 +140,11 @@
         <div class="flex items-center gap-3 px-2">
           <div
             class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-sun-yellow text-sm font-bold text-zinc-900 border border-sun-yellowDark shadow-sm">
-            AD
+            <span data-admin-display-initials>AD</span>
           </div>
           <div class="flex flex-col overflow-hidden">
-            <span class="truncate text-sm font-medium tracking-tight text-zinc-900">Admin User</span>
-            <span class="truncate text-xs text-zinc-500">Authenticated Admin</span>
+            <span data-admin-display-name class="truncate text-sm font-medium tracking-tight text-zinc-900">Admin</span>
+            <span data-admin-display-role class="truncate text-xs text-zinc-500">Authenticated Admin</span>
           </div>
         </div>
 
@@ -303,57 +310,60 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Sync stats from LocalStorage
-      const employees = JSON.parse(localStorage.getItem('sunstar_employees')) || [];
-      const leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
-      const performance = JSON.parse(localStorage.getItem('sunstar_performances')) || [];
-      const attendance = JSON.parse(localStorage.getItem('sunstar_attendance')) || {};
+    document.addEventListener('DOMContentLoaded', async () => {
+      let employees = [];
+      let leaves = [];
+      let performance = [];
+      let attendance = {};
 
-      // 1. Total Workforce
+      if (window.supabaseClient && window.EmployeeDataService) {
+        const remoteEmployees = await window.EmployeeDataService.fetchEmployees();
+        if (Array.isArray(remoteEmployees)) employees = remoteEmployees;
+      }
+      if (window.supabaseClient && window.HRDataService) {
+        const remoteLeaves = await window.HRDataService.fetchLeaves();
+        if (Array.isArray(remoteLeaves)) leaves = remoteLeaves;
+        const remoteAttendance = await window.HRDataService.fetchAttendanceGrouped();
+        if (remoteAttendance && typeof remoteAttendance === 'object') attendance = remoteAttendance;
+      }
+      if (window.supabaseClient && window.PerformanceDataService) {
+        const remotePerf = await window.PerformanceDataService.fetchPerformances();
+        if (Array.isArray(remotePerf)) performance = remotePerf;
+      }
+
       document.getElementById('statTotalEmployees').textContent = employees.length;
 
-      // 2. Performance Avg
       let perfSum = 0;
       let perfCount = 0;
       performance.forEach(p => {
-        if(p.managerRating) {
+        if (p.managerRating !== undefined && p.managerRating !== null && p.managerRating !== '') {
           perfSum += parseFloat(p.managerRating);
           perfCount++;
         }
       });
       document.getElementById('statAvgPerformance').textContent = perfCount > 0 ? (perfSum / perfCount).toFixed(1) : "0.0";
 
-      // 3. Attendance Rate Calculation (Today + Last 6 Days)
       let totalExpected = 0;
       let totalActual = 0;
-      for(let i = 0; i < 7; i++) {
-         const d = new Date();
-          d.setDate(d.getDate() - i);
-         const dateStr = d.toISOString().split('T')[0];
-         const dayRecords = attendance[dateStr] || [];
-         
-         if (employees.length > 0) {
-            totalExpected += employees.length;
-            totalActual += dayRecords.filter(r => r.status === 'Present' || r.status === 'Late').length;
-         }
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayRecords = attendance[dateStr] || [];
+        if (employees.length > 0) {
+          totalExpected += employees.length;
+          totalActual += dayRecords.filter(r => r.status === 'Present' || r.status === 'Late').length;
+        }
       }
       const attendanceRate = totalExpected > 0 ? ((totalActual / totalExpected) * 100).toFixed(1) : "0.0";
       document.getElementById('statAttendanceRate').textContent = attendanceRate + "%";
 
-      // 4. Open Leaves
       document.getElementById('statPendingLeaves').textContent = leaves.filter(l => l.status === 'Pending' || l.status === 'To verify').length;
 
-      // Initialize Charts
       initAttendanceChart(attendance);
       initPerformanceChart(performance);
       initLeaveChart(leaves);
       initStaffingChart(employees);
-    });
-
-    window.addEventListener('storage', function(event) {
-      if (event.key && event.key !== 'sunstar_employees' && event.key !== 'sunstar_leaves' && event.key !== 'sunstar_performances' && event.key !== 'sunstar_attendance') return;
-      window.location.reload();
     });
 
      const chartColors = {

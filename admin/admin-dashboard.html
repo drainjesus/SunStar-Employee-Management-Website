@@ -39,6 +39,11 @@
   <script>
     window.AuthGuard.requireAdmin();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../backend-database/supabase-config.js"></script>
+  <script src="../backend-database/supabase-client.js"></script>
+  <script src="../backend-database/supabase-admin-service.js"></script>
+  <script src="admin-session-display.js"></script>
   <style>
     .sun-sidebar {
       background-color: #f4d000 !important;
@@ -113,11 +118,11 @@
         <div class="flex items-center gap-3 px-2">
           <div
             class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-sun-yellow text-sm font-bold text-black shadow-sm">
-            AD
+            <span data-admin-display-initials>AD</span>
           </div>
           <div class="flex flex-col overflow-hidden">
-            <span class="truncate text-sm font-medium tracking-tight text-zinc-900">Admin User</span>
-            <span class="truncate text-xs text-zinc-500">Authenticated Admin</span>
+            <span data-admin-display-name class="truncate text-sm font-medium tracking-tight text-zinc-900">Admin</span>
+            <span data-admin-display-role class="truncate text-xs text-zinc-500">Authenticated Admin</span>
           </div>
         </div>
 
@@ -304,9 +309,27 @@
 
         let editingAnnouncementId = '';
 
-        document.addEventListener('DOMContentLoaded', () => {
-           loadStats();
-           renderAnnouncements();
+        let cachedAdminFullNameFromDb = '';
+
+        async function refreshAdminDisplayNameFromDb() {
+          cachedAdminFullNameFromDb = '';
+          const email = (localStorage.getItem(SESSION_ADMIN_EMAIL_KEY) || '').trim().toLowerCase();
+          if (!email || !window.supabaseClient) return;
+          const { data, error } = await window.supabaseClient
+            .from('admin_accounts')
+            .select('full_name')
+            .eq('email', email)
+            .limit(1)
+            .maybeSingle();
+          if (!error && data && data.full_name) {
+            cachedAdminFullNameFromDb = String(data.full_name).trim();
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+          await refreshAdminDisplayNameFromDb();
+          loadStats();
+          renderAnnouncements();
         });
 
         function safeParse(value, fallback) {
@@ -327,6 +350,8 @@
         }
 
         function getAdminDisplayName() {
+          const name = (cachedAdminFullNameFromDb || '').trim();
+          if (name) return name;
           return localStorage.getItem(SESSION_ADMIN_EMAIL_KEY) || 'Admin Desk';
         }
 
@@ -440,7 +465,8 @@
           });
         }
 
-        window.openAnnouncementModal = function(announcementId) {
+        window.openAnnouncementModal = async function(announcementId) {
+          await refreshAdminDisplayNameFromDb();
           const modal = document.getElementById('announcementModal');
           const heading = document.getElementById('announcementModalHeading');
           const saveButton = document.getElementById('announcementSaveBtn');

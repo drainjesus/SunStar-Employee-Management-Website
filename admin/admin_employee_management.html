@@ -16,6 +16,7 @@
   <script src="../backend-database/supabase-client.js"></script>
   <script src="../backend-database/supabase-admin-service.js"></script>
   <script src="../backend-database/supabase-employee-service.js"></script>
+  <script src="admin-session-display.js"></script>
 
   <script>
     tailwind = {
@@ -101,11 +102,11 @@
         <div class="flex items-center gap-3 px-2">
           <div
             class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-sun-yellow text-sm font-bold text-black border border-sun-yellowDark shadow-sm">
-            AD
+            <span data-admin-display-initials>AD</span>
           </div>
           <div class="flex flex-col overflow-hidden">
-            <span class="truncate text-sm font-medium tracking-tight text-zinc-900">Admin User</span>
-            <span class="truncate text-xs text-zinc-500">Authenticated Admin</span>
+            <span data-admin-display-name class="truncate text-sm font-medium tracking-tight text-zinc-900">Admin</span>
+            <span data-admin-display-role class="truncate text-xs text-zinc-500">Authenticated Admin</span>
           </div>
         </div>
 
@@ -450,10 +451,12 @@
         </div>
         <select id="roleFilter" onchange="updateTable()" class="px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none bg-white shadow-sm font-medium">
           <option value="">All Roles</option>
+          <option value="Business Manager / Marketing Head">Business Manager / Marketing Head</option>
+          <option value="Editor-in-Chief">Editor-in-Chief</option>
+          <option value="ICT">ICT</option>
+          <option value="HR Head">HR Head</option>
+          <option value="Graphic Artist">Graphic Artist</option>
           <option value="Editor">Editor</option>
-          <option value="Writer">Writer</option>
-          <option value="Photographer">Photographer</option>
-          <option value="Manager">Manager</option>
         </select>
         <select id="sortFilter" onchange="updateTable()" class="px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none bg-white shadow-sm font-medium">
           <option value="name-asc">A - Z</option>
@@ -708,10 +711,12 @@
             <label class="block text-[11px] font-semibold text-zinc-600">Job Role</label>
             <select class="mt-1 w-full rounded border border-zinc-300 px-2 py-1.5 text-xs">
               <option value="" ${!entry.role ? 'selected' : ''}>Select...</option>
+              <option value="Business Manager / Marketing Head" ${entry.role === 'Business Manager / Marketing Head' ? 'selected' : ''}>Business Manager / Marketing Head</option>
+              <option value="Editor-in-Chief" ${entry.role === 'Editor-in-Chief' ? 'selected' : ''}>Editor-in-Chief</option>
+              <option value="ICT" ${entry.role === 'ICT' ? 'selected' : ''}>ICT</option>
+              <option value="HR Head" ${entry.role === 'HR Head' ? 'selected' : ''}>HR Head</option>
+              <option value="Graphic Artist" ${entry.role === 'Graphic Artist' ? 'selected' : ''}>Graphic Artist</option>
               <option value="Editor" ${entry.role === 'Editor' ? 'selected' : ''}>Editor</option>
-              <option value="Writer" ${entry.role === 'Writer' ? 'selected' : ''}>Writer</option>
-              <option value="Photographer" ${entry.role === 'Photographer' ? 'selected' : ''}>Photographer</option>
-              <option value="Manager" ${entry.role === 'Manager' ? 'selected' : ''}>Manager</option>
             </select>
           </div>
           <div>
