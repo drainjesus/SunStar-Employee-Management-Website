@@ -10,6 +10,7 @@
 -- 05_supabase_employee_profile_fields.sql + 09_add_history_fields.sql) then
 -- inserts full rows (middle name, address, histories, hire dates, etc.).
 -- Attendance: adds 06–08 columns (incl. shift_schedule) before bulk attendance insert.
+-- Special requests: adds migration 13 columns + widened type/status checks before insert.
 -- =============================================================================
 
 -- 1) Clear stale training enrollees (JSON), not necessarily deleting programs
@@ -199,6 +200,52 @@ INSERT INTO public.leave_requests (
 (300012, 1006, 'Arnel Ado', '2026-03-25', '2026-03-27', '2026-03-27', '2026-03-27', 'Dental procedure', NULL, 1, '[]'::jsonb, 'Declined', '10:30 AM'),
 (300013, 1007, 'Marianne Abalayan', '2026-02-22', '2026-02-24', '2026-02-24', '2026-02-25', 'Child care', NULL, 2, '[]'::jsonb, 'Approved', '08:15 AM'),
 (300014, 1007, 'Marianne Abalayan', '2026-03-02', '2026-03-04', '2026-03-04', '2026-03-04', 'Half-day personal', NULL, 1, '[]'::jsonb, 'Pending', '04:45 PM');
+
+-- 8b) attendance_special_requests: extended columns + checks (mirrors 13_alter_attendance_special_requests_extended_fields.sql)
+ALTER TABLE IF EXISTS public.attendance_special_requests
+  ADD COLUMN IF NOT EXISTS request_date_to date,
+  ADD COLUMN IF NOT EXISTS time_from text,
+  ADD COLUMN IF NOT EXISTS time_to text,
+  ADD COLUMN IF NOT EXISTS business_type text,
+  ADD COLUMN IF NOT EXISTS special_holiday text;
+
+UPDATE public.attendance_special_requests
+SET request_date_to = request_date
+WHERE request_date_to IS NULL;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'attendance_special_requests_request_type_check'
+      AND conrelid = 'public.attendance_special_requests'::regclass
+  ) THEN
+    ALTER TABLE public.attendance_special_requests
+      DROP CONSTRAINT attendance_special_requests_request_type_check;
+  END IF;
+END $$;
+
+ALTER TABLE IF EXISTS public.attendance_special_requests
+  ADD CONSTRAINT attendance_special_requests_request_type_check
+  CHECK (request_type IN ('Overtime', 'Special Work', 'Special Holiday Work', 'Official Business'));
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'attendance_special_requests_status_check'
+      AND conrelid = 'public.attendance_special_requests'::regclass
+  ) THEN
+    ALTER TABLE public.attendance_special_requests
+      DROP CONSTRAINT attendance_special_requests_status_check;
+  END IF;
+END $$;
+
+ALTER TABLE IF EXISTS public.attendance_special_requests
+  ADD CONSTRAINT attendance_special_requests_status_check
+  CHECK (status IN ('Pending', 'Approved', 'Rejected', 'Declined'));
 
 -- 9) Special attendance requests (two per employee; Feb–Mar 2026)
 INSERT INTO public.attendance_special_requests (
