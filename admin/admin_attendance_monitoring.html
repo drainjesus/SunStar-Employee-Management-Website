@@ -622,14 +622,22 @@
         if (!attendance[dateIso]) attendance[dateIso] = [];
         const dayRecords = attendance[dateIso];
         const employees = getEmployees();
+        const todayIso = getManilaIsoDate();
+        const currentManilaParts = getManilaParts();
+        const currentMinutes = (currentManilaParts.hour * 60) + currentManilaParts.minute;
+        const isPastDate = String(dateIso || '') < todayIso;
+        const isToday = String(dateIso || '') === todayIso;
+        const allowAutoAbsent = isPastDate || (isToday && currentMinutes >= (17 * 60));
         let changed = false;
         const recordsToSync = [];
+        const recordsToDelete = [];
 
         employees.forEach((emp) => {
           const name = getEmployeeDisplayName(emp);
           let record = findRecordByEmployee(dayRecords, emp.id, name);
 
           if (!record) {
+            if (!allowAutoAbsent) return;
             record = {
               empId: emp.id,
               name,
@@ -649,6 +657,21 @@
 
           normalizeAttendanceRecordFields(record);
           if (!hasValidClockIn(record)) {
+            if (!allowAutoAbsent) {
+              const isSystemPlaceholder =
+                String(record.status || '').trim() === 'Absent' &&
+                String(record.statusSource || '').trim() === 'system' &&
+                !hasValidClockOut(record);
+              if (isSystemPlaceholder) {
+                const index = dayRecords.indexOf(record);
+                if (index !== -1) {
+                  dayRecords.splice(index, 1);
+                  changed = true;
+                  recordsToDelete.push({ employeeId: emp.id });
+                }
+              }
+              return;
+            }
             const nextStatus = record.status === 'Absent' ? record.status : 'Absent';
             if (record.status !== nextStatus || record.clockOut !== '--' || String(record.ot || '0.0') !== '0.0') {
               record.status = nextStatus;
@@ -666,6 +689,11 @@
           if (window.HRDataService && typeof window.HRDataService.upsertAttendanceRecord === 'function') {
             recordsToSync.forEach((record) => {
               window.HRDataService.upsertAttendanceRecord(dateIso, record);
+            });
+          }
+          if (window.HRDataService && typeof window.HRDataService.deleteAttendanceRecord === 'function') {
+            recordsToDelete.forEach((entry) => {
+              window.HRDataService.deleteAttendanceRecord(dateIso, entry.employeeId);
             });
           }
         }
