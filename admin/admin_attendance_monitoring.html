@@ -356,7 +356,9 @@
 
       function safeParse(value, fallback) {
         try {
-          return JSON.parse(value);
+          if (value === null || value === undefined || value === '') return fallback;
+          const parsed = JSON.parse(value);
+          return parsed === null ? fallback : parsed;
         } catch {
           return fallback;
         }
@@ -542,16 +544,18 @@
 
       function mergeAttendanceRequestsForSync(cachedRequests, remoteRequests) {
         const mergedMap = new Map();
+        const cachedList = Array.isArray(cachedRequests) ? cachedRequests : [];
+        const remoteList = Array.isArray(remoteRequests) ? remoteRequests : [];
         
         // Add all cached requests
-        cachedRequests.forEach((request) => {
+        cachedList.forEach((request) => {
           if (request && request.id) {
             mergedMap.set(String(request.id), request);
           }
         });
         
         // Merge remote requests - remote data takes precedence if newer
-        remoteRequests.forEach((remoteRequest) => {
+        remoteList.forEach((remoteRequest) => {
           if (!remoteRequest || !remoteRequest.id) return;
           const key = String(remoteRequest.id);
           const existing = mergedMap.get(key);
@@ -585,15 +589,18 @@
       await syncAttendanceRequestsFromSupabase();
 
       function getAttendances() {
-        return safeParse(localStorage.getItem('sunstar_attendance'), {});
+        const attendances = safeParse(localStorage.getItem('sunstar_attendance'), {});
+        return attendances && typeof attendances === 'object' && !Array.isArray(attendances) ? attendances : {};
       }
 
       function getEmployees() {
-        return safeParse(localStorage.getItem('sunstar_employees'), []);
+        const employees = safeParse(localStorage.getItem('sunstar_employees'), []);
+        return Array.isArray(employees) ? employees : [];
       }
 
       function getAttendanceRequests() {
-        return safeParse(localStorage.getItem(ATTENDANCE_REQUEST_KEY), []);
+        const requests = safeParse(localStorage.getItem(ATTENDANCE_REQUEST_KEY), []);
+        return Array.isArray(requests) ? requests : [];
       }
 
       function saveAttendanceRequests(requests) {
