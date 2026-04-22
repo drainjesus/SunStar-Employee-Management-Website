@@ -617,11 +617,14 @@
         await syncEmployeesFromSupabase();
         if (!window.PerformanceDataService) return;
 
-        const [perfRows, peerRows, managerRows] = await Promise.all([
+        const [perfRows, peerRows, managerRows, templateRows] = await Promise.all([
           window.PerformanceDataService.fetchPerformances(),
           window.PerformanceDataService.fetchPeerReviews(),
           (typeof window.PerformanceDataService.fetchManagerReviews === 'function'
             ? window.PerformanceDataService.fetchManagerReviews()
+            : Promise.resolve([])),
+          (typeof window.PerformanceDataService.fetchAppraisalTemplate === 'function'
+            ? window.PerformanceDataService.fetchAppraisalTemplate()
             : Promise.resolve([]))
         ]);
 
@@ -635,8 +638,11 @@
         if (Array.isArray(managerRows)) {
           localStorage.setItem(MANAGER_REVIEW_KEY, JSON.stringify(managerRows));
         }
+        if (Array.isArray(templateRows) && templateRows.length) {
+          localStorage.setItem(APPRAISAL_TEMPLATE_KEY, JSON.stringify(templateRows));
+        }
 
-        if (Array.isArray(perfRows) || Array.isArray(peerRows) || Array.isArray(managerRows)) {
+        if (Array.isArray(perfRows) || Array.isArray(peerRows) || Array.isArray(managerRows) || Array.isArray(templateRows)) {
           renderAppraisals();
           renderManagerReviews();
         }
@@ -694,7 +700,7 @@
         renderTemplateEditorRows();
       };
 
-      window.saveAppraisalTemplate = function() {
+      window.saveAppraisalTemplate = async function() {
         const criteriaInputs = Array.from(templateCriteriaList.querySelectorAll('[data-template-criterion]'));
         const questionInputs = Array.from(templateCriteriaList.querySelectorAll('[data-template-question]'));
         const nextTemplate = criteriaInputs.map((input, index) => {
@@ -713,6 +719,9 @@
         }
 
         setAppraisalTemplate(nextTemplate);
+        if (window.PerformanceDataService && typeof window.PerformanceDataService.upsertAppraisalTemplate === 'function') {
+          await window.PerformanceDataService.upsertAppraisalTemplate(nextTemplate);
+        }
         closeTemplateModal();
         renderEvaluationCriteriaFields(null);
         document.getElementById('successMessage').textContent = 'Performance appraisal table saved successfully.';
@@ -771,15 +780,17 @@
       });
 
       window.addEventListener('storage', async function(event) {
-        if (event.key && event.key !== 'sunstar_performances' && event.key !== 'sunstar_peer_reviews' && event.key !== 'sunstar_employees' && event.key !== MANAGER_REVIEW_KEY) return;
+        if (event.key && event.key !== 'sunstar_performances' && event.key !== 'sunstar_peer_reviews' && event.key !== 'sunstar_employees' && event.key !== MANAGER_REVIEW_KEY && event.key !== APPRAISAL_TEMPLATE_KEY) return;
         await syncFromSupabase();
         renderAppraisals();
         renderManagerReviews();
       });
 
-      renderAppraisals();
-      renderManagerReviews();
-      syncFromSupabase();
+      (async function bootstrapPerformancePage() {
+        await syncFromSupabase();
+        renderAppraisals();
+        renderManagerReviews();
+      })();
     });
   </script>
 </body>

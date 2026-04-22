@@ -1,5 +1,9 @@
 const PERFORMANCE_MANAGER_REVIEW_KEY = "sunstar_manager_reviews";
+const APPRAISAL_TEMPLATE_KEY = "sunstar_performance_appraisal_template";
+const APPRAISAL_TEMPLATE_SETTING_KEY = "performance_appraisal_template";
+const SESSION_ADMIN_EMAIL_KEY = "sunstar_logged_in_admin_email";
 let managerReviewTableMissingInSession = false;
+let adminSettingsTableMissingInSession = false;
 
 function getCachedManagerReviews() {
   try {
@@ -21,6 +25,52 @@ function isManagerReviewsTableMissing(error) {
 function toNumberOrZero(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getCachedAppraisalTemplate() {
+  try {
+    const raw = localStorage.getItem(APPRAISAL_TEMPLATE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function isAdminSettingsTableMissing(error) {
+  const message = [error && error.message, error && error.details, error && error.hint]
+    .filter(Boolean)
+    .join(" ");
+  return /admin_settings|setting_key|setting_value/i.test(message);
+}
+
+function normalizeTemplateRows(templateRows) {
+  if (!Array.isArray(templateRows)) return [];
+  return templateRows
+    .map((item, index) => {
+      if (!item || typeof item !== "object") return null;
+      const criterion = String(item.criterion || "").trim() || `Criterion ${index + 1}`;
+      const question = String(item.question || "").trim() || "Rate this criterion.";
+      const key = String(item.key || "").trim() || `criterion_${index + 1}`;
+      return { key, criterion, question };
+    })
+    .filter(Boolean);
+}
+
+async function resolveActiveAdminId() {
+  const sessionEmail = String(localStorage.getItem(SESSION_ADMIN_EMAIL_KEY) || "").trim().toLowerCase();
+  if (!sessionEmail) return null;
+
+  const byEmail = await window.supabaseClient
+    .from("admin_accounts")
+    .select("id")
+    .eq("email", sessionEmail)
+    .limit(1)
+    .maybeSingle();
+  if (!byEmail.error && byEmail.data && byEmail.data.id !== undefined && byEmail.data.id !== null) {
+    return Number(byEmail.data.id);
+  }
+  return null;
 }
 
 window.PerformanceDataService = {
@@ -184,6 +234,79 @@ window.PerformanceDataService = {
     }
 
     managerReviewTableMissingInSession = false;
+    return true;
+  },
+
+  async fetchAppraisalTemplate() {
+    if (!window.supabaseClient) return getCachedAppraisalTemplate();
+    if (adminSettingsTableMissingInSession) return getCachedAppraisalTemplate();
+
+    const { data, error } = await window.supabaseClient
+      .from("admin_settings")
+      .select("setting_value,updated_at")
+      .eq("setting_key", APPRAISAL_TEMPLATE_SETTING_KEY)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      if (isAdminSettingsTableMissing(error)) {
+        adminSettingsTableMissingInSession = true;
+        return getCachedAppraisalTemplate();
+      }
+      console.error("fetchAppraisalTemplate failed", error);
+      return getCachedAppraisalTemplate();
+    }
+
+    adminSettingsTableMissingInSession = false;
+    const row = Array.isArray(data) && data.length ? data[0] : null;
+    if (!row || !row.setting_value) return getCachedAppraisalTemplate();
+
+    const settingValue = row.setting_value;
+    const templateRows = Array.isArray(settingValue)
+      ? settingValue
+      : (Array.isArray(settingValue.template) ? settingValue.template : []);
+
+    const normalized = normalizeTemplateRows(templateRows);
+    return normalized.length ? normalized : getCachedAppraisalTemplate();
+  },
+
+  async upsertAppraisalTemplate(templateRows) {
+    if (!window.supabaseClient) return false;
+    if (adminSettingsTableMissingInSession) return true;
+
+    const normalized = normalizeTemplateRows(templateRows);
+    if (!normalized.length) return false;
+
+    const adminId = await resolveActiveAdminId();
+    if (!Number.isFinite(adminId)) {
+      // Keep local save working even when admin identity is unavailable.
+      return true;
+    }
+
+    const payload = {
+      admin_id: adminId,
+      setting_key: APPRAISAL_TEMPLATE_SETTING_KEY,
+      setting_value: {
+        template: normalized,
+        updatedAt: new Date().toISOString()
+      },
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await window.supabaseClient
+      .from("admin_settings")
+      .upsert(payload, { onConflict: "admin_id,setting_key" });
+
+    if (error) {
+      if (isAdminSettingsTableMissing(error)) {
+        adminSettingsTableMissingInSession = true;
+        return true;
+      }
+      console.error("upsertAppraisalTemplate failed", error);
+      return false;
+    }
+
+    adminSettingsTableMissingInSession = false;
     return true;
   }
 };

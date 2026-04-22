@@ -460,7 +460,7 @@
          const container = document.getElementById(containerId);
          if (!container) return;
          const template = getAppraisalTemplate();
-         const criteria = existingCriteria && typeof existingCriteria === 'object' ? existingCriteria : {};
+         const criteria = normalizeReviewCriteria(existingCriteria);
          container.innerHTML = '';
 
          template.forEach((item) => {
@@ -524,6 +524,20 @@
          }));
       }
 
+      function normalizeReviewCriteria(criteriaRaw) {
+         const criteria = criteriaRaw && typeof criteriaRaw === 'object' ? { ...criteriaRaw } : {};
+         const template = getAppraisalTemplate();
+         const templateKeys = template.map((item) => item.key);
+         const hasTemplateKeys = templateKeys.some((key) => criteria[key] !== undefined);
+         if (hasTemplateKeys) return criteria;
+
+         // Backward compatibility for older fixed-key manager review payloads.
+         if (criteria.leadership !== undefined && template[0]) criteria[template[0].key] = criteria.leadership;
+         if (criteria.communication !== undefined && template[1]) criteria[template[1].key] = criteria.communication;
+         if (criteria.support !== undefined && template[2]) criteria[template[2].key] = criteria.support;
+         return criteria;
+      }
+
       function normalizeBreakdown(breakdownRaw) {
          if (!breakdownRaw || typeof breakdownRaw !== 'object') return {};
          const breakdown = { ...breakdownRaw };
@@ -547,11 +561,14 @@
       async function syncFromSupabase() {
          if (!window.PerformanceDataService) return;
 
-         const [perfRows, peerRows, managerRows] = await Promise.all([
+         const [perfRows, peerRows, managerRows, templateRows] = await Promise.all([
             window.PerformanceDataService.fetchPerformances(),
             window.PerformanceDataService.fetchPeerReviews(),
             (typeof window.PerformanceDataService.fetchManagerReviews === 'function'
                ? window.PerformanceDataService.fetchManagerReviews()
+               : Promise.resolve([])),
+            (typeof window.PerformanceDataService.fetchAppraisalTemplate === 'function'
+               ? window.PerformanceDataService.fetchAppraisalTemplate()
                : Promise.resolve([]))
          ]);
 
@@ -563,6 +580,9 @@
          }
          if (Array.isArray(managerRows)) {
             localStorage.setItem(MANAGER_REVIEW_KEY, JSON.stringify(managerRows));
+         }
+         if (Array.isArray(templateRows) && templateRows.length) {
+            localStorage.setItem(APPRAISAL_TEMPLATE_KEY, JSON.stringify(templateRows));
          }
       }
 
