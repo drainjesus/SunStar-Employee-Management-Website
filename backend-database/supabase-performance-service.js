@@ -283,15 +283,14 @@ window.PerformanceDataService = {
 
   async upsertAppraisalTemplate(templateRows) {
     if (!window.supabaseClient) return false;
-    if (adminSettingsTableMissingInSession) return true;
+    if (adminSettingsTableMissingInSession) return false;
 
     const normalized = normalizeTemplateRows(templateRows);
     if (!normalized.length) return false;
 
     const adminId = await resolveActiveAdminId();
     if (!Number.isFinite(adminId)) {
-      // Keep local save working even when admin identity is unavailable.
-      return true;
+      return false;
     }
 
     const payload = {
@@ -311,7 +310,7 @@ window.PerformanceDataService = {
     if (error) {
       if (isAdminSettingsTableMissing(error)) {
         adminSettingsTableMissingInSession = true;
-        return true;
+        return false;
       }
       console.error("upsertAppraisalTemplate failed", error);
       return false;
