@@ -77,6 +77,27 @@
     return `${year}-${month}-${day}`;
   }
 
+  function normalizeLeaveStatus(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    if (!raw) return "Pending";
+    if (raw === "approved" || raw === "approve") return "Approve";
+    if (raw === "declined" || raw === "decline" || raw === "rejected" || raw === "reject") return "Decline";
+    if (raw === "to verify" || raw === "to_verify" || raw === "to-verify") return "To verify";
+    if (raw === "pending") return "Pending";
+    return value || "Pending";
+  }
+
+  function normalizeLeaveTypeKey(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    if (!raw) return "";
+    if (raw.includes("vacation")) return "Vacation";
+    if (raw.includes("sick")) return "Sick";
+    if (raw.includes("emergency")) return "Emergency";
+    if (raw.includes("maternity")) return "Maternity";
+    if (raw.includes("paternity")) return "Paternity";
+    return "";
+  }
+
   function normalizeLeaveDocuments(documents) {
     if (!Array.isArray(documents)) return [];
 
@@ -220,6 +241,9 @@
   }
 
   function mapLeaveDbToLocal(row) {
+    const normalizedStatus = normalizeLeaveStatus(row.status);
+    const leaveType = normalizeLeaveTypeKey(row.reason);
+
     return {
       id: row.id,
       empId: row.employee_id,
@@ -230,10 +254,11 @@
       dateFrom: row.date_from,
       dateTo: row.date_to,
       reason: row.reason,
+      leaveType,
       note: row.note,
       days: row.days || 1,
       documents: Array.isArray(row.documents) ? row.documents : [],
-      status: row.status || "Pending",
+      status: normalizedStatus,
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };
@@ -1251,8 +1276,8 @@
     syncAttendanceLocalFromRemote,
     syncAttendanceRequestsLocalFromRemote,
     uploadTrainingCertificate,
-    getTrainingCertificatePublicUrl
-    ,
-    getTrainingDevLastError: () => trainingDevLastError
+    getTrainingCertificatePublicUrl,
+    getTrainingDevLastError: () => trainingDevLastError,
+    clearTrainingDevLastError
   };
 })();

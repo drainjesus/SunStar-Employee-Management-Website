@@ -1,5 +1,5 @@
 -- =============================================================================
--- DEMO: Organizational reset + seed (February–March 2026 only; no April data)
+-- DEMO: Organizational reset + seed (February–April 2026 demo window)
 -- =============================================================================
 -- DESTRUCTIVE: Deletes all employees and cascaded HR data, clears leave rows,
 -- and clears training program enrollee JSON. Run only on a dev/demo project.
@@ -178,6 +178,43 @@ SELECT
   END,
   'Newsroom Day Shift (08:00 AM - 05:00 PM)'
 FROM generate_series('2026-02-01'::date, '2026-03-31'::date, interval '1 day') AS gs(d)
+CROSS JOIN public.employees e
+WHERE e.id BETWEEN 1001 AND 1007;
+
+-- 7b) Attendance: 2026-04-01 .. current date in April 2026 (mostly present with occasional late/absent)
+INSERT INTO public.attendance_records (work_date, employee_id, employee_name, clock_in, clock_out, status, shift_schedule)
+SELECT
+  gs.d::date,
+  e.id,
+  CASE e.id
+    WHEN 1001 THEN 'Donna C. Cuyos'
+    WHEN 1002 THEN 'Cristina E. Alivio'
+    WHEN 1003 THEN 'Prince Agustin'
+    WHEN 1004 THEN 'Margie Abordo'
+    WHEN 1005 THEN 'Maria Victoneta Quintos'
+    WHEN 1006 THEN 'Arnel Ado'
+    WHEN 1007 THEN 'Marianne Abalayan'
+  END,
+  CASE
+    WHEN extract(isodow FROM gs.d::date) IN (6, 7) THEN '--'
+    WHEN (extract(day FROM gs.d::date) + (e.id * 2)) % 29 = 0 THEN '--'
+    WHEN (extract(day FROM gs.d::date) + e.id) % 7 = 0 THEN '08:18 AM'
+    ELSE '08:00 AM'
+  END,
+  CASE
+    WHEN extract(isodow FROM gs.d::date) IN (6, 7) THEN '--'
+    WHEN (extract(day FROM gs.d::date) + (e.id * 2)) % 29 = 0 THEN '--'
+    WHEN (extract(day FROM gs.d::date) + e.id) % 7 = 0 THEN '05:15 PM'
+    ELSE '05:03 PM'
+  END,
+  CASE
+    WHEN extract(isodow FROM gs.d::date) IN (6, 7) THEN 'Absent'
+    WHEN (extract(day FROM gs.d::date) + (e.id * 2)) % 29 = 0 THEN 'Absent'
+    WHEN (extract(day FROM gs.d::date) + e.id) % 7 = 0 THEN 'Late'
+    ELSE 'Present'
+  END,
+  'Newsroom Day Shift (08:00 AM - 05:00 PM)'
+FROM generate_series('2026-04-01'::date, LEAST(CURRENT_DATE, '2026-04-30'::date), interval '1 day') AS gs(d)
 CROSS JOIN public.employees e
 WHERE e.id BETWEEN 1001 AND 1007;
 

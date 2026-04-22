@@ -459,6 +459,27 @@
         return '--:--';
       }
 
+      function normalizeLeaveStatus(value) {
+        const raw = String(value || '').trim().toLowerCase();
+        if (!raw) return 'Pending';
+        if (raw === 'approved' || raw === 'approve') return 'Approve';
+        if (raw === 'declined' || raw === 'decline' || raw === 'rejected' || raw === 'reject') return 'Decline';
+        if (raw === 'to verify' || raw === 'to_verify' || raw === 'to-verify') return 'To verify';
+        if (raw === 'pending') return 'Pending';
+        return value || 'Pending';
+      }
+
+      function normalizeLeaveType(value) {
+        const raw = String(value || '').trim().toLowerCase();
+        if (!raw) return '';
+        if (raw.includes('vacation')) return 'Vacation';
+        if (raw.includes('sick')) return 'Sick';
+        if (raw.includes('emergency')) return 'Emergency';
+        if (raw.includes('maternity')) return 'Maternity';
+        if (raw.includes('paternity')) return 'Paternity';
+        return '';
+      }
+
       function getFiledSortValue(leave) {
         if (leave.createdAt) {
           const createdDate = new Date(leave.createdAt);
@@ -488,9 +509,9 @@
       }
 
       function updateOverviewCounts(leaves) {
-         const pending = leaves.filter(l => l.status === 'Pending').length;
-         const toVerify = leaves.filter(l => l.status === 'To verify').length;
-         const approved = leaves.filter(l => l.status === 'Approve').length;
+         const pending = leaves.filter(l => normalizeLeaveStatus(l.status) === 'Pending').length;
+         const toVerify = leaves.filter(l => normalizeLeaveStatus(l.status) === 'To verify').length;
+         const approved = leaves.filter(l => normalizeLeaveStatus(l.status) === 'Approve').length;
 
          document.getElementById('countPending').textContent = pending;
          document.getElementById('countVerify').textContent = toVerify;
@@ -498,16 +519,32 @@
       }
 
       function updateLeaveTypeBalances(leaves) {
+        const usedByType = {
+          Vacation: 0,
+          Sick: 0,
+          Emergency: 0,
+          Maternity: 0,
+          Paternity: 0
+        };
+
+        leaves
+          .filter((leave) => normalizeLeaveStatus(leave.status) === 'Approve')
+          .forEach((leave) => {
+            const type = normalizeLeaveType(leave.leaveType || leave.reason);
+            if (!type || !Object.prototype.hasOwnProperty.call(usedByType, type)) return;
+            usedByType[type] += Number(leave.days || 1);
+          });
+
         document.getElementById('adminVacationTotal').textContent = LEAVE_LIMITS.Vacation;
-        document.getElementById('adminVacationRemain').textContent = LEAVE_LIMITS.Vacation;
+        document.getElementById('adminVacationRemain').textContent = Math.max(0, LEAVE_LIMITS.Vacation - usedByType.Vacation);
         document.getElementById('adminSickTotal').textContent = LEAVE_LIMITS.Sick;
-        document.getElementById('adminSickRemain').textContent = LEAVE_LIMITS.Sick;
+        document.getElementById('adminSickRemain').textContent = Math.max(0, LEAVE_LIMITS.Sick - usedByType.Sick);
         document.getElementById('adminEmergencyTotal').textContent = LEAVE_LIMITS.Emergency;
-        document.getElementById('adminEmergencyRemain').textContent = LEAVE_LIMITS.Emergency;
+        document.getElementById('adminEmergencyRemain').textContent = Math.max(0, LEAVE_LIMITS.Emergency - usedByType.Emergency);
         document.getElementById('adminMaternityTotal').textContent = LEAVE_LIMITS.Maternity;
-        document.getElementById('adminMaternityRemain').textContent = LEAVE_LIMITS.Maternity;
+        document.getElementById('adminMaternityRemain').textContent = Math.max(0, LEAVE_LIMITS.Maternity - usedByType.Maternity);
         document.getElementById('adminPaternityTotal').textContent = LEAVE_LIMITS.Paternity;
-        document.getElementById('adminPaternityRemain').textContent = LEAVE_LIMITS.Paternity;
+        document.getElementById('adminPaternityRemain').textContent = Math.max(0, LEAVE_LIMITS.Paternity - usedByType.Paternity);
       }
 
       function renderLeaveTable() {
@@ -565,23 +602,26 @@
         }
 
         currentData.forEach((l, index) => {
+          const normalizedStatus = normalizeLeaveStatus(l.status);
+          const normalizedLeaveType = normalizeLeaveType(l.leaveType || l.reason);
+          const leaveLabel = normalizedLeaveType || l.reason || 'Personal';
           const tr = document.createElement('tr');
           tr.className = "hover:bg-zinc-50 transition duration-150";
 
           let statusBadge = '';
           const commonBadgeClasses = "inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset";
           
-          if (l.status === 'Pending') {
+          if (normalizedStatus === 'Pending') {
             statusBadge = `<span class="${commonBadgeClasses} bg-zinc-100 text-zinc-600 ring-zinc-500/20">Pending</span>`;
-          } else if (l.status === 'To verify') {
+          } else if (normalizedStatus === 'To verify') {
             statusBadge = `<span class="${commonBadgeClasses} bg-blue-50 text-blue-700 ring-blue-600/20">To verify</span>`;
-          } else if (l.status === 'Approve') {
+          } else if (normalizedStatus === 'Approve') {
             statusBadge = `<span class="${commonBadgeClasses} bg-green-50 text-green-700 ring-green-600/20">Approved</span>`;
           } else {
             statusBadge = `<span class="${commonBadgeClasses} bg-red-50 text-red-700 ring-red-600/10">Declined</span>`;
           }
 
-          const isApproved = l.status === 'Approve';
+          const isApproved = normalizedStatus === 'Approve';
           const selectClasses = "rounded-md border border-zinc-200 py-1.5 pl-3 pr-8 text-xs font-bold text-zinc-700 bg-white shadow-sm focus:border-sun-yellow outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
 
           const filedDate = formatFiledDate(l.dateFiled, l.createdAt);
@@ -615,7 +655,7 @@
             <td class="px-6 py-4">
               <div class="flex items-center gap-2">
                 <span class="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black uppercase text-zinc-600 ring-1 ring-inset ring-zinc-200">
-                  ${l.reason || 'Personal'}
+                  ${leaveLabel}
                 </span>
                 <button type=\"button\" data-store-key=\"${storeKey}\" class=\"view-leave-note-btn text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 rounded px-1.5 py-0.5 text-xs font-bold transition cursor-pointer\" title=\"View details\">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7"/><circle cx="12" cy="12" r="3"/></svg>
@@ -634,10 +674,10 @@
             <td class="px-6 py-4 text-right">
               <div class="flex flex-col items-end gap-2">
                 <select onchange="updateLeaveStatus(${l.id}, this.value)" class="${selectClasses}" ${isApproved ? 'disabled' : ''}>
-                  <option value="Pending" ${l.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                  <option value="To verify" ${l.status === 'To verify' ? 'selected' : ''}>To verify</option>
-                  <option value="Approve" ${l.status === 'Approve' ? 'selected' : ''}>Approve</option>
-                  <option value="Decline" ${l.status === 'Decline' ? 'selected' : ''}>Decline</option>
+                  <option value="Pending" ${normalizedStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+                  <option value="To verify" ${normalizedStatus === 'To verify' ? 'selected' : ''}>To verify</option>
+                  <option value="Approve" ${normalizedStatus === 'Approve' ? 'selected' : ''}>Approve</option>
+                  <option value="Decline" ${normalizedStatus === 'Decline' ? 'selected' : ''}>Decline</option>
                 </select>
                 <button onclick="removeLeaveRequest(${l.id})" class="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-700 hover:bg-red-100 transition">
                   Remove
@@ -776,9 +816,9 @@
         const index = leaves.findIndex(l => l.id === id);
         if(index !== -1) {
           const leave = leaves[index];
-          leave.status = newStatus;
+          leave.status = normalizeLeaveStatus(newStatus);
           
-          if (newStatus === 'Approve') {
+          if (leave.status === 'Approve') {
             await syncToAttendance(leave);
           }
 
@@ -787,7 +827,7 @@
             await window.HRDataService.upsertLeave(leave);
           }
           renderLeaveTable();
-          showSuccessModal(newStatus);
+          showSuccessModal(leave.status);
         }
       };
 

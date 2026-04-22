@@ -833,8 +833,10 @@
     function resolveCurrentEmploymentStatusEntry(historyRows) {
       const rows = Array.isArray(historyRows) ? historyRows : [];
       if (!rows.length) return null;
-      const active = rows.find(row => getEmploymentStatusFromDates(row.dateFrom, row.dateTo) === 'Active');
-      if (active) return active;
+      const activeRows = rows
+        .filter(row => getEmploymentStatusFromDates(row.dateFrom, row.dateTo) === 'Active')
+        .sort((a, b) => String(b.dateFrom || '').localeCompare(String(a.dateFrom || '')));
+      if (activeRows.length) return activeRows[0];
       return rows[rows.length - 1];
     }
 

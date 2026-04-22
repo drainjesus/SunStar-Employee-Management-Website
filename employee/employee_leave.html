@@ -464,6 +464,27 @@
       return safeParse(localStorage.getItem(LEAVE_KEY), []);
     }
 
+    function normalizeLeaveStatus(value) {
+      const raw = String(value || '').trim().toLowerCase();
+      if (!raw) return 'Pending';
+      if (raw === 'approved' || raw === 'approve') return 'Approve';
+      if (raw === 'declined' || raw === 'decline' || raw === 'rejected' || raw === 'reject') return 'Decline';
+      if (raw === 'to verify' || raw === 'to_verify' || raw === 'to-verify') return 'To verify';
+      if (raw === 'pending') return 'Pending';
+      return value || 'Pending';
+    }
+
+    function normalizeLeaveType(value) {
+      const raw = String(value || '').trim().toLowerCase();
+      if (!raw) return '';
+      if (raw.includes('vacation')) return 'Vacation';
+      if (raw.includes('sick')) return 'Sick';
+      if (raw.includes('emergency')) return 'Emergency';
+      if (raw.includes('maternity')) return 'Maternity';
+      if (raw.includes('paternity')) return 'Paternity';
+      return '';
+    }
+
     function redirectToLogin() {
       window.location.replace('../index.html');
     }
@@ -765,7 +786,7 @@
 
     function getUsedLeaveByType() {
       const leaves = getLeaves();
-      const myApproved = leaves.filter(l => isMyLeave(l) && String(l.status || '') === 'Approve');
+      const myApproved = leaves.filter(l => isMyLeave(l) && normalizeLeaveStatus(l.status) === 'Approve');
       const usedByType = {
         Vacation: 0,
         Sick: 0,
@@ -775,7 +796,7 @@
       };
 
       myApproved.forEach(item => {
-        const type = String(item.reason || '').trim();
+        const type = normalizeLeaveType(item.leaveType || item.reason);
         if (Object.prototype.hasOwnProperty.call(usedByType, type)) {
           usedByType[type] += Number(item.days || 1);
         }
@@ -911,13 +932,16 @@
         tr.className = 'hover:bg-zinc-50/50 transition';
         const filedDate = formatFiledDate(l.dateFiled, l.createdAt);
         const filedTime = formatFiledTime(l.timeFiled, l.createdAt);
+        const normalizedStatus = normalizeLeaveStatus(l.status);
+        const normalizedLeaveType = normalizeLeaveType(l.leaveType || l.reason);
+        const leaveLabel = normalizedLeaveType || l.reason || 'General';
 
         let statusClasses = 'inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset';
-        if (l.status === 'Pending') {
+        if (normalizedStatus === 'Pending') {
           statusClasses += ' bg-zinc-100 text-zinc-600 ring-zinc-500/20';
-        } else if (l.status === 'To verify') {
+        } else if (normalizedStatus === 'To verify') {
           statusClasses += ' bg-blue-50 text-blue-700 ring-blue-600/20';
-        } else if (l.status === 'Approve') {
+        } else if (normalizedStatus === 'Approve') {
           statusClasses += ' bg-green-50 text-green-700 ring-green-600/20';
         } else {
           statusClasses += ' bg-red-50 text-red-700 ring-red-600/10';
@@ -937,10 +961,10 @@
                 <p class="font-bold text-xs text-zinc-700">${formatReadable(l.dateTo)}</p>
              </td>
              <td class="px-8 py-5 border-r border-zinc-50">
-                <span class="inline-flex items-center rounded-md bg-sun-yellowLight/50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-sun-yellowDark ring-1 ring-inset ring-sun-yellow/20">${l.reason || 'General'}</span>
+                <span class="inline-flex items-center rounded-md bg-sun-yellowLight/50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-sun-yellowDark ring-1 ring-inset ring-sun-yellow/20">${leaveLabel}</span>
              </td>
              <td class="px-8 py-5 border-r border-zinc-50 font-black text-xs text-zinc-900">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</td>
-             <td class="px-8 py-5 border-r border-zinc-50"><span class="${statusClasses}">${l.status === 'Approve' ? 'Approved' : (l.status === 'Decline' ? 'Declined' : l.status)}</span></td>
+             <td class="px-8 py-5 border-r border-zinc-50"><span class="${statusClasses}">${normalizedStatus === 'Approve' ? 'Approved' : (normalizedStatus === 'Decline' ? 'Declined' : normalizedStatus)}</span></td>
              <td class="px-8 py-5 text-right">
                 <div class="flex justify-end gap-2">
                   <button onclick="viewNote('${escapedNote}')" class="h-8 w-8 bg-zinc-50 rounded-lg flex items-center justify-center text-zinc-400 hover:text-sun-yellowDark hover:bg-sun-yellowLight/50 transition-all border border-zinc-100">

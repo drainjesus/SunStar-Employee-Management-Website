@@ -348,6 +348,8 @@
       .from("employees")
       .upsert(payload, { onConflict: "id" });
 
+    let shouldSyncExtendedProfile = true;
+
     if (error) {
       const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ");
       if (REQUIRED_PROFILE_COLUMNS_PATTERN.test(errorText)) {
@@ -366,9 +368,17 @@
         if (!savedExtended) {
           return false;
         }
+        shouldSyncExtendedProfile = false;
       } else {
         setLastError(error.message || "Unable to save employee to Supabase.");
         console.error("upsertEmployee failed", error);
+        return false;
+      }
+    }
+
+    if (shouldSyncExtendedProfile) {
+      const savedExtended = await upsertExtendedProfileByEmployeeId(employee.id, employee);
+      if (!savedExtended) {
         return false;
       }
     }
