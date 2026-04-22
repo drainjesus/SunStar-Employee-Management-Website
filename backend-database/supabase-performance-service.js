@@ -18,6 +18,11 @@ function isManagerReviewsTableMissing(error) {
   return /manager_reviews/i.test(message);
 }
 
+function toNumberOrZero(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 window.PerformanceDataService = {
   async fetchPerformances() {
     if (!window.supabaseClient) return null;
@@ -128,10 +133,12 @@ window.PerformanceDataService = {
     }
 
     managerReviewTableMissingInSession = false;
+    const cached = getCachedManagerReviews();
     return (data || []).map((row) => ({
+      ...(cached.find(item => String(item.employeeId) === String(row.employee_id)) || {}),
       employeeId: row.employee_id,
       employeeName: row.employee_name || "",
-      criteria: {
+      criteria: (cached.find(item => String(item.employeeId) === String(row.employee_id)) || {}).criteria || {
         leadership: Number(row.leadership || 0),
         communication: Number(row.communication || 0),
         support: Number(row.support || 0)
@@ -146,12 +153,18 @@ window.PerformanceDataService = {
     if (!window.supabaseClient || !review) return false;
     if (managerReviewTableMissingInSession) return true;
 
+    const criteria = review.criteria && typeof review.criteria === "object" ? review.criteria : {};
+    const scores = Object.values(criteria).map(toNumberOrZero).filter((score) => score > 0);
+    const leadership = toNumberOrZero(criteria.leadership) || scores[0] || 0;
+    const communication = toNumberOrZero(criteria.communication) || scores[1] || 0;
+    const support = toNumberOrZero(criteria.support) || scores[2] || 0;
+
     const payload = {
       employee_id: review.employeeId,
       employee_name: review.employeeName || "Employee",
-      leadership: Number(review.criteria && review.criteria.leadership) || 0,
-      communication: Number(review.criteria && review.criteria.communication) || 0,
-      support: Number(review.criteria && review.criteria.support) || 0,
+      leadership,
+      communication,
+      support,
       average: Number.parseFloat(review.average) || 0,
       comment: review.comment || null,
       updated_at: review.updatedAt || new Date().toISOString()

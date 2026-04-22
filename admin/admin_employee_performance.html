@@ -200,9 +200,7 @@
               <thead class="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wider text-zinc-500">
                 <tr>
                   <th class="px-6 py-4">Employee</th>
-                  <th class="px-6 py-4 text-center">Leadership</th>
-                  <th class="px-6 py-4 text-center">Communication</th>
-                  <th class="px-6 py-4 text-center">Support</th>
+                  <th class="px-6 py-4">Criteria Snapshot</th>
                   <th class="px-6 py-4 text-center">Average</th>
                   <th class="px-6 py-4">Comment</th>
                   <th class="px-6 py-4">Updated</th>
@@ -510,6 +508,33 @@
         });
       }
 
+      function normalizeReviewCriteria(criteriaRaw) {
+        const criteria = criteriaRaw && typeof criteriaRaw === 'object' ? { ...criteriaRaw } : {};
+        const template = getAppraisalTemplate();
+        const templateKeys = template.map(item => item.key);
+        const hasTemplateKeys = templateKeys.some(key => criteria[key] !== undefined);
+        if (hasTemplateKeys) return criteria;
+
+        // Backward compatibility for older manager review payloads.
+        if (criteria.leadership !== undefined && template[0]) criteria[template[0].key] = criteria.leadership;
+        if (criteria.communication !== undefined && template[1]) criteria[template[1].key] = criteria.communication;
+        if (criteria.support !== undefined && template[2]) criteria[template[2].key] = criteria.support;
+        return criteria;
+      }
+
+      function buildCriteriaSnapshot(criteriaRaw) {
+        const template = getAppraisalTemplate();
+        const criteria = normalizeReviewCriteria(criteriaRaw);
+        const snippets = template
+          .map((item) => {
+            const value = Number(criteria[item.key]);
+            if (!Number.isFinite(value) || value <= 0) return '';
+            return `${item.criterion}: ${value}`;
+          })
+          .filter(Boolean);
+        return snippets.length ? snippets.join(' | ') : '--';
+      }
+
       function renderManagerReviews() {
         if (!managerReviewTableBody) return;
         const reviews = getManagerReviews()
@@ -518,24 +543,19 @@
         managerReviewTableBody.innerHTML = '';
 
         if (!reviews.length) {
-          managerReviewTableBody.innerHTML = '<tr><td colspan="7" class="py-12 text-center text-zinc-400 italic font-medium">No manager ratings submitted by employees yet.</td></tr>';
+          managerReviewTableBody.innerHTML = '<tr><td colspan="5" class="py-12 text-center text-zinc-400 italic font-medium">No manager ratings submitted by employees yet.</td></tr>';
           return;
         }
 
         reviews.forEach((review) => {
-          const criteria = review.criteria || {};
-          const leadership = Number(criteria.leadership || 0);
-          const communication = Number(criteria.communication || 0);
-          const support = Number(criteria.support || 0);
           const average = Number.parseFloat(review.average);
+          const criteriaSnapshot = buildCriteriaSnapshot(review.criteria);
 
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-zinc-50 transition-colors';
           tr.innerHTML = `
             <td class="px-6 py-4 font-medium text-zinc-900">${review.employeeName || 'Employee'}</td>
-            <td class="px-6 py-4 text-center font-semibold">${leadership || '--'}</td>
-            <td class="px-6 py-4 text-center font-semibold">${communication || '--'}</td>
-            <td class="px-6 py-4 text-center font-semibold">${support || '--'}</td>
+            <td class="px-6 py-4 text-xs text-zinc-700">${criteriaSnapshot}</td>
             <td class="px-6 py-4 text-center"><span class="inline-flex items-center rounded-md bg-violet-50 px-2.5 py-1 text-xs font-black uppercase tracking-widest text-violet-700 ring-1 ring-inset ring-violet-600/20">${Number.isFinite(average) ? average.toFixed(1) : '--'}</span></td>
             <td class="px-6 py-4 text-xs text-zinc-700">${review.comment || '--'}</td>
             <td class="px-6 py-4 text-xs text-zinc-500 font-medium">${formatUpdatedAt(review.updatedAt)}</td>

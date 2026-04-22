@@ -208,9 +208,9 @@
                     <span id="peerPendingBadge" class="text-[10px] font-black uppercase px-2 py-1 bg-zinc-100 text-zinc-400 rounded">0 Pending</span>
                  </div>
                  <h3 class="text-xl font-black text-zinc-900">Peer Reviews</h3>
-                 <p class="text-sm text-zinc-500 mt-2 font-medium italic">Support your colleagues. Provide constructive feedback for your teammates.</p>
+                 <p class="text-sm text-zinc-500 mt-2 font-medium italic">Support your colleagues. Provide constructive feedback using the same appraisal criteria.</p>
               </div>
-              <button onclick="document.getElementById('peerReviewModal').classList.remove('hidden')" class="w-full mt-6 bg-white border border-zinc-300 py-3 text-xs font-semibold uppercase text-zinc-900 rounded-md hover:bg-zinc-100 transition tracking-widest active:scale-95 shadow-sm">Rate Colleagues</button>
+              <button onclick="openPeerReviewModal()" class="w-full mt-6 bg-white border border-zinc-300 py-3 text-xs font-semibold uppercase text-zinc-900 rounded-md hover:bg-zinc-100 transition tracking-widest active:scale-95 shadow-sm">Rate Colleagues</button>
            </div>
 
            <!-- Manager Review -->
@@ -223,7 +223,7 @@
                     <span id="managerReviewBadge" class="text-[10px] font-black uppercase px-2 py-1 bg-zinc-100 text-zinc-400 rounded">Not Submitted</span>
                  </div>
                  <h3 class="text-xl font-black text-zinc-900">Rate Manager</h3>
-                 <p class="text-sm text-zinc-500 mt-2 font-medium italic">Give feedback to your manager using a fixed set of criteria.</p>
+                 <p class="text-sm text-zinc-500 mt-2 font-medium italic">Give feedback to your manager using the same appraisal criteria.</p>
               </div>
               <button onclick="openManagerReviewModal()" class="w-full mt-6 bg-white border border-zinc-300 py-3 text-xs font-semibold uppercase text-zinc-900 rounded-md hover:bg-zinc-100 transition tracking-widest active:scale-95 shadow-sm">Open Form</button>
            </div>
@@ -322,17 +322,7 @@
                     <!-- Populated by JS -->
                  </select>
               </div>
-              <div>
-                 <label class="block text-xs font-black uppercase text-zinc-400 mb-2 tracking-widest">Collaboration Rating (1-5)</label>
-                 <div class="flex justify-center gap-4">
-                    <button type="button" onclick="setPeerRating(1)" class="peer-btn h-10 w-10 rounded-full border border-zinc-100 flex items-center justify-center font-black text-zinc-400 hover:bg-zinc-900 hover:text-white transition">1</button>
-                    <button type="button" onclick="setPeerRating(2)" class="peer-btn h-10 w-10 rounded-full border border-zinc-100 flex items-center justify-center font-black text-zinc-400 hover:bg-zinc-900 hover:text-white transition">2</button>
-                    <button type="button" onclick="setPeerRating(3)" class="peer-btn h-10 w-10 rounded-full border border-zinc-100 flex items-center justify-center font-black text-zinc-400 hover:bg-zinc-900 hover:text-white transition">3</button>
-                    <button type="button" onclick="setPeerRating(4)" class="peer-btn h-10 w-10 rounded-full border border-zinc-100 flex items-center justify-center font-black text-zinc-400 hover:bg-zinc-900 hover:text-white transition group-checked:bg-zinc-900">4</button>
-                    <button type="button" onclick="setPeerRating(5)" class="peer-btn h-10 w-10 rounded-full border border-zinc-100 flex items-center justify-center font-black text-zinc-400 hover:bg-zinc-900 hover:text-white transition">5</button>
-                 </div>
-                 <input type="hidden" id="peerRatingValue" value="0">
-              </div>
+              <div id="peerCriteriaFields" class="space-y-4"></div>
               <div class="flex gap-3 pt-4">
                  <button type="button" onclick="document.getElementById('peerReviewModal').classList.add('hidden')" class="flex-1 py-4 text-xs font-black uppercase text-zinc-400 hover:bg-zinc-50 rounded-2xl transition">Cancel</button>
                  <button type="submit" class="flex-1 bg-sun-yellow py-4 text-xs font-black uppercase text-zinc-900 rounded-2xl shadow-xl hover:bg-sun-yellowLight transition tracking-widest border border-sun-yellowDark">Submit Rating</button>
@@ -351,36 +341,7 @@
            <p class="text-sm text-zinc-500 mb-8 font-medium italic border-b border-zinc-50 pb-4">Submit manager feedback based on set criteria.</p>
 
            <form id="managerReviewForm" class="space-y-6">
-              <div>
-                 <label class="block text-xs font-black uppercase text-zinc-400 mb-2 tracking-widest">Leadership (1-5)</label>
-                 <select id="managerLeadership" class="w-full rounded-2xl border border-zinc-200 p-3 text-sm font-bold focus:border-sun-yellow outline-none transition bg-zinc-50/50">
-                    <option value="5">5 - Excellent</option>
-                    <option value="4">4 - Good</option>
-                    <option value="3" selected>3 - Satisfactory</option>
-                    <option value="2">2 - Needs Improvement</option>
-                    <option value="1">1 - Poor</option>
-                 </select>
-              </div>
-              <div>
-                 <label class="block text-xs font-black uppercase text-zinc-400 mb-2 tracking-widest">Communication (1-5)</label>
-                 <select id="managerCommunication" class="w-full rounded-2xl border border-zinc-200 p-3 text-sm font-bold focus:border-sun-yellow outline-none transition bg-zinc-50/50">
-                    <option value="5">5 - Excellent</option>
-                    <option value="4">4 - Good</option>
-                    <option value="3" selected>3 - Satisfactory</option>
-                    <option value="2">2 - Needs Improvement</option>
-                    <option value="1">1 - Poor</option>
-                 </select>
-              </div>
-              <div>
-                 <label class="block text-xs font-black uppercase text-zinc-400 mb-2 tracking-widest">Support for Team (1-5)</label>
-                 <select id="managerSupport" class="w-full rounded-2xl border border-zinc-200 p-3 text-sm font-bold focus:border-sun-yellow outline-none transition bg-zinc-50/50">
-                    <option value="5">5 - Excellent</option>
-                    <option value="4">4 - Good</option>
-                    <option value="3" selected>3 - Satisfactory</option>
-                    <option value="2">2 - Needs Improvement</option>
-                    <option value="1">1 - Poor</option>
-                 </select>
-              </div>
+              <div id="managerCriteriaFields" class="space-y-4"></div>
               <div>
                  <label class="block text-xs font-black uppercase text-zinc-400 mb-2 tracking-widest">Comments</label>
                  <textarea id="managerReviewComment" rows="3" class="w-full rounded-2xl border border-zinc-200 p-4 text-sm focus:border-sun-yellow outline-none transition shadow-inner font-medium" placeholder="Share constructive feedback..."></textarea>
@@ -495,13 +456,62 @@
          }
       }
 
+      function renderCriteriaSelectFields(containerId, existingCriteria) {
+         const container = document.getElementById(containerId);
+         if (!container) return;
+         const template = getAppraisalTemplate();
+         const criteria = existingCriteria && typeof existingCriteria === 'object' ? existingCriteria : {};
+         container.innerHTML = '';
+
+         template.forEach((item) => {
+            const value = Number.parseInt(criteria[item.key], 10);
+            const selected = Number.isFinite(value) && value >= 1 && value <= 5 ? String(value) : '3';
+            const block = document.createElement('div');
+            block.innerHTML = `
+              <label class="block text-xs font-black uppercase text-zinc-400 mb-2 tracking-widest">${item.criterion} (1-5)</label>
+              <select data-criteria-key="${item.key}" class="w-full rounded-2xl border border-zinc-200 p-3 text-sm font-bold focus:border-sun-yellow outline-none transition bg-zinc-50/50">
+                 <option value="5" ${selected === '5' ? 'selected' : ''}>5 - Excellent</option>
+                 <option value="4" ${selected === '4' ? 'selected' : ''}>4 - Good</option>
+                 <option value="3" ${selected === '3' ? 'selected' : ''}>3 - Satisfactory</option>
+                 <option value="2" ${selected === '2' ? 'selected' : ''}>2 - Needs Improvement</option>
+                 <option value="1" ${selected === '1' ? 'selected' : ''}>1 - Poor</option>
+              </select>
+            `;
+            container.appendChild(block);
+         });
+      }
+
+      function collectCriteriaFromContainer(containerId) {
+         const container = document.getElementById(containerId);
+         const fields = container ? Array.from(container.querySelectorAll('[data-criteria-key]')) : [];
+         const criteria = {};
+         let total = 0;
+
+         fields.forEach((field) => {
+            const key = field.getAttribute('data-criteria-key');
+            const value = Number.parseInt(field.value, 10);
+            const score = Number.isFinite(value) ? value : 3;
+            criteria[key] = score;
+            total += score;
+         });
+
+         return {
+            criteria,
+            average: fields.length ? (total / fields.length).toFixed(1) : '0.0',
+            count: fields.length
+         };
+      }
+
       function openManagerReviewModal() {
          const myReview = getMyManagerReview();
-         document.getElementById('managerLeadership').value = myReview ? String(myReview.criteria?.leadership || 3) : '3';
-         document.getElementById('managerCommunication').value = myReview ? String(myReview.criteria?.communication || 3) : '3';
-         document.getElementById('managerSupport').value = myReview ? String(myReview.criteria?.support || 3) : '3';
+         renderCriteriaSelectFields('managerCriteriaFields', myReview ? myReview.criteria : null);
          document.getElementById('managerReviewComment').value = myReview ? (myReview.comment || '') : '';
          document.getElementById('managerReviewModal').classList.remove('hidden');
+      }
+
+      function openPeerReviewModal() {
+         renderCriteriaSelectFields('peerCriteriaFields', null);
+         document.getElementById('peerReviewModal').classList.remove('hidden');
       }
 
       function getAppraisalTemplate() {
@@ -753,16 +763,6 @@
          }
       }
 
-      function setPeerRating(value) {
-         document.getElementById('peerRatingValue').value = value;
-         document.querySelectorAll('.peer-btn').forEach(button => {
-            button.classList.remove('bg-sun-yellow', 'text-zinc-900', 'border-sun-yellowDark');
-            if (Number(button.textContent) === value) {
-               button.classList.add('bg-sun-yellow', 'text-zinc-900', 'border-sun-yellowDark');
-            }
-         });
-      }
-
       document.getElementById('selfEvalForm').addEventListener('submit', event => {
          event.preventDefault();
 
@@ -781,14 +781,19 @@
          event.preventDefault();
 
          const targetId = document.getElementById('peerSelect').value;
-         const rating = Number(document.getElementById('peerRatingValue').value);
+         const peerCriteriaResult = collectCriteriaFromContainer('peerCriteriaFields');
+         const rating = Number(peerCriteriaResult.average);
 
          if (!targetId) {
             alert('Please select a teammate first.');
             return;
          }
-         if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
-            alert('Please select a rating.');
+         if (!peerCriteriaResult.count) {
+            alert('No appraisal criteria configured yet. Please ask admin to set the criteria table first.');
+            return;
+         }
+         if (!Number.isFinite(rating) || rating <= 0) {
+            alert('Please complete the rating fields.');
             return;
          }
          if (activeUserId === null) {
@@ -801,6 +806,7 @@
          const newReview = {
             reviewerId: activeUserId,
             targetId,
+            criteria: peerCriteriaResult.criteria,
             rating,
             updatedAt: new Date().toISOString()
          };
@@ -820,10 +826,7 @@
 
          document.getElementById('peerReviewModal').classList.add('hidden');
          document.getElementById('peerSelect').selectedIndex = 0;
-         document.getElementById('peerRatingValue').value = '0';
-         document.querySelectorAll('.peer-btn').forEach(button => {
-            button.classList.remove('bg-sun-yellow', 'text-zinc-900', 'border-sun-yellowDark');
-         });
+         renderCriteriaSelectFields('peerCriteriaFields', null);
 
          alert('Peer review submitted anonymously. Thank you!');
       });
@@ -835,17 +838,19 @@
             return;
          }
 
-         const leadership = Number.parseInt(document.getElementById('managerLeadership').value, 10);
-         const communication = Number.parseInt(document.getElementById('managerCommunication').value, 10);
-         const support = Number.parseInt(document.getElementById('managerSupport').value, 10);
+         const managerCriteriaResult = collectCriteriaFromContainer('managerCriteriaFields');
          const comment = String(document.getElementById('managerReviewComment').value || '').trim();
+         if (!managerCriteriaResult.count) {
+            alert('No appraisal criteria configured yet. Please ask admin to set the criteria table first.');
+            return;
+         }
 
          const reviews = getManagerReviews();
          const payload = {
             employeeId: activeUserId,
             employeeName: activeUserName,
-            criteria: { leadership, communication, support },
-            average: ((leadership + communication + support) / 3).toFixed(1),
+            criteria: managerCriteriaResult.criteria,
+            average: managerCriteriaResult.average,
             comment,
             updatedAt: new Date().toISOString()
          };
@@ -934,6 +939,7 @@
       document.addEventListener('DOMContentLoaded', async () => {
          await syncFromSupabase();
          resolveActiveUser();
+         renderCriteriaSelectFields('peerCriteriaFields', null);
          recomputePeerAverages();
          renderMyPerformance();
          populatePeerSelect();
