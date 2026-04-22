@@ -730,7 +730,7 @@
       renderUploadedDocumentsList();
     }
 
-    function updateBalanceCards() {
+    function getUsedLeaveByType() {
       const leaves = getLeaves();
       const myApproved = leaves.filter(l => isMyLeave(l) && String(l.status || '') === 'Approve');
       const usedByType = {
@@ -748,16 +748,66 @@
         }
       });
 
+      return usedByType;
+    }
+
+    function getRemainingLeaveByType() {
+      const usedByType = getUsedLeaveByType();
+      return {
+        Vacation: Math.max(0, LEAVE_LIMITS.Vacation - usedByType.Vacation),
+        Sick: Math.max(0, LEAVE_LIMITS.Sick - usedByType.Sick),
+        Emergency: Math.max(0, LEAVE_LIMITS.Emergency - usedByType.Emergency),
+        Maternity: Math.max(0, LEAVE_LIMITS.Maternity - usedByType.Maternity),
+        Paternity: Math.max(0, LEAVE_LIMITS.Paternity - usedByType.Paternity)
+      };
+    }
+
+    function updateLeaveTypeAvailability() {
+      const select = document.getElementById('reason');
+      if (!select) return;
+
+      const remaining = getRemainingLeaveByType();
+      const optionMap = {
+        Vacation: 'Vacation Leave',
+        Sick: 'Sick Leave',
+        Emergency: 'Emergency Leave',
+        Maternity: 'Maternity Leave',
+        Paternity: 'Paternity Leave'
+      };
+
+      Array.from(select.options).forEach(option => {
+        const key = option.value;
+        if (!Object.prototype.hasOwnProperty.call(remaining, key)) return;
+        const isUnavailable = remaining[key] <= 0;
+        option.disabled = isUnavailable;
+        option.textContent = isUnavailable
+          ? `${optionMap[key]} (No balance)`
+          : optionMap[key];
+      });
+
+      const selectedValue = select.value;
+      if (Object.prototype.hasOwnProperty.call(remaining, selectedValue) && remaining[selectedValue] <= 0) {
+        const firstAvailable = Object.keys(remaining).find(key => remaining[key] > 0);
+        if (firstAvailable) {
+          select.value = firstAvailable;
+        }
+      }
+    }
+
+    function updateBalanceCards() {
+      const remaining = getRemainingLeaveByType();
+
       document.getElementById('vacationTotal').textContent = LEAVE_LIMITS.Vacation;
-      document.getElementById('vacationRemain').textContent = Math.max(0, LEAVE_LIMITS.Vacation - usedByType.Vacation);
+      document.getElementById('vacationRemain').textContent = remaining.Vacation;
       document.getElementById('sickTotal').textContent = LEAVE_LIMITS.Sick;
-      document.getElementById('sickRemain').textContent = Math.max(0, LEAVE_LIMITS.Sick - usedByType.Sick);
+      document.getElementById('sickRemain').textContent = remaining.Sick;
       document.getElementById('emergencyTotal').textContent = LEAVE_LIMITS.Emergency;
-      document.getElementById('emergencyRemain').textContent = Math.max(0, LEAVE_LIMITS.Emergency - usedByType.Emergency);
+      document.getElementById('emergencyRemain').textContent = remaining.Emergency;
       document.getElementById('maternityTotal').textContent = LEAVE_LIMITS.Maternity;
-      document.getElementById('maternityRemain').textContent = Math.max(0, LEAVE_LIMITS.Maternity - usedByType.Maternity);
+      document.getElementById('maternityRemain').textContent = remaining.Maternity;
       document.getElementById('paternityTotal').textContent = LEAVE_LIMITS.Paternity;
-      document.getElementById('paternityRemain').textContent = Math.max(0, LEAVE_LIMITS.Paternity - usedByType.Paternity);
+      document.getElementById('paternityRemain').textContent = remaining.Paternity;
+      updateLeaveTypeAvailability();
     }
 
     function renderHistory() {
@@ -902,11 +952,27 @@
        const dateLeave = document.getElementById('dateOfLeave').value;
        const dateFrom = document.getElementById('dateFrom').value;
        const dateTo = document.getElementById('dateTo').value;
-       const days = document.getElementById('days').value;
+       const days = parseInt(document.getElementById('days').value, 10) || 0;
        const note = document.getElementById('note').value;
        const filedNow = getNowFiledValues();
        const documents = await collectLeaveDocuments();
        if (documents === null) {
+         return;
+       }
+
+       const remaining = getRemainingLeaveByType();
+       const availableForType = Number(remaining[reason] || 0);
+       if (availableForType <= 0) {
+         alert(`You cannot file ${reason} leave because your balance is already 0.`);
+         updateLeaveTypeAvailability();
+         return;
+       }
+       if (days <= 0) {
+         alert('Please select a valid leave duration.');
+         return;
+       }
+       if (days > availableForType) {
+         alert(`Insufficient ${reason} leave balance. You only have ${availableForType} day(s) left.`);
          return;
        }
 
@@ -924,7 +990,7 @@
           dateTo: dateTo,
           reason: reason,
           note: note,
-          days: parseInt(days),
+          days,
           status: 'Pending',
           documents
        };
