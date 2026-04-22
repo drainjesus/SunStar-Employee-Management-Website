@@ -9,6 +9,7 @@
 -- Extended profile: this script adds missing employee columns (same as
 -- 05_supabase_employee_profile_fields.sql + 09_add_history_fields.sql) then
 -- inserts full rows (middle name, address, histories, hire dates, etc.).
+-- Attendance: adds 06–08 columns (incl. shift_schedule) before bulk attendance insert.
 -- =============================================================================
 
 -- 1) Clear stale training enrollees (JSON), not necessarily deleting programs
@@ -121,6 +122,23 @@ INSERT INTO public.employees (
   '["Copy editing","Fact-checking","Style consistency"]'::jsonb,
   '[]'::jsonb
 );
+
+-- 6b) attendance_records extensions (idempotent; mirrors 06–08 migrations)
+ALTER TABLE IF EXISTS public.attendance_records
+  ADD COLUMN IF NOT EXISTS is_verified boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS verified_by text,
+  ADD COLUMN IF NOT EXISTS verified_at timestamptz,
+  ADD COLUMN IF NOT EXISTS status_source text NOT NULL DEFAULT 'system';
+
+ALTER TABLE IF EXISTS public.attendance_records
+  ADD COLUMN IF NOT EXISTS sanction_message text,
+  ADD COLUMN IF NOT EXISTS sanction_by text,
+  ADD COLUMN IF NOT EXISTS sanction_at timestamptz;
+
+ALTER TABLE IF EXISTS public.attendance_records
+  ADD COLUMN IF NOT EXISTS shift_schedule text,
+  ADD COLUMN IF NOT EXISTS overtime_hours numeric(6,2) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS is_holiday_work boolean NOT NULL DEFAULT false;
 
 -- 7) Attendance: 2026-02-01 .. 2026-03-31 (weekends mostly absent; weekday lates/absences)
 INSERT INTO public.attendance_records (work_date, employee_id, employee_name, clock_in, clock_out, status, shift_schedule)
