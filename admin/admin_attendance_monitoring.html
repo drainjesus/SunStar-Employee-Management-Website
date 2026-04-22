@@ -199,6 +199,7 @@
               <p class="text-xs text-zinc-500 font-medium mt-1">View monthly Daily Time Record and print to PDF.</p>
             </div>
             <div class="flex flex-wrap gap-2">
+              <input type="search" id="dtrEmployeeSearch" placeholder="Search employee..." class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white">
               <select id="dtrEmployeeSelect" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white"></select>
               <input type="month" id="dtrMonthInput" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white">
               <button id="printDtrBtn" class="h-9 rounded-md border border-zinc-300 bg-white px-3 text-xs font-black uppercase tracking-widest text-zinc-700 hover:bg-zinc-50 transition">Print PDF</button>
@@ -348,11 +349,13 @@
       const tbody = document.getElementById('attendanceTableBody');
       const requestBody = document.getElementById('attendanceRequestBody');
       const controlBody = document.getElementById('employeeControlBody');
+      const dtrEmployeeSearch = document.getElementById('dtrEmployeeSearch');
       const dtrEmployeeSelect = document.getElementById('dtrEmployeeSelect');
       const dtrMonthInput = document.getElementById('dtrMonthInput');
       const dtrTableBody = document.getElementById('dtrTableBody');
       const dtrPresentCount = document.getElementById('dtrPresentCount');
       const printDtrBtn = document.getElementById('printDtrBtn');
+      let dtrEmployeeSearchTerm = '';
 
       function safeParse(value, fallback) {
         try {
@@ -953,22 +956,45 @@
         });
       }
 
-      function renderDtrEmployeeOptions() {
-        const employees = getEmployees();
-        dtrEmployeeSelect.innerHTML = employees.length
-          ? employees.map(emp => `<option value="${emp.id}">${escapeHtml(`${emp.firstName || ''} ${emp.lastName || ''}`.trim())}</option>`).join('')
-          : '<option value="">No employees</option>';
+      function getEmployeeDisplayName(employee) {
+        return `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || 'Employee';
       }
 
-      function getCurrentMonthValue() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        return `${year}-${month}`;
+      function getFilteredEmployees(searchTerm = '') {
+        const employees = getEmployees();
+        const normalizedTerm = String(searchTerm || '').trim().toLowerCase();
+        if (!normalizedTerm) return employees;
+        return employees.filter(emp => getEmployeeDisplayName(emp).toLowerCase().includes(normalizedTerm));
+      }
+
+      function renderDtrEmployeeOptions() {
+        const previousValue = dtrEmployeeSelect.value;
+        const filteredEmployees = getFilteredEmployees(dtrEmployeeSearchTerm);
+        const hasFilter = String(dtrEmployeeSearchTerm || '').trim() !== '';
+
+        if (!filteredEmployees.length) {
+          dtrEmployeeSelect.innerHTML = hasFilter
+            ? '<option value="">No matching employees</option>'
+            : '<option value="">No employees</option>';
+          return;
+        }
+
+        dtrEmployeeSelect.innerHTML = filteredEmployees
+          .map(emp => `<option value="${emp.id}">${escapeHtml(getEmployeeDisplayName(emp))}</option>`)
+          .join('');
+
+        const exists = filteredEmployees.some(emp => String(emp.id) === String(previousValue));
+        dtrEmployeeSelect.value = exists ? previousValue : String(filteredEmployees[0].id);
       }
 
       function renderDtrTable() {
         const employeeId = dtrEmployeeSelect.value;
+        if (!employeeId) {
+          dtrTableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-sm text-zinc-400 italic">Select an employee to view DTR records.</td></tr>';
+          dtrPresentCount.textContent = '0';
+          return;
+        }
+
         const selectedMonth = dtrMonthInput.value || getCurrentMonthValue();
         const [year, month] = selectedMonth.split('-').map(Number);
         const attendances = getAttendances();
@@ -1013,6 +1039,13 @@
         });
 
         dtrPresentCount.textContent = String(presentCounter);
+      }
+
+      function getCurrentMonthValue() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        return `${year}-${month}`;
       }
 
       function printDtrReport() {
@@ -1089,6 +1122,11 @@
       prevDateBtn.addEventListener('click', () => updateDateObj(-1));
       nextDateBtn.addEventListener('click', () => updateDateObj(1));
       dateInput.addEventListener('change', (e) => renderTable(e.target.value));
+      dtrEmployeeSearch.addEventListener('input', () => {
+        dtrEmployeeSearchTerm = dtrEmployeeSearch.value || '';
+        renderDtrEmployeeOptions();
+        renderDtrTable();
+      });
       dtrEmployeeSelect.addEventListener('change', renderDtrTable);
       dtrMonthInput.addEventListener('change', renderDtrTable);
       printDtrBtn.addEventListener('click', printDtrReport);
