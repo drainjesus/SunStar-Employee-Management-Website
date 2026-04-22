@@ -5,6 +5,10 @@
 -- and clears training program enrollee JSON. Run only on a dev/demo project.
 -- After run: log in as admin — first admin_accounts row is updated to Donna
 -- C. Cuyos (Business Manager / Marketing Head). Employee demo password: sunstar1
+--
+-- Extended profile: this script adds missing employee columns (same as
+-- 05_supabase_employee_profile_fields.sql + 09_add_history_fields.sql) then
+-- inserts full rows (middle name, address, histories, hire dates, etc.).
 -- =============================================================================
 
 -- 1) Clear stale training enrollees (JSON), not necessarily deleting programs
@@ -24,32 +28,101 @@ SET
   role = 'Business Manager / Marketing Head'
 WHERE id = (SELECT id FROM public.admin_accounts ORDER BY id ASC LIMIT 1);
 
--- 5) Seven employees (stable ids 1001–1007)
--- Uses only columns from 01_supabase_schema.sql (no middle_name / address /
--- date_hired / employment_history, etc.) so this runs on a minimal DB.
--- Initials merged into first_name where needed for display.
-INSERT INTO public.employees (
-  id, first_name, last_name, age, gender, contact,
-  last_title, date_started, date_ended, role, salary,
-  emergency_name, emergency_contact, emergency_relation,
-  email, password
-) VALUES
-(1001, 'Donna C.', 'Cuyos', 42, 'Female', '+63 917 000 1001', 'Business Manager', '2018-01-15', NULL, 'Business Manager / Marketing Head', 78000.00,
- 'R. Cuyos', '+63 917 000 2001', 'Spouse', 'donna.cuyos@sunstar.demo', 'sunstar1'),
-(1002, 'Cristina E.', 'Alivio', 45, 'Female', '+63 917 000 1002', 'Editor-in-Chief', '2016-06-01', NULL, 'Editor-in-Chief', 82000.00,
- 'J. Alivio', '+63 917 000 2002', 'Spouse', 'cristina.alivio@sunstar.demo', 'sunstar1'),
-(1003, 'Prince', 'Agustin', 34, 'Male', '+63 917 000 1003', 'ICT Specialist', '2019-03-10', NULL, 'ICT', 55000.00,
- 'L. Agustin', '+63 917 000 2003', 'Parent', 'prince.agustin@sunstar.demo', 'sunstar1'),
-(1004, 'Margie', 'Abordo', 48, 'Female', '+63 917 000 1004', 'HR Manager', '2015-09-01', NULL, 'HR Head', 72000.00,
- 'T. Abordo', '+63 917 000 2004', 'Spouse', 'margie.abordo@sunstar.demo', 'sunstar1'),
-(1005, 'Maria Victoneta', 'Quintos', 38, 'Female', '+63 917 000 1005', 'Graphic Artist', '2020-02-17', NULL, 'Graphic Artist', 42000.00,
- 'A. Quintos', '+63 917 000 2005', 'Sibling', 'maria.quintos@sunstar.demo', 'sunstar1'),
-(1006, 'Arnel', 'Ado', 36, 'Male', '+63 917 000 1006', 'Graphic Artist', '2021-07-05', NULL, 'Graphic Artist', 41000.00,
- 'S. Ado', '+63 917 000 2006', 'Spouse', 'arnel.ado@sunstar.demo', 'sunstar1'),
-(1007, 'Marianne', 'Abalayan', 40, 'Female', '+63 917 000 1007', 'Editor', '2017-11-20', NULL, 'Editor', 48000.00,
- 'K. Abalayan', '+63 917 000 2007', 'Spouse', 'marianne.abalayan@sunstar.demo', 'sunstar1');
+-- 5) Extended employee columns (idempotent; mirrors 05 + 09 migrations)
+ALTER TABLE IF EXISTS public.employees
+  ADD COLUMN IF NOT EXISTS middle_name text,
+  ADD COLUMN IF NOT EXISTS birth_date date,
+  ADD COLUMN IF NOT EXISTS marital_status text,
+  ADD COLUMN IF NOT EXISTS employment_status text,
+  ADD COLUMN IF NOT EXISTS address text;
 
--- 6) Attendance: 2026-02-01 .. 2026-03-31 (weekends mostly absent; weekday lates/absences)
+ALTER TABLE IF EXISTS public.employees
+  ADD COLUMN IF NOT EXISTS date_hired date,
+  ADD COLUMN IF NOT EXISTS date_terminated date,
+  ADD COLUMN IF NOT EXISTS employment_history jsonb NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS role_history jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+-- 6) Seven employees (stable ids 1001–1007) — full profile + histories
+INSERT INTO public.employees (
+  id, first_name, last_name, middle_name, birth_date, age, gender, marital_status, employment_status,
+  contact, address, last_title, date_started, date_ended, role, salary,
+  emergency_name, emergency_contact, emergency_relation,
+  email, password, profile_pic,
+  date_hired, date_terminated, employment_history, role_history,
+  skills, certs
+) VALUES
+(
+  1001, 'Donna', 'Cuyos', 'C.', '1983-04-12', 42, 'Female', 'Married', 'Active',
+  '+63 917 000 1001', '12 Lacson St., Poblacion, Davao City, Davao del Sur', 'Business Manager', '2018-01-15', NULL, 'Business Manager / Marketing Head', 78000.00,
+  'Ramon Cuyos', '+63 917 000 2001', 'Spouse', 'donna.cuyos@sunstar.demo', 'sunstar1', NULL,
+  '2018-01-15', NULL,
+  '[{"ds":"2010-06","de":"2015-12","company":"SunStar Davao","job":"Advertising Coordinator"},{"ds":"2016-01","de":"2017-12","company":"SunStar Davao","job":"Marketing Supervisor"},{"ds":"2018-01","de":"","company":"SunStar Davao","job":"Business Manager"}]'::jsonb,
+  '[{"ds":"2018-01","de":"","role":"Business Manager / Marketing Head","salary":"78000"}]'::jsonb,
+  '["Campaign planning","Digital analytics","Stakeholder management"]'::jsonb,
+  '[]'::jsonb
+),
+(
+  1002, 'Cristina', 'Alivio', 'E.', '1980-09-03', 45, 'Female', 'Married', 'Active',
+  '+63 917 000 1002', '8 Torres St., Bajada, Davao City', 'Editor-in-Chief', '2016-06-01', NULL, 'Editor-in-Chief', 82000.00,
+  'Jose Alivio', '+63 917 000 2002', 'Spouse', 'cristina.alivio@sunstar.demo', 'sunstar1', NULL,
+  '2016-06-01', NULL,
+  '[{"ds":"2005-03","de":"2016-05","company":"SunStar Davao","job":"Senior Editor"},{"ds":"2016-06","de":"","company":"SunStar Davao","job":"Editor-in-Chief"}]'::jsonb,
+  '[{"ds":"2016-06","de":"","role":"Editor-in-Chief","salary":"82000"}]'::jsonb,
+  '["Editorial judgment","Newsroom leadership","Crisis editing"]'::jsonb,
+  '[]'::jsonb
+),
+(
+  1003, 'Prince', 'Agustin', NULL, '1991-11-20', 34, 'Male', 'Single', 'Active',
+  '+63 917 000 1003', 'Blk 4 Lot 7, Matina, Davao City', 'ICT Specialist', '2019-03-10', NULL, 'ICT', 55000.00,
+  'Lorna Agustin', '+63 917 000 2003', 'Parent', 'prince.agustin@sunstar.demo', 'sunstar1', NULL,
+  '2019-03-10', NULL,
+  '[{"ds":"2014-08","de":"2019-02","company":"SunStar Davao","job":"IT Support Associate"},{"ds":"2019-03","de":"","company":"SunStar Davao","job":"ICT Specialist"}]'::jsonb,
+  '[{"ds":"2019-03","de":"","role":"ICT","salary":"55000"}]'::jsonb,
+  '["Network administration","Helpdesk","CMS maintenance"]'::jsonb,
+  '[]'::jsonb
+),
+(
+  1004, 'Margie', 'Abordo', NULL, '1976-02-18', 48, 'Female', 'Married', 'Active',
+  '+63 917 000 1004', '45 Buhangin Rd., Davao City', 'HR Manager', '2015-09-01', NULL, 'HR Head', 72000.00,
+  'Teodoro Abordo', '+63 917 000 2004', 'Spouse', 'margie.abordo@sunstar.demo', 'sunstar1', NULL,
+  '2015-09-01', NULL,
+  '[{"ds":"2008-01","de":"2015-08","company":"SunStar Davao","job":"HR Officer"},{"ds":"2015-09","de":"","company":"SunStar Davao","job":"HR Manager"}]'::jsonb,
+  '[{"ds":"2015-09","de":"","role":"HR Head","salary":"72000"}]'::jsonb,
+  '["Labor relations","Benefits administration","Policy development"]'::jsonb,
+  '[]'::jsonb
+),
+(
+  1005, 'Maria', 'Quintos', 'Victoneta', '1987-07-25', 38, 'Female', 'Single', 'Active',
+  '+63 917 000 1005', '22 Mintal, Tugbok, Davao City', 'Graphic Artist', '2020-02-17', NULL, 'Graphic Artist', 42000.00,
+  'Angela Quintos', '+63 917 000 2005', 'Sibling', 'maria.quintos@sunstar.demo', 'sunstar1', NULL,
+  '2020-02-17', NULL,
+  '[{"ds":"2012-04","de":"2019-11","company":"SunStar Davao","job":"Layout Artist"},{"ds":"2020-02","de":"","company":"SunStar Davao","job":"Graphic Artist"}]'::jsonb,
+  '[{"ds":"2020-02","de":"","role":"Graphic Artist","salary":"42000"}]'::jsonb,
+  '["Print layout","Photo retouching","Brand collateral"]'::jsonb,
+  '[]'::jsonb
+),
+(
+  1006, 'Arnel', 'Ado', NULL, '1989-01-08', 36, 'Male', 'Married', 'Active',
+  '+63 917 000 1006', 'Phase 3, Catalunan Pequeño, Davao City', 'Graphic Artist', '2021-07-05', NULL, 'Graphic Artist', 41000.00,
+  'Sheila Ado', '+63 917 000 2006', 'Spouse', 'arnel.ado@sunstar.demo', 'sunstar1', NULL,
+  '2021-07-05', NULL,
+  '[{"ds":"2015-09","de":"2021-06","company":"SunStar Davao","job":"Photography Assistant"},{"ds":"2021-07","de":"","company":"SunStar Davao","job":"Graphic Artist"}]'::jsonb,
+  '[{"ds":"2021-07","de":"","role":"Graphic Artist","salary":"41000"}]'::jsonb,
+  '["Photography","Vector illustration","Print production"]'::jsonb,
+  '[]'::jsonb
+),
+(
+  1007, 'Marianne', 'Abalayan', NULL, '1985-12-01', 40, 'Female', 'Married', 'Active',
+  '+63 917 000 1007', '7 Lanang Business Park, Davao City', 'Editor', '2017-11-20', NULL, 'Editor', 48000.00,
+  'Kevin Abalayan', '+63 917 000 2007', 'Spouse', 'marianne.abalayan@sunstar.demo', 'sunstar1', NULL,
+  '2017-11-20', NULL,
+  '[{"ds":"2011-02","de":"2017-10","company":"SunStar Davao","job":"Copy Editor"},{"ds":"2017-11","de":"","company":"SunStar Davao","job":"Editor"}]'::jsonb,
+  '[{"ds":"2017-11","de":"","role":"Editor","salary":"48000"}]'::jsonb,
+  '["Copy editing","Fact-checking","Style consistency"]'::jsonb,
+  '[]'::jsonb
+);
+
+-- 7) Attendance: 2026-02-01 .. 2026-03-31 (weekends mostly absent; weekday lates/absences)
 INSERT INTO public.attendance_records (work_date, employee_id, employee_name, clock_in, clock_out, status, shift_schedule)
 SELECT
   gs.d::date,
@@ -89,7 +162,7 @@ FROM generate_series('2026-02-01'::date, '2026-03-31'::date, interval '1 day') A
 CROSS JOIN public.employees e
 WHERE e.id BETWEEN 1001 AND 1007;
 
--- 7) Leave requests (two per employee; ids explicit; dates within Feb–Mar 2026)
+-- 8) Leave requests (two per employee; ids explicit; dates within Feb–Mar 2026)
 INSERT INTO public.leave_requests (
   id, employee_id, employee_name, date_filed, date_of_leave, date_from, date_to,
   reason, note, days, documents, status, time_filed
@@ -109,7 +182,7 @@ INSERT INTO public.leave_requests (
 (300013, 1007, 'Marianne Abalayan', '2026-02-22', '2026-02-24', '2026-02-24', '2026-02-25', 'Child care', NULL, 2, '[]'::jsonb, 'Approved', '08:15 AM'),
 (300014, 1007, 'Marianne Abalayan', '2026-03-02', '2026-03-04', '2026-03-04', '2026-03-04', 'Half-day personal', NULL, 1, '[]'::jsonb, 'Pending', '04:45 PM');
 
--- 8) Special attendance requests (two per employee; Feb–Mar 2026)
+-- 9) Special attendance requests (two per employee; Feb–Mar 2026)
 INSERT INTO public.attendance_special_requests (
   employee_id, employee_name, request_date, request_date_to, request_type, requested_hours,
   shift_schedule, reason, status, decision_note, decided_by, decided_at
@@ -129,7 +202,7 @@ INSERT INTO public.attendance_special_requests (
 (1007, 'Marianne Abalayan', '2026-02-15', '2026-02-15', 'Special Work', 2.5, 'Newsroom Day Shift (08:00 AM - 05:00 PM)', 'Proofing weekend edition', 'Approved', 'Desk coverage arranged', 'HR', now()),
 (1007, 'Marianne Abalayan', '2026-03-28', '2026-03-28', 'Official Business', 3.5, 'Newsroom Day Shift (08:00 AM - 05:00 PM)', 'Courthouse hearing notes', 'Pending', NULL, NULL, NULL);
 
--- 9) Performance records
+-- 10) Performance records
 INSERT INTO public.performance_records (id, employee_name, role, profile_pic, manager_rating, peer_avg, breakdown, comments) VALUES
 (1001, 'Donna C. Cuyos', 'Business Manager / Marketing Head', NULL, 4.6, 4.4, '{"quality":4.5,"collaboration":4.7,"initiative":4.6}'::jsonb, 'Strong leadership on cross-desk campaigns.'),
 (1002, 'Cristina E. Alivio', 'Editor-in-Chief', NULL, 4.8, 4.6, '{"quality":4.9,"collaboration":4.7,"initiative":4.8}'::jsonb, 'Consistent editorial standards and mentoring.'),
@@ -139,7 +212,7 @@ INSERT INTO public.performance_records (id, employee_name, role, profile_pic, ma
 (1006, 'Arnel Ado', 'Graphic Artist', NULL, 4.0, 3.9, '{"quality":4.1,"collaboration":3.8,"initiative":4.0}'::jsonb, 'Good photo treatment; continue upskilling on motion.'),
 (1007, 'Marianne Abalayan', 'Editor', NULL, 4.4, 4.2, '{"quality":4.5,"collaboration":4.1,"initiative":4.3}'::jsonb, 'Sharp copy edits; proactive on fact-checks.');
 
--- 10) Manager reviews (averages match rounded one-decimal averages)
+-- 11) Manager reviews (averages match rounded one-decimal averages)
 INSERT INTO public.manager_reviews (employee_id, employee_name, leadership, communication, support, average, comment) VALUES
 (1001, 'Donna C. Cuyos', 5, 5, 4, 4.7, 'Sets clear priorities for marketing pushes.'),
 (1002, 'Cristina E. Alivio', 5, 5, 5, 5.0, 'Anchors newsroom quality under pressure.'),
@@ -149,7 +222,7 @@ INSERT INTO public.manager_reviews (employee_id, employee_name, leadership, comm
 (1006, 'Arnel Ado', 4, 3, 4, 3.7, 'Solid teammate; improve deadline communication.'),
 (1007, 'Marianne Abalayan', 4, 5, 4, 4.3, 'Detail-oriented editor; great collaborator.');
 
--- 11) Peer reviews (sparse, no self-reviews)
+-- 12) Peer reviews (sparse, no self-reviews)
 INSERT INTO public.peer_reviews (reviewer_id, target_id, rating) VALUES
 (1002, 1001, 5), (1002, 1003, 4), (1002, 1004, 5),
 (1003, 1001, 4), (1003, 1004, 4), (1003, 1007, 5),
