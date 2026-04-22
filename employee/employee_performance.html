@@ -502,17 +502,17 @@
          };
       }
 
-      function openManagerReviewModal() {
+      window.openManagerReviewModal = function() {
          const myReview = getMyManagerReview();
          renderCriteriaSelectFields('managerCriteriaFields', myReview ? myReview.criteria : null);
          document.getElementById('managerReviewComment').value = myReview ? (myReview.comment || '') : '';
          document.getElementById('managerReviewModal').classList.remove('hidden');
-      }
+      };
 
-      function openPeerReviewModal() {
+      window.openPeerReviewModal = function() {
          renderCriteriaSelectFields('peerCriteriaFields', null);
          document.getElementById('peerReviewModal').classList.remove('hidden');
-      }
+      };
 
       function getAppraisalTemplate() {
          const parsed = safeParse(localStorage.getItem(APPRAISAL_TEMPLATE_KEY), null);
