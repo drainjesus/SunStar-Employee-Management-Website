@@ -252,6 +252,21 @@
       }
     }
 
+    function parseDateTimeLocalInput(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return null;
+      const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+      if (!match) return null;
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      const hours = Number(match[4]);
+      const minutes = Number(match[5]);
+      const seconds = Number(match[6] || 0);
+      if ([year, month, day, hours, minutes, seconds].some(Number.isNaN)) return null;
+      return new Date(year, month - 1, day, hours, minutes, seconds, 0);
+    }
+
     function renderTrainingDevEntries() {
       const tbody = document.getElementById('entriesTableBody');
       const pageInfo = document.getElementById('trainingEntriesPageInfo');
@@ -261,8 +276,8 @@
       const filterValue = String(filterInput && filterInput.value ? filterInput.value : '').trim();
       const entries = getTrainingDevEntries().filter((entry) => {
         if (!filterValue) return true;
-        const filterDate = new Date(filterValue);
-        if (Number.isNaN(filterDate.getTime())) return true;
+        const filterDate = parseDateTimeLocalInput(filterValue);
+        if (!filterDate || Number.isNaN(filterDate.getTime())) return true;
         const createdDate = new Date(entry.createdAt || 0);
         if (Number.isNaN(createdDate.getTime())) return true;
         return createdDate >= filterDate;

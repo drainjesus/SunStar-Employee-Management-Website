@@ -636,6 +636,34 @@
          return (hour * 60) + minute;
       }
 
+      function parseDateTimeLocalInput(value) {
+         const raw = String(value || '').trim();
+         if (!raw) return null;
+         const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+         if (!match) return null;
+         const year = Number(match[1]);
+         const month = Number(match[2]);
+         const day = Number(match[3]);
+         const hours = Number(match[4]);
+         const minutes = Number(match[5]);
+         const seconds = Number(match[6] || 0);
+         if ([year, month, day, hours, minutes, seconds].some(Number.isNaN)) return null;
+         return new Date(year, month - 1, day, hours, minutes, seconds, 0);
+      }
+
+      function buildLocalDateFromIsoAndClock(isoDate, clockValue) {
+         const dateMatch = String(isoDate || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+         if (!dateMatch) return null;
+         const year = Number(dateMatch[1]);
+         const month = Number(dateMatch[2]);
+         const day = Number(dateMatch[3]);
+         if ([year, month, day].some(Number.isNaN)) return null;
+         const clockMinutes = parseClockTimeToMinutes(clockValue);
+         const hours = clockMinutes === null ? 0 : Math.floor(clockMinutes / 60);
+         const minutes = clockMinutes === null ? 0 : (clockMinutes % 60);
+         return new Date(year, month - 1, day, hours, minutes, 0, 0);
+      }
+
       function getShiftEndMinutes(shiftLabel) {
          const match = String(shiftLabel || '').match(/-\s*(\d{1,2}:\d{2}\s*[AP]M)\s*\)/i);
          if (!match) return DEFAULT_SHIFT_END_MINUTES;
@@ -966,15 +994,15 @@
          });
          const filterValue = String(filterInput && filterInput.value ? filterInput.value : '').trim();
          if (filterValue) {
-            const filterDate = new Date(filterValue);
-            if (!Number.isNaN(filterDate.getTime())) {
+            const filterDate = parseDateTimeLocalInput(filterValue);
+            if (filterDate && !Number.isNaN(filterDate.getTime())) {
                allRecords = allRecords.filter((rec) => {
                   const baseDate = String(rec.dateIso || '');
                   const clockInRaw = String(rec.clockIn || '').trim();
                   const normalizedClockIn = clockInRaw && !clockInRaw.includes('--') ? clockInRaw : '12:00 AM';
-                  const combined = new Date(`${baseDate} ${normalizedClockIn}`);
-                  if (Number.isNaN(combined.getTime())) return true;
-                  return combined >= filterDate;
+                  const combined = buildLocalDateFromIsoAndClock(baseDate, normalizedClockIn);
+                  if (!combined || Number.isNaN(combined.getTime())) return true;
+                  return combined.getTime() >= filterDate.getTime();
                });
             }
          }
@@ -1095,8 +1123,8 @@
          const filterValue = String(filterInput && filterInput.value ? filterInput.value : '').trim();
          const filteredRequests = allRequests.filter((request) => {
             if (!filterValue) return true;
-            const filterDate = new Date(filterValue);
-            if (Number.isNaN(filterDate.getTime())) return true;
+            const filterDate = parseDateTimeLocalInput(filterValue);
+            if (!filterDate || Number.isNaN(filterDate.getTime())) return true;
             const createdDate = new Date(request.createdAt || `${request.requestDate || ''}T00:00:00`);
             if (Number.isNaN(createdDate.getTime())) return true;
             return createdDate >= filterDate;

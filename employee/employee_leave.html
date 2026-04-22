@@ -691,6 +691,21 @@
       return { hours, minutes, seconds };
     }
 
+    function parseDateTimeLocalInput(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return null;
+      const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+      if (!match) return null;
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      const hours = Number(match[4]);
+      const minutes = Number(match[5]);
+      const seconds = Number(match[6] || 0);
+      if ([year, month, day, hours, minutes, seconds].some(Number.isNaN)) return null;
+      return new Date(year, month - 1, day, hours, minutes, seconds, 0);
+    }
+
     function formatFiledDate(dateStr, createdAt) {
       if (createdAt) {
         const createdDate = new Date(createdAt);
@@ -843,13 +858,32 @@
         .filter((leave) => {
           const filterValue = String(dateTimeFilterInput && dateTimeFilterInput.value ? dateTimeFilterInput.value : '').trim();
           if (!filterValue) return true;
-          const filterDate = new Date(filterValue);
-          if (Number.isNaN(filterDate.getTime())) return true;
-          const filedDate = leave.createdAt
-            ? new Date(leave.createdAt)
-            : new Date(`${leave.dateFiled || ''}T${leave.timeFiled || '00:00:00'}`);
-          if (Number.isNaN(filedDate.getTime())) return true;
-          return filedDate >= filterDate;
+          const filterDate = parseDateTimeLocalInput(filterValue);
+          if (!filterDate || Number.isNaN(filterDate.getTime())) return true;
+          let filedDate = null;
+          if (leave.createdAt) {
+            const created = new Date(leave.createdAt);
+            if (!Number.isNaN(created.getTime())) {
+              filedDate = created;
+            }
+          }
+          if (!filedDate) {
+            const datePart = parseDateInput(leave.dateFiled);
+            const timePart = parseTimeInput(leave.timeFiled);
+            if (datePart) {
+              filedDate = new Date(
+                datePart.getFullYear(),
+                datePart.getMonth(),
+                datePart.getDate(),
+                timePart ? timePart.hours : 0,
+                timePart ? timePart.minutes : 0,
+                timePart ? timePart.seconds : 0,
+                0
+              );
+            }
+          }
+          if (!filedDate || Number.isNaN(filedDate.getTime())) return true;
+          return filedDate.getTime() >= filterDate.getTime();
         });
       myLeaves.sort((a, b) => getFiledSortValue(b) - getFiledSortValue(a));
       const totalItems = myLeaves.length;
