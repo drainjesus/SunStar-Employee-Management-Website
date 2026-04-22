@@ -476,13 +476,13 @@
 
     function normalizeLeaveType(value) {
       const raw = String(value || '').trim().toLowerCase();
-      if (!raw) return '';
+      if (!raw) return 'Emergency';
       if (raw.includes('vacation')) return 'Vacation';
       if (raw.includes('sick')) return 'Sick';
       if (raw.includes('emergency')) return 'Emergency';
       if (raw.includes('maternity')) return 'Maternity';
       if (raw.includes('paternity')) return 'Paternity';
-      return '';
+      return 'Emergency';
     }
 
     function redirectToLogin() {
@@ -816,6 +816,22 @@
       };
     }
 
+    function isSingleUseLeaveType(type) {
+      return type === 'Maternity' || type === 'Paternity';
+    }
+
+    function hasActiveSingleUseLeaveRequest(type) {
+      if (!isSingleUseLeaveType(type)) return false;
+
+      const myLeaves = getLeaves().filter(isMyLeave);
+      return myLeaves.some((entry) => {
+        const leaveType = normalizeLeaveType(entry.leaveType || entry.reason);
+        if (leaveType !== type) return false;
+        const status = normalizeLeaveStatus(entry.status);
+        return status !== 'Decline';
+      });
+    }
+
     function updateLeaveTypeAvailability() {
       const select = document.getElementById('reason');
       if (!select) return;
@@ -832,11 +848,16 @@
       Array.from(select.options).forEach(option => {
         const key = option.value;
         if (!Object.prototype.hasOwnProperty.call(remaining, key)) return;
-        const isUnavailable = remaining[key] <= 0;
+        const singleUseLocked = hasActiveSingleUseLeaveRequest(key);
+        const isUnavailable = remaining[key] <= 0 || singleUseLocked;
         option.disabled = isUnavailable;
-        option.textContent = isUnavailable
-          ? `${optionMap[key]} (No balance)`
-          : optionMap[key];
+        if (singleUseLocked) {
+          option.textContent = `${optionMap[key]} (Already used)`;
+        } else {
+          option.textContent = isUnavailable
+            ? `${optionMap[key]} (No balance)`
+            : optionMap[key];
+        }
       });
 
       const selectedValue = select.value;
@@ -934,7 +955,7 @@
         const filedTime = formatFiledTime(l.timeFiled, l.createdAt);
         const normalizedStatus = normalizeLeaveStatus(l.status);
         const normalizedLeaveType = normalizeLeaveType(l.leaveType || l.reason);
-        const leaveLabel = normalizedLeaveType || l.reason || 'General';
+        const leaveLabel = normalizedLeaveType;
 
         let statusClasses = 'inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ring-1 ring-inset';
         if (normalizedStatus === 'Pending') {
@@ -1084,6 +1105,19 @@
          alert(`Insufficient ${reason} leave balance. You only have ${availableForType} day(s) left.`);
          return;
        }
+      if (isSingleUseLeaveType(reason)) {
+        if (hasActiveSingleUseLeaveRequest(reason)) {
+          alert(`${reason} leave can only be used once and already has a filed request.`);
+          updateLeaveTypeAvailability();
+          return;
+        }
+
+        const requiredDays = Number(LEAVE_LIMITS[reason] || 0);
+        if (days !== requiredDays) {
+          alert(`${reason} leave must use the full ${requiredDays} day credit in one request.`);
+          return;
+        }
+      }
 
        let leaves = getLeaves();
        

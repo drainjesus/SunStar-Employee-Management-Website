@@ -471,13 +471,13 @@
 
       function normalizeLeaveType(value) {
         const raw = String(value || '').trim().toLowerCase();
-        if (!raw) return '';
+        if (!raw) return 'Emergency';
         if (raw.includes('vacation')) return 'Vacation';
         if (raw.includes('sick')) return 'Sick';
         if (raw.includes('emergency')) return 'Emergency';
         if (raw.includes('maternity')) return 'Maternity';
         if (raw.includes('paternity')) return 'Paternity';
-        return '';
+        return 'Emergency';
       }
 
       function getFiledSortValue(leave) {
@@ -604,7 +604,7 @@
         currentData.forEach((l, index) => {
           const normalizedStatus = normalizeLeaveStatus(l.status);
           const normalizedLeaveType = normalizeLeaveType(l.leaveType || l.reason);
-          const leaveLabel = normalizedLeaveType || l.reason || 'Personal';
+          const leaveLabel = normalizedLeaveType;
           const tr = document.createElement('tr');
           tr.className = "hover:bg-zinc-50 transition duration-150";
 

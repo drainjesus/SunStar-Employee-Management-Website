@@ -131,8 +131,8 @@
             <div class="mt-3 flex flex-wrap items-center gap-2">
               <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Go to date/time</span>
               <input type="datetime-local" id="trainingEntriesDateTimeFilter" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white">
-              <button id="clearTrainingEntriesFilterBtn" type="button" class="h-9 rounded-md border border-zinc-200 bg-white px-3 text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-50 transition">Clear</button>
-              <button id="removeTrainingEntriesLogBtn" type="button" class="h-9 rounded-md border border-red-200 bg-red-50 px-3 text-[10px] font-black uppercase tracking-widest text-red-700 hover:bg-red-100 transition">Remove</button>
+              <button id="clearTrainingEntriesFilterBtn" type="button" class="h-9 rounded-md border border-zinc-200 bg-white px-3 text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-50 transition">Clear Entries</button>
+              <button id="removeTrainingEntriesLogBtn" type="button" class="h-9 rounded-md border border-red-200 bg-red-50 px-3 text-[10px] font-black uppercase tracking-widest text-red-700 hover:bg-red-100 transition">Remove Selected</button>
             </div>
           </div>
           <div class="overflow-x-auto">
@@ -140,6 +140,7 @@
             <table class="w-full text-left text-sm">
               <thead class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-black uppercase tracking-widest text-zinc-500">
                 <tr>
+                  <th class="px-6 py-4">Select</th>
                   <th class="px-6 py-4">Employee</th>
                   <th class="px-6 py-4">Training Title</th>
                   <th class="px-6 py-4">Date From</th>
@@ -193,6 +194,7 @@
     const TRAINING_DEV_KEY = 'sunstar_training_development_entries';
     const TRAINING_ENTRIES_PAGE_SIZE = 5;
     let trainingEntriesPage = 1;
+    let selectedTrainingEntryId = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
       await syncEmployeesFromSupabase();
@@ -233,25 +235,53 @@
       box.classList.remove('hidden');
     }
 
-    function clearTrainingEntriesFilter() {
-      const filterInput = document.getElementById('trainingEntriesDateTimeFilter');
-      if (filterInput) {
-        filterInput.value = '';
+    async function clearTrainingEntriesFilter() {
+      const confirmed = window.confirm('Clear all training entries? This cannot be undone.');
+      if (!confirmed) return;
+
+      selectedTrainingEntryId = null;
+      localStorage.setItem(TRAINING_DEV_KEY, JSON.stringify([]));
+
+      if (window.HRDataService && typeof window.HRDataService.clearTrainingDevEntries === 'function') {
+        const ok = await window.HRDataService.clearTrainingDevEntries();
+        if (!ok) {
+          const detail = typeof window.HRDataService.getTrainingDevLastError === 'function'
+            ? window.HRDataService.getTrainingDevLastError()
+            : '';
+          alert(`Cleared locally but failed to clear entries in database.${detail ? `\n\n${detail}` : ''}`);
+        }
       }
+
       trainingEntriesPage = 1;
       renderTrainingDevEntries();
+      showTrainingDevSyncError();
     }
 
-    function removeTrainingEntriesLog() {
-      clearTrainingEntriesFilter();
-      if (window.HRDataService && typeof window.HRDataService.clearTrainingDevLastError === 'function') {
-        window.HRDataService.clearTrainingDevLastError();
+    async function removeTrainingEntriesLog() {
+      if (selectedTrainingEntryId === null || selectedTrainingEntryId === undefined) {
+        alert('Please select a training entry to remove.');
+        return;
       }
-      const box = document.getElementById('entriesSyncError');
-      if (box) {
-        box.classList.add('hidden');
-        box.textContent = '';
+
+      const confirmed = window.confirm('Remove selected training entry?');
+      if (!confirmed) return;
+
+      const entries = getTrainingDevEntries().filter((entry) => String(entry.id) !== String(selectedTrainingEntryId));
+      localStorage.setItem(TRAINING_DEV_KEY, JSON.stringify(entries));
+
+      if (window.HRDataService && typeof window.HRDataService.deleteTrainingDevEntry === 'function') {
+        const ok = await window.HRDataService.deleteTrainingDevEntry(selectedTrainingEntryId);
+        if (!ok) {
+          const detail = typeof window.HRDataService.getTrainingDevLastError === 'function'
+            ? window.HRDataService.getTrainingDevLastError()
+            : '';
+          alert(`Removed locally but failed to remove from database.${detail ? `\n\n${detail}` : ''}`);
+        }
       }
+
+      selectedTrainingEntryId = null;
+      renderTrainingDevEntries();
+      showTrainingDevSyncError();
     }
 
     function syncEmployeeFields() {
@@ -310,7 +340,7 @@
       tbody.innerHTML = '';
 
       if (!entries.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-zinc-400 italic">No training entries submitted yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-10 text-center text-zinc-400 italic">No training entries submitted yet.</td></tr>';
         pageInfo.textContent = 'Showing 0 to 0 of 0 entries';
         prevBtn.disabled = true;
         nextBtn.disabled = true;
@@ -348,6 +378,9 @@
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-zinc-50 transition';
           tr.innerHTML = `
+            <td class="px-6 py-4">
+              <input type="radio" name="selectedTrainingEntry" value="${entry.id}" ${String(selectedTrainingEntryId) === String(entry.id) ? 'checked' : ''} onchange="selectTrainingEntry('${entry.id}')">
+            </td>
             <td class="px-6 py-4 font-medium text-zinc-900">${employeeName}</td>
             <td class="px-6 py-4 text-zinc-700">${entry.title || '-'}</td>
             <td class="px-6 py-4 text-zinc-600">${entry.dateFrom || '-'}</td>
@@ -373,12 +406,22 @@
               <div class="flex flex-wrap gap-2">
                 <button onclick="updateTrainingEntryStatus(${entry.id}, 'Approved')" class="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-700 hover:bg-emerald-100 transition">Approve</button>
                 <button onclick="updateTrainingEntryStatus(${entry.id}, 'Declined')" class="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-700 hover:bg-red-100 transition">Decline</button>
+                <button onclick="removeTrainingEntryById('${entry.id}')" class="rounded-md border border-red-200 bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-700 hover:bg-red-50 transition">Remove</button>
               </div>
             </td>
           `;
           tbody.appendChild(tr);
         });
     }
+
+    window.selectTrainingEntry = function(entryId) {
+      selectedTrainingEntryId = String(entryId);
+    };
+
+    window.removeTrainingEntryById = async function(entryId) {
+      selectedTrainingEntryId = String(entryId);
+      await removeTrainingEntriesLog();
+    };
 
     async function updateTrainingEntryStatus(entryId, nextStatus) {
       const entries = getTrainingDevEntries();
@@ -484,12 +527,12 @@
       renderTrainingDevEntries();
     });
 
-    document.getElementById('clearTrainingEntriesFilterBtn').addEventListener('click', () => {
-      clearTrainingEntriesFilter();
+    document.getElementById('clearTrainingEntriesFilterBtn').addEventListener('click', async () => {
+      await clearTrainingEntriesFilter();
     });
 
-    document.getElementById('removeTrainingEntriesLogBtn').addEventListener('click', () => {
-      removeTrainingEntriesLog();
+    document.getElementById('removeTrainingEntriesLogBtn').addEventListener('click', async () => {
+      await removeTrainingEntriesLog();
     });
   </script>
 </body>

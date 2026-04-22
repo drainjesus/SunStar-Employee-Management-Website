@@ -223,20 +223,20 @@ INSERT INTO public.leave_requests (
   id, employee_id, employee_name, date_filed, date_of_leave, date_from, date_to,
   reason, note, days, documents, status, time_filed
 ) VALUES
-(300001, 1001, 'Donna C. Cuyos', '2026-02-03', '2026-02-05', '2026-02-05', '2026-02-06', 'Family travel', NULL, 2, '[]'::jsonb, 'Approved', '09:10 AM'),
-(300002, 1001, 'Donna C. Cuyos', '2026-03-12', '2026-03-14', '2026-03-14', '2026-03-14', 'Medical appointment', NULL, 1, '[]'::jsonb, 'Pending', '08:05 AM'),
-(300003, 1002, 'Cristina E. Alivio', '2026-02-08', '2026-02-10', '2026-02-10', '2026-02-11', 'Editorial summit', NULL, 2, '[]'::jsonb, 'Approved', '04:30 PM'),
-(300004, 1002, 'Cristina E. Alivio', '2026-03-20', '2026-03-24', '2026-03-24', '2026-03-25', 'Personal leave', NULL, 2, '[]'::jsonb, 'Declined', '10:00 AM'),
-(300005, 1003, 'Prince Agustin', '2026-02-14', '2026-02-17', '2026-02-17', '2026-02-17', 'ICT vendor visit', NULL, 1, '[]'::jsonb, 'Approved', '11:15 AM'),
-(300006, 1003, 'Prince Agustin', '2026-03-05', '2026-03-07', '2026-03-07', '2026-03-09', 'Sick leave', 'Flu symptoms', 3, '[]'::jsonb, 'Pending', '07:45 AM'),
-(300007, 1004, 'Margie Abordo', '2026-02-01', '2026-02-03', '2026-02-03', '2026-02-03', 'HR offsite', NULL, 1, '[]'::jsonb, 'Approved', '03:00 PM'),
-(300008, 1004, 'Margie Abordo', '2026-03-18', '2026-03-21', '2026-03-21', '2026-03-22', 'Bereavement', NULL, 2, '[]'::jsonb, 'Approved', '02:20 PM'),
-(300009, 1005, 'Maria Victoneta Quintos', '2026-02-19', '2026-02-21', '2026-02-21', '2026-02-21', 'Creative workshop', NULL, 1, '[]'::jsonb, 'Approved', '09:00 AM'),
-(300010, 1005, 'Maria Victoneta Quintos', '2026-03-08', '2026-03-10', '2026-03-10', '2026-03-10', 'Vacation leave', NULL, 1, '[]'::jsonb, 'Pending', '08:50 AM'),
-(300011, 1006, 'Arnel Ado', '2026-02-11', '2026-02-13', '2026-02-13', '2026-02-14', 'Family occasion', NULL, 2, '[]'::jsonb, 'Approved', '01:10 PM'),
-(300012, 1006, 'Arnel Ado', '2026-03-25', '2026-03-27', '2026-03-27', '2026-03-27', 'Dental procedure', NULL, 1, '[]'::jsonb, 'Declined', '10:30 AM'),
-(300013, 1007, 'Marianne Abalayan', '2026-02-22', '2026-02-24', '2026-02-24', '2026-02-25', 'Child care', NULL, 2, '[]'::jsonb, 'Approved', '08:15 AM'),
-(300014, 1007, 'Marianne Abalayan', '2026-03-02', '2026-03-04', '2026-03-04', '2026-03-04', 'Half-day personal', NULL, 1, '[]'::jsonb, 'Pending', '04:45 PM');
+(300001, 1001, 'Donna C. Cuyos', '2026-02-03', '2026-02-05', '2026-02-05', '2026-02-06', 'Vacation', NULL, 2, '[]'::jsonb, 'Approved', '09:10 AM'),
+(300002, 1001, 'Donna C. Cuyos', '2026-03-12', '2026-03-14', '2026-03-14', '2026-03-14', 'Sick', NULL, 1, '[]'::jsonb, 'Pending', '08:05 AM'),
+(300003, 1002, 'Cristina E. Alivio', '2026-02-08', '2026-02-10', '2026-02-10', '2026-02-11', 'Emergency', NULL, 2, '[]'::jsonb, 'Approved', '04:30 PM'),
+(300004, 1002, 'Cristina E. Alivio', '2026-03-20', '2026-03-24', '2026-03-24', '2026-03-25', 'Vacation', NULL, 2, '[]'::jsonb, 'Declined', '10:00 AM'),
+(300005, 1003, 'Prince Agustin', '2026-02-14', '2026-02-17', '2026-02-17', '2026-02-17', 'Emergency', NULL, 1, '[]'::jsonb, 'Approved', '11:15 AM'),
+(300006, 1003, 'Prince Agustin', '2026-03-05', '2026-03-07', '2026-03-07', '2026-03-09', 'Sick', 'Flu symptoms', 3, '[]'::jsonb, 'Pending', '07:45 AM'),
+(300007, 1004, 'Margie Abordo', '2026-02-01', '2026-02-03', '2026-02-03', '2026-02-03', 'Emergency', NULL, 1, '[]'::jsonb, 'Approved', '03:00 PM'),
+(300008, 1004, 'Margie Abordo', '2026-03-18', '2026-03-21', '2026-03-21', '2026-03-22', 'Emergency', NULL, 2, '[]'::jsonb, 'Approved', '02:20 PM'),
+(300009, 1005, 'Maria Victoneta Quintos', '2026-02-19', '2026-02-21', '2026-02-21', '2026-02-21', 'Vacation', NULL, 1, '[]'::jsonb, 'Approved', '09:00 AM'),
+(300010, 1005, 'Maria Victoneta Quintos', '2026-03-08', '2026-03-10', '2026-03-10', '2026-03-10', 'Vacation', NULL, 1, '[]'::jsonb, 'Pending', '08:50 AM'),
+(300011, 1006, 'Arnel Ado', '2026-02-11', '2026-02-13', '2026-02-13', '2026-02-14', 'Emergency', NULL, 2, '[]'::jsonb, 'Approved', '01:10 PM'),
+(300012, 1006, 'Arnel Ado', '2026-03-25', '2026-03-27', '2026-03-27', '2026-03-27', 'Sick', NULL, 1, '[]'::jsonb, 'Declined', '10:30 AM'),
+(300013, 1007, 'Marianne Abalayan', '2026-02-22', '2026-02-24', '2026-02-24', '2026-02-25', 'Emergency', NULL, 2, '[]'::jsonb, 'Approved', '08:15 AM'),
+(300014, 1007, 'Marianne Abalayan', '2026-03-02', '2026-03-04', '2026-03-04', '2026-03-04', 'Vacation', NULL, 1, '[]'::jsonb, 'Pending', '04:45 PM');
 
 -- 8b) attendance_special_requests: extended columns + checks (mirrors 13_alter_attendance_special_requests_extended_fields.sql)
 ALTER TABLE IF EXISTS public.attendance_special_requests

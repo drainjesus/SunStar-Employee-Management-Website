@@ -98,6 +98,10 @@
     return "";
   }
 
+  function canonicalLeaveType(value) {
+    return normalizeLeaveTypeKey(value) || "Emergency";
+  }
+
   function normalizeLeaveDocuments(documents) {
     if (!Array.isArray(documents)) return [];
 
@@ -223,6 +227,7 @@
     };
   }
   function mapLeaveLocalToDb(leave) {
+    const normalizedReason = canonicalLeaveType(leave.leaveType || leave.reason);
     return {
       id: leave.id,
       employee_id: leave.empId === "" || leave.empId === null || leave.empId === undefined ? null : Number(leave.empId),
@@ -231,7 +236,7 @@
       date_of_leave: safeDateString(leave.dateOfLeave),
       date_from: safeDateString(leave.dateFrom),
       date_to: safeDateString(leave.dateTo),
-      reason: leave.reason || null,
+      reason: normalizedReason,
       note: leave.note || null,
       days: Number(leave.days || 1),
       documents: Array.isArray(leave.documents) ? leave.documents : [],
@@ -242,7 +247,7 @@
 
   function mapLeaveDbToLocal(row) {
     const normalizedStatus = normalizeLeaveStatus(row.status);
-    const leaveType = normalizeLeaveTypeKey(row.reason);
+    const leaveType = canonicalLeaveType(row.reason);
 
     return {
       id: row.id,
@@ -253,7 +258,7 @@
       dateOfLeave: row.date_of_leave,
       dateFrom: row.date_from,
       dateTo: row.date_to,
-      reason: row.reason,
+      reason: leaveType,
       leaveType,
       note: row.note,
       days: row.days || 1,
@@ -704,6 +709,42 @@
       }
 
       console.error("upsertTrainingDevEntry failed", error);
+      setTrainingDevLastError(error);
+      return false;
+    }
+
+    clearTrainingDevLastError();
+    return true;
+  }
+
+  async function deleteTrainingDevEntry(entryId) {
+    if (!hasClient()) return false;
+
+    const { error } = await window.supabaseClient
+      .from("training_development_entries")
+      .delete()
+      .eq("id", entryId);
+
+    if (error) {
+      console.error("deleteTrainingDevEntry failed", error);
+      setTrainingDevLastError(error);
+      return false;
+    }
+
+    clearTrainingDevLastError();
+    return true;
+  }
+
+  async function clearTrainingDevEntries() {
+    if (!hasClient()) return false;
+
+    const { error } = await window.supabaseClient
+      .from("training_development_entries")
+      .delete()
+      .not("id", "is", null);
+
+    if (error) {
+      console.error("clearTrainingDevEntries failed", error);
       setTrainingDevLastError(error);
       return false;
     }
@@ -1258,6 +1299,8 @@
     upsertTraining,
     fetchTrainingDevEntries,
     upsertTrainingDevEntry,
+    deleteTrainingDevEntry,
+    clearTrainingDevEntries,
     fetchLeaves,
     upsertLeave,
     deleteLeave,
