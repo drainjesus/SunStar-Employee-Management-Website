@@ -25,41 +25,29 @@ SET
 WHERE id = (SELECT id FROM public.admin_accounts ORDER BY id ASC LIMIT 1);
 
 -- 5) Seven employees (stable ids 1001–1007)
+-- Uses only columns from 01_supabase_schema.sql (no middle_name / address /
+-- date_hired / employment_history, etc.) so this runs on a minimal DB.
+-- Initials merged into first_name where needed for display.
 INSERT INTO public.employees (
-  id, first_name, last_name, middle_name, age, gender, contact, address,
-  last_title, date_started, role, salary,
+  id, first_name, last_name, age, gender, contact,
+  last_title, date_started, date_ended, role, salary,
   emergency_name, emergency_contact, emergency_relation,
-  email, password,
-  date_hired, employment_status, employment_history, role_history
+  email, password
 ) VALUES
-(1001, 'Donna', 'Cuyos', 'C.', 42, 'Female', '+63 917 000 1001', 'Davao City', 'Business Manager', '2018-01-15', 'Business Manager / Marketing Head', 78000.00,
- 'R. Cuyos', '+63 917 000 2001', 'Spouse', 'donna.cuyos@sunstar.demo', 'sunstar1',
- '2018-01-15', 'Active', '[]'::jsonb,
- '[{"ds":"2018-01","de":"","role":"Business Manager / Marketing Head","salary":"78000"}]'::jsonb),
-(1002, 'Cristina', 'Alivio', 'E.', 45, 'Female', '+63 917 000 1002', 'Davao City', 'Editor-in-Chief', '2016-06-01', 'Editor-in-Chief', 82000.00,
- 'J. Alivio', '+63 917 000 2002', 'Spouse', 'cristina.alivio@sunstar.demo', 'sunstar1',
- '2016-06-01', 'Active', '[]'::jsonb,
- '[{"ds":"2016-06","de":"","role":"Editor-in-Chief","salary":"82000"}]'::jsonb),
-(1003, 'Prince', 'Agustin', NULL, 34, 'Male', '+63 917 000 1003', 'Davao City', 'ICT Specialist', '2019-03-10', 'ICT', 55000.00,
- 'L. Agustin', '+63 917 000 2003', 'Parent', 'prince.agustin@sunstar.demo', 'sunstar1',
- '2019-03-10', 'Active', '[]'::jsonb,
- '[{"ds":"2019-03","de":"","role":"ICT","salary":"55000"}]'::jsonb),
-(1004, 'Margie', 'Abordo', NULL, 48, 'Female', '+63 917 000 1004', 'Davao City', 'HR Manager', '2015-09-01', 'HR Head', 72000.00,
- 'T. Abordo', '+63 917 000 2004', 'Spouse', 'margie.abordo@sunstar.demo', 'sunstar1',
- '2015-09-01', 'Active', '[]'::jsonb,
- '[{"ds":"2015-09","de":"","role":"HR Head","salary":"72000"}]'::jsonb),
-(1005, 'Maria', 'Quintos', 'Victoneta', 38, 'Female', '+63 917 000 1005', 'Davao City', 'Graphic Artist', '2020-02-17', 'Graphic Artist', 42000.00,
- 'A. Quintos', '+63 917 000 2005', 'Sibling', 'maria.quintos@sunstar.demo', 'sunstar1',
- '2020-02-17', 'Active', '[]'::jsonb,
- '[{"ds":"2020-02","de":"","role":"Graphic Artist","salary":"42000"}]'::jsonb),
-(1006, 'Arnel', 'Ado', NULL, 36, 'Male', '+63 917 000 1006', 'Davao City', 'Graphic Artist', '2021-07-05', 'Graphic Artist', 41000.00,
- 'S. Ado', '+63 917 000 2006', 'Spouse', 'arnel.ado@sunstar.demo', 'sunstar1',
- '2021-07-05', 'Active', '[]'::jsonb,
- '[{"ds":"2021-07","de":"","role":"Graphic Artist","salary":"41000"}]'::jsonb),
-(1007, 'Marianne', 'Abalayan', NULL, 40, 'Female', '+63 917 000 1007', 'Davao City', 'Editor', '2017-11-20', 'Editor', 48000.00,
- 'K. Abalayan', '+63 917 000 2007', 'Spouse', 'marianne.abalayan@sunstar.demo', 'sunstar1',
- '2017-11-20', 'Active', '[]'::jsonb,
- '[{"ds":"2017-11","de":"","role":"Editor","salary":"48000"}]'::jsonb);
+(1001, 'Donna C.', 'Cuyos', 42, 'Female', '+63 917 000 1001', 'Business Manager', '2018-01-15', NULL, 'Business Manager / Marketing Head', 78000.00,
+ 'R. Cuyos', '+63 917 000 2001', 'Spouse', 'donna.cuyos@sunstar.demo', 'sunstar1'),
+(1002, 'Cristina E.', 'Alivio', 45, 'Female', '+63 917 000 1002', 'Editor-in-Chief', '2016-06-01', NULL, 'Editor-in-Chief', 82000.00,
+ 'J. Alivio', '+63 917 000 2002', 'Spouse', 'cristina.alivio@sunstar.demo', 'sunstar1'),
+(1003, 'Prince', 'Agustin', 34, 'Male', '+63 917 000 1003', 'ICT Specialist', '2019-03-10', NULL, 'ICT', 55000.00,
+ 'L. Agustin', '+63 917 000 2003', 'Parent', 'prince.agustin@sunstar.demo', 'sunstar1'),
+(1004, 'Margie', 'Abordo', 48, 'Female', '+63 917 000 1004', 'HR Manager', '2015-09-01', NULL, 'HR Head', 72000.00,
+ 'T. Abordo', '+63 917 000 2004', 'Spouse', 'margie.abordo@sunstar.demo', 'sunstar1'),
+(1005, 'Maria Victoneta', 'Quintos', 38, 'Female', '+63 917 000 1005', 'Graphic Artist', '2020-02-17', NULL, 'Graphic Artist', 42000.00,
+ 'A. Quintos', '+63 917 000 2005', 'Sibling', 'maria.quintos@sunstar.demo', 'sunstar1'),
+(1006, 'Arnel', 'Ado', 36, 'Male', '+63 917 000 1006', 'Graphic Artist', '2021-07-05', NULL, 'Graphic Artist', 41000.00,
+ 'S. Ado', '+63 917 000 2006', 'Spouse', 'arnel.ado@sunstar.demo', 'sunstar1'),
+(1007, 'Marianne', 'Abalayan', 40, 'Female', '+63 917 000 1007', 'Editor', '2017-11-20', NULL, 'Editor', 48000.00,
+ 'K. Abalayan', '+63 917 000 2007', 'Spouse', 'marianne.abalayan@sunstar.demo', 'sunstar1');
 
 -- 6) Attendance: 2026-02-01 .. 2026-03-31 (weekends mostly absent; weekday lates/absences)
 INSERT INTO public.attendance_records (work_date, employee_id, employee_name, clock_in, clock_out, status, shift_schedule)
