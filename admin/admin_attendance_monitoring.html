@@ -254,11 +254,11 @@
           </div>
         </section>
 
-        <!-- Section 2: Attendance Control (Mark Absent) -->
+        <!-- Section 2: Attendance Control -->
         <section>
           <div class="mb-4">
             <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Manual Attendance Control</h2>
-            <p class="text-xs text-zinc-500 font-medium mt-1">Select employees to manually verify records and apply Late or Absent overrides for the selected date.</p>
+            <p class="text-xs text-zinc-500 font-medium mt-1">Override clock-out time for employees who clocked in but forgot to clock out.</p>
           </div>
 
           <div class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
@@ -281,24 +281,6 @@
 
       </div>
     </main>
-  </div>
-
-  <!-- Confirmation Modal -->
-  <div id="confirmAbsentModal" class="relative z-50 hidden">
-    <div class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm"></div>
-    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-      <div class="max-w-sm w-full bg-white rounded-xl p-8 shadow-2xl border border-zinc-200">
-        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-6 text-red-600 mx-auto">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        </div>
-        <h3 class="text-lg font-black uppercase text-zinc-900 mb-2 text-center tracking-tight">Confirm Absence</h3>
-        <p class="text-sm text-zinc-500 mb-8 text-center font-medium leading-relaxed">Are you sure you want to mark <span id="confirmName" class="font-bold text-zinc-900 underline decoration-red-200">---</span> as absent for <span id="confirmDate" class="font-bold text-zinc-900">---</span>?</p>
-        <div class="flex gap-3">
-            <button onclick="confirmMarkAbsent()" class="flex-1 bg-red-500 py-3 text-sm font-bold text-white rounded-md hover:bg-red-600 transition shadow-md shadow-red-500/20">Yes, Absent</button>
-            <button onclick="document.getElementById('confirmAbsentModal').classList.add('hidden')" class="flex-1 bg-white border border-zinc-200 py-3 text-sm font-bold text-zinc-500 rounded-md hover:bg-zinc-50 transition">Cancel</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- Sanction Modal -->
@@ -357,8 +339,6 @@
   <script src="../backend-database/supabase-hr-service.js"></script>
 
   <script>
-    let pendingAbsentName = '';
-    let pendingAbsentEmployeeId = null;
     let pendingSanctionDate = '';
     let pendingSanctionRecordIndex = -1;
     const SESSION_ADMIN_EMAIL_KEY = 'sunstar_logged_in_admin_email';
@@ -571,6 +551,126 @@
         });
       }
 
+      function hasValidClockIn(record) {
+        const clockIn = String(record && record.clockIn ? record.clockIn : '').trim();
+        if (!clockIn) return false;
+        if (clockIn === '--') return false;
+        if (clockIn.includes('--')) return false;
+        return true;
+      }
+
+      function hasValidClockOut(record) {
+        const clockOut = String(record && record.clockOut ? record.clockOut : '').trim();
+        if (!clockOut) return false;
+        if (clockOut === '--') return false;
+        if (clockOut.includes('--')) return false;
+        return true;
+      }
+
+      function parseClockTimeToMinutes(timeValue) {
+        if (!timeValue || String(timeValue).includes('--')) return null;
+        const match = String(timeValue).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (!match) return null;
+
+        let hour = Number(match[1]);
+        const minute = Number(match[2]);
+        const period = String(match[3] || '').toUpperCase();
+        if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
+
+        if (period === 'PM' && hour !== 12) hour += 12;
+        if (period === 'AM' && hour === 12) hour = 0;
+        return (hour * 60) + minute;
+      }
+
+      function formatClockMinutes(minutes) {
+        const parsed = Number(minutes);
+        if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1439) return null;
+        const hours24 = Math.floor(parsed / 60);
+        const mins = parsed % 60;
+        const period = hours24 >= 12 ? 'PM' : 'AM';
+        let hours12 = hours24 % 12;
+        if (hours12 === 0) hours12 = 12;
+        return `${String(hours12).padStart(2, '0')}:${String(mins).padStart(2, '0')} ${period}`;
+      }
+
+      function normalizeClockOutInput(rawValue) {
+        const raw = String(rawValue || '').trim();
+        if (!raw) return null;
+
+        const match12 = raw.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (match12) {
+          const normalized = `${match12[1]}:${match12[2]} ${match12[3].toUpperCase()}`;
+          const minutes = parseClockTimeToMinutes(normalized);
+          return minutes === null ? null : formatClockMinutes(minutes);
+        }
+
+        const match24 = raw.match(/^(\d{1,2}):(\d{2})$/);
+        if (match24) {
+          const hours = Number(match24[1]);
+          const minutes = Number(match24[2]);
+          if (Number.isNaN(hours) || Number.isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+            return null;
+          }
+          return formatClockMinutes((hours * 60) + minutes);
+        }
+
+        return null;
+      }
+
+      function ensureAutomaticAbsencesForDate(dateIso) {
+        const attendance = getAttendances();
+        if (!attendance[dateIso]) attendance[dateIso] = [];
+        const dayRecords = attendance[dateIso];
+        const employees = getEmployees();
+        let changed = false;
+        const recordsToSync = [];
+
+        employees.forEach((emp) => {
+          const name = getEmployeeDisplayName(emp);
+          let record = findRecordByEmployee(dayRecords, emp.id, name);
+
+          if (!record) {
+            record = {
+              empId: emp.id,
+              name,
+              clockIn: '--',
+              clockOut: '--',
+              status: 'Absent',
+              shift: DEFAULT_SHIFT_SCHEDULE,
+              ot: '0.0',
+              isHoliday: false,
+              statusSource: 'system'
+            };
+            dayRecords.push(record);
+            changed = true;
+            recordsToSync.push(record);
+            return;
+          }
+
+          normalizeAttendanceRecordFields(record);
+          if (!hasValidClockIn(record)) {
+            const nextStatus = record.status === 'Absent' ? record.status : 'Absent';
+            if (record.status !== nextStatus || record.clockOut !== '--' || String(record.ot || '0.0') !== '0.0') {
+              record.status = nextStatus;
+              record.clockOut = '--';
+              record.ot = '0.0';
+              record.statusSource = record.statusSource || 'system';
+              changed = true;
+              recordsToSync.push(record);
+            }
+          }
+        });
+
+        if (changed) {
+          localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+          if (window.HRDataService && typeof window.HRDataService.upsertAttendanceRecord === 'function') {
+            recordsToSync.forEach((record) => {
+              window.HRDataService.upsertAttendanceRecord(dateIso, record);
+            });
+          }
+        }
+      }
+
       async function syncAttendanceFromSupabase() {
         if (!window.HRDataService) return;
         const remote = await window.HRDataService.fetchAttendanceGrouped();
@@ -666,6 +766,7 @@
       // Render the main Today log
       function renderTable(dateIso) {
          tbody.innerHTML = '';
+         ensureAutomaticAbsencesForDate(dateIso);
          const attendances = getAttendances();
         const rawRecords = attendances[dateIso] || [];
         const records = rawRecords.map((rec, index) => ({ rec, index })).filter(({ rec }) => {
@@ -684,6 +785,7 @@
           attendancePageInfo.textContent = 'Showing 0 to 0 of 0 entries';
           attendancePrevBtn.disabled = true;
           attendanceNextBtn.disabled = true;
+          renderControl();
             return;
          }
         const endDisplay = Math.min(startIndex + LOG_PAGE_SIZE, totalItems);
@@ -725,7 +827,6 @@
               <div class="inline-flex flex-wrap justify-end gap-1">
                 <button onclick="verifyAttendanceRecord('${dateIso}', ${originalIndex})" class="text-[10px] font-black uppercase text-emerald-700 border border-emerald-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-emerald-50 transition-colors">Verify</button>
                 <button onclick="overrideAttendanceStatus('${dateIso}', ${originalIndex}, 'Late')" class="text-[10px] font-black uppercase text-yellow-700 border border-yellow-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-yellow-50 transition-colors">Late</button>
-                <button onclick="overrideAttendanceStatus('${dateIso}', ${originalIndex}, 'Absent')" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Absent</button>
                 <button onclick="openSanctionModal('${dateIso}', ${originalIndex})" class="text-[10px] font-black uppercase text-fuchsia-700 border border-fuchsia-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-fuchsia-50 transition-colors">Sanction</button>
                 <button onclick="removeAttendanceRecord('${dateIso}', ${originalIndex})" class="text-[10px] font-black uppercase text-red-700 border border-red-200 bg-red-50 px-2.5 py-1.5 rounded-md hover:bg-red-100 transition-colors">Remove</button>
               </div>
@@ -752,6 +853,7 @@
             `;
             tbody.appendChild(tr);
          });
+         renderControl();
       }
 
       function getRequestStatusBadge(status) {
@@ -1055,51 +1157,12 @@
         document.getElementById('successModal').classList.remove('hidden');
       };
 
-      async function upsertManualStatus(name, employeeId, dateIso, nextStatus) {
-        const attendance = getAttendances();
-        if (!attendance[dateIso]) attendance[dateIso] = [];
-
-        const existing = findRecordByEmployee(attendance[dateIso], employeeId, name);
-        let targetRecord = existing;
-
-        if (!targetRecord) {
-          targetRecord = {
-            empId: employeeId,
-            name,
-            clockIn: '--',
-            clockOut: '--',
-            status: nextStatus,
-            shift: DEFAULT_SHIFT_SCHEDULE,
-            ot: '0.0',
-            isHoliday: false
-          };
-          attendance[dateIso].push(targetRecord);
-        } else {
-          normalizeAttendanceRecordFields(targetRecord);
-          targetRecord.status = nextStatus;
-        }
-
-        if (nextStatus === 'Absent') {
-          targetRecord.clockIn = '--';
-          targetRecord.clockOut = '--';
-          targetRecord.ot = '0.0';
-        }
-
-        markRecordVerified(targetRecord);
-
-        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
-        if (window.HRDataService) {
-          await window.HRDataService.upsertAttendanceRecord(dateIso, targetRecord);
-        }
-
-        renderTable(dateIso);
-        document.getElementById('successMessage').textContent = `${name} has been set to ${nextStatus} and verified by admin.`;
-        document.getElementById('successModal').classList.remove('hidden');
-      }
-
       // Render the Control Table (All Employees)
       function renderControl() {
         const employees = getEmployees();
+        const dateIso = dateInput.value || getManilaIsoDate();
+        const attendance = getAttendances();
+        const dayRecords = Array.isArray(attendance[dateIso]) ? attendance[dateIso] : [];
         controlBody.innerHTML = '';
         if (employees.length === 0) {
           controlBody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-zinc-400 text-sm">No employees found in management.</td></tr>`;
@@ -1108,15 +1171,27 @@
 
         employees.forEach(emp => {
           const name = `${emp.firstName} ${emp.lastName}`;
+          const record = findRecordByEmployee(dayRecords, emp.id, name);
+          const canOverrideClockOut = hasValidClockIn(record) && !hasValidClockOut(record);
+          const currentStatus = record
+            ? `Clock In: ${record.clockIn || '--'} | Clock Out: ${record.clockOut || '--'} | Status: ${record.status || 'Absent'}`
+            : 'No record for selected date';
           const tr = document.createElement('tr');
           tr.className = "hover:bg-zinc-50 transition duration-150 group";
           tr.innerHTML = `
             <td class="px-6 py-4 font-black text-zinc-900">${name}</td>
-            <td class="px-6 py-4 text-[10px] font-black uppercase text-zinc-400 tracking-widest">${emp.role || 'Staff'}</td>
+            <td class="px-6 py-4 text-[10px] font-black uppercase text-zinc-400 tracking-widest">
+              <div>${emp.role || 'Staff'}</div>
+              <div class="mt-1 normal-case tracking-normal text-[11px] font-semibold text-zinc-500">${escapeHtml(currentStatus)}</div>
+            </td>
             <td class="px-6 py-4 text-right">
               <div class="inline-flex flex-wrap justify-end gap-2">
-                <button onclick="markLate(${JSON.stringify(name)}, ${emp.id})" class="text-[10px] font-black uppercase text-yellow-700 border border-yellow-200 bg-white px-3 py-2 rounded-lg hover:bg-yellow-50 transition duration-200 shadow-sm whitespace-nowrap">Mark Late</button>
-                <button onclick="markAbsent(${JSON.stringify(name)}, ${emp.id})" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-3 py-2 rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition duration-200 shadow-sm whitespace-nowrap">Mark Absent</button>
+                <button
+                  onclick="overrideManualClockOut(${JSON.stringify(name)}, ${emp.id})"
+                  class="text-[10px] font-black uppercase border px-3 py-2 rounded-lg transition duration-200 shadow-sm whitespace-nowrap ${canOverrideClockOut ? 'text-blue-700 border-blue-200 bg-white hover:bg-blue-50' : 'text-zinc-400 border-zinc-200 bg-zinc-100 cursor-not-allowed'}"
+                  ${canOverrideClockOut ? '' : 'disabled'}>
+                  Override Clock Out
+                </button>
               </div>
             </td>
           `;
@@ -1267,26 +1342,46 @@
         printWindow.print();
       }
 
-      window.markLate = async function(name, employeeId) {
-        const dateIso = dateInput.value;
-        await upsertManualStatus(name, employeeId, dateIso, 'Late');
-      };
+      window.overrideManualClockOut = async function(name, employeeId) {
+        const dateIso = dateInput.value || getManilaIsoDate();
+        const attendance = getAttendances();
+        const dayRecords = Array.isArray(attendance[dateIso]) ? attendance[dateIso] : [];
+        const record = findRecordByEmployee(dayRecords, employeeId, name);
+        if (!record || !hasValidClockIn(record)) {
+          alert('Clock-out override is only available for employees with a valid clock-in on the selected date.');
+          return;
+        }
+        if (hasValidClockOut(record)) {
+          alert('This employee already has a clock-out time.');
+          return;
+        }
 
-      window.markAbsent = function(name, employeeId) {
-        pendingAbsentName = name;
-        pendingAbsentEmployeeId = employeeId;
-        const dateIso = dateInput.value;
-        document.getElementById('confirmName').textContent = name;
-        document.getElementById('confirmDate').textContent = formatReadableDate(dateIso);
-        document.getElementById('confirmAbsentModal').classList.remove('hidden');
-      };
+        const suggested = '05:00 PM';
+        const raw = window.prompt(`Enter clock-out time for ${name} on ${formatReadableDate(dateIso)}.\nAccepted formats: HH:MM AM/PM or HH:MM (24-hour).`, suggested);
+        if (raw === null) return;
 
-      window.confirmMarkAbsent = async function() {
-        const name = pendingAbsentName;
-        const empId = pendingAbsentEmployeeId;
-        const dateIso = dateInput.value;
-        await upsertManualStatus(name, empId, dateIso, 'Absent');
-        document.getElementById('confirmAbsentModal').classList.add('hidden');
+        const normalizedClockOut = normalizeClockOutInput(raw);
+        if (!normalizedClockOut) {
+          alert('Invalid time format. Please use HH:MM AM/PM (example: 05:00 PM) or HH:MM (24-hour).');
+          return;
+        }
+
+        normalizeAttendanceRecordFields(record);
+        record.clockOut = normalizedClockOut;
+        if (String(record.status || '').trim().toLowerCase() === 'absent') {
+          record.status = 'Present';
+        }
+        markRecordVerified(record);
+
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+        if (window.HRDataService) {
+          await window.HRDataService.upsertAttendanceRecord(dateIso, record);
+        }
+
+        renderTable(dateIso);
+        renderControl();
+        document.getElementById('successMessage').textContent = `Clock-out override saved for ${name}: ${normalizedClockOut}.`;
+        document.getElementById('successModal').classList.remove('hidden');
       };
 
       function updateDateObj(offset) {
