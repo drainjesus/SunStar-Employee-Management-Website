@@ -8,7 +8,13 @@
   const ATTENDANCE_REQUEST_KEY = "sunstar_attendance_requests";
   const ATTENDANCE_REQUEST_TABLE = "attendance_special_requests";
   const ATTENDANCE_REQUEST_UNSUPPORTED_COLUMNS_KEY = "__attendance_request_unsupported_columns";
-  const DEFAULT_UNSUPPORTED_ATTENDANCE_REQUEST_COLUMNS = ["business_type"];
+  const DEFAULT_UNSUPPORTED_ATTENDANCE_REQUEST_COLUMNS = [
+    "request_date_to",
+    "time_from",
+    "time_to",
+    "business_type",
+    "special_holiday"
+  ];
   const DEFAULT_SHIFT_SCHEDULE = "Newsroom Day Shift (08:00 AM - 05:00 PM)";
   let trainingDevLastError = "";
   let attendanceRequestTableMissingInSession = false;
