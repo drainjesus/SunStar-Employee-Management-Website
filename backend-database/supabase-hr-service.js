@@ -7,11 +7,20 @@
   const ATTENDANCE_KEY = "sunstar_attendance";
   const ATTENDANCE_REQUEST_KEY = "sunstar_attendance_requests";
   const ATTENDANCE_REQUEST_TABLE = "attendance_special_requests";
+  const ATTENDANCE_REQUEST_UNSUPPORTED_COLUMNS_KEY = "__attendance_request_unsupported_columns";
   const DEFAULT_SHIFT_SCHEDULE = "Newsroom Day Shift (08:00 AM - 05:00 PM)";
   let trainingDevLastError = "";
   let attendanceRequestTableMissingInSession = false;
   const unsupportedTrainingDevColumns = new Set();
-  const unsupportedAttendanceRequestColumns = new Set();
+  const unsupportedAttendanceRequestColumns = new Set((() => {
+    try {
+      const raw = localStorage.getItem(ATTENDANCE_REQUEST_UNSUPPORTED_COLUMNS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.map((value) => String(value)) : [];
+    } catch {
+      return [];
+    }
+  })());
   const ATTENDANCE_EXTENDED_COLUMNS = [
     "is_verified",
     "verified_by",
@@ -369,6 +378,19 @@
 
   function isAttendanceRequestTableMarkedMissing() {
     return attendanceRequestTableMissingInSession;
+  }
+
+  function rememberUnsupportedAttendanceRequestColumn(columnName) {
+    if (!columnName) return;
+    unsupportedAttendanceRequestColumns.add(String(columnName));
+    try {
+      localStorage.setItem(
+        ATTENDANCE_REQUEST_UNSUPPORTED_COLUMNS_KEY,
+        JSON.stringify(Array.from(unsupportedAttendanceRequestColumns))
+      );
+    } catch {
+      // Ignore localStorage write failures.
+    }
   }
 
   function markAttendanceRequestTableMissing() {
@@ -1002,6 +1024,7 @@
     if (unsupportedAttendanceRequestColumns.has("time_to")) delete payload.time_to;
     if (unsupportedAttendanceRequestColumns.has("business_type")) delete payload.business_type;
     if (unsupportedAttendanceRequestColumns.has("special_holiday")) delete payload.special_holiday;
+    if (unsupportedAttendanceRequestColumns.has("employee_id")) delete payload.employee_id;
 
     let { error } = await window.supabaseClient
       .from(ATTENDANCE_REQUEST_TABLE)
@@ -1019,36 +1042,37 @@
 
       if (/shift[_\s]?schedule/i.test(errorText)) {
         delete fallbackPayload.shift_schedule;
-        unsupportedAttendanceRequestColumns.add("shift_schedule");
+        rememberUnsupportedAttendanceRequestColumn("shift_schedule");
         shouldRetry = true;
       }
       if (/request[_\s]?date[_\s]?to/i.test(errorText)) {
         delete fallbackPayload.request_date_to;
-        unsupportedAttendanceRequestColumns.add("request_date_to");
+        rememberUnsupportedAttendanceRequestColumn("request_date_to");
         shouldRetry = true;
       }
       if (/time[_\s]?from/i.test(errorText)) {
         delete fallbackPayload.time_from;
-        unsupportedAttendanceRequestColumns.add("time_from");
+        rememberUnsupportedAttendanceRequestColumn("time_from");
         shouldRetry = true;
       }
       if (/time[_\s]?to/i.test(errorText)) {
         delete fallbackPayload.time_to;
-        unsupportedAttendanceRequestColumns.add("time_to");
+        rememberUnsupportedAttendanceRequestColumn("time_to");
         shouldRetry = true;
       }
       if (/business[_\s]?type/i.test(errorText)) {
         delete fallbackPayload.business_type;
-        unsupportedAttendanceRequestColumns.add("business_type");
+        rememberUnsupportedAttendanceRequestColumn("business_type");
         shouldRetry = true;
       }
       if (/special[_\s]?holiday/i.test(errorText)) {
         delete fallbackPayload.special_holiday;
-        unsupportedAttendanceRequestColumns.add("special_holiday");
+        rememberUnsupportedAttendanceRequestColumn("special_holiday");
         shouldRetry = true;
       }
       if (/employee_id|foreign key|employees/i.test(errorText)) {
         delete fallbackPayload.employee_id;
+        rememberUnsupportedAttendanceRequestColumn("employee_id");
         shouldRetry = true;
       }
       if (/reason/i.test(errorText)) {
