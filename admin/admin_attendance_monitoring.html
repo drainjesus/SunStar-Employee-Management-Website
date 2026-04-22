@@ -133,6 +133,8 @@
           <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Today's Attendance Log</h2>
             <div class="flex items-center gap-2">
+              <button id="clearSelectedAttendanceBtn" class="h-9 rounded-md border border-red-200 bg-red-50 px-3 text-[10px] font-black uppercase tracking-widest text-red-700 hover:bg-red-100 transition">Clear Date</button>
+              <button id="clearAllAttendanceBtn" class="h-9 rounded-md border border-red-200 bg-red-50 px-3 text-[10px] font-black uppercase tracking-widest text-red-700 hover:bg-red-100 transition">Clear All</button>
               <span class="text-xs font-black uppercase text-zinc-400 mr-2 tracking-widest">Select Date</span>
               <span class="rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-500">PST (UTC+8)</span>
               <button id="prevDateBtn" class="flex items-center justify-center h-9 w-9 rounded-md border border-zinc-200 text-zinc-500 hover:bg-zinc-50 transition-colors bg-white">
@@ -165,9 +167,12 @@
         </section>
 
         <section>
-          <div class="mb-4">
-            <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Attendance Requests</h2>
-            <p class="text-xs text-zinc-500 font-medium mt-1">Approve or decline Overtime, Special Holiday Work, and Official Business requests.</p>
+          <div class="mb-4 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+            <div>
+              <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Attendance Requests</h2>
+              <p class="text-xs text-zinc-500 font-medium mt-1">Approve or decline Overtime, Special Holiday Work, and Official Business requests.</p>
+            </div>
+            <button id="clearAttendanceRequestsBtn" class="h-9 rounded-md border border-red-200 bg-red-50 px-3 text-[10px] font-black uppercase tracking-widest text-red-700 hover:bg-red-100 transition">Clear All Requests</button>
           </div>
 
           <div class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
@@ -349,6 +354,9 @@
       const tbody = document.getElementById('attendanceTableBody');
       const requestBody = document.getElementById('attendanceRequestBody');
       const controlBody = document.getElementById('employeeControlBody');
+      const clearSelectedAttendanceBtn = document.getElementById('clearSelectedAttendanceBtn');
+      const clearAllAttendanceBtn = document.getElementById('clearAllAttendanceBtn');
+      const clearAttendanceRequestsBtn = document.getElementById('clearAttendanceRequestsBtn');
       const dtrEmployeeSearch = document.getElementById('dtrEmployeeSearch');
       const dtrEmployeeSelect = document.getElementById('dtrEmployeeSelect');
       const dtrMonthInput = document.getElementById('dtrMonthInput');
@@ -662,6 +670,7 @@
                 <button onclick="overrideAttendanceStatus('${dateIso}', ${originalIndex}, 'Late')" class="text-[10px] font-black uppercase text-yellow-700 border border-yellow-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-yellow-50 transition-colors">Late</button>
                 <button onclick="overrideAttendanceStatus('${dateIso}', ${originalIndex}, 'Absent')" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Absent</button>
                 <button onclick="openSanctionModal('${dateIso}', ${originalIndex})" class="text-[10px] font-black uppercase text-fuchsia-700 border border-fuchsia-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-fuchsia-50 transition-colors">Sanction</button>
+                <button onclick="removeAttendanceRecord('${dateIso}', ${originalIndex})" class="text-[10px] font-black uppercase text-red-700 border border-red-200 bg-red-50 px-2.5 py-1.5 rounded-md hover:bg-red-100 transition-colors">Remove</button>
               </div>
             `;
 
@@ -750,9 +759,10 @@
                 <div class="inline-flex gap-2 justify-end">
                   <button onclick="updateAttendanceRequestStatus('${request.id}', 'Approved')" class="text-[10px] font-black uppercase text-emerald-700 border border-emerald-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-emerald-50 transition-colors">Approve</button>
                   <button onclick="updateAttendanceRequestStatus('${request.id}', 'Declined')" class="text-[10px] font-black uppercase text-red-600 border border-red-200 bg-white px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors">Decline</button>
+                  <button onclick="removeAttendanceRequest('${request.id}')" class="text-[10px] font-black uppercase text-red-700 border border-red-200 bg-red-50 px-2.5 py-1.5 rounded-md hover:bg-red-100 transition-colors">Remove</button>
                 </div>
               `
-            : `<span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Completed</span>`;
+            : `<div class="inline-flex gap-2 justify-end"><span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Completed</span><button onclick="removeAttendanceRequest('${request.id}')" class="text-[10px] font-black uppercase text-red-700 border border-red-200 bg-red-50 px-2.5 py-1.5 rounded-md hover:bg-red-100 transition-colors">Remove</button></div>`;
 
           tr.innerHTML = `
             <td class="px-6 py-4 text-sm font-bold text-zinc-900">${escapeHtml(request.employeeName || 'Employee')}</td>
@@ -791,6 +801,86 @@
         document.getElementById('successMessage').textContent = `${target.employeeName || 'Employee'} request marked as ${nextStatus}.`;
         document.getElementById('successModal').classList.remove('hidden');
       };
+
+      window.removeAttendanceRequest = async function(requestId) {
+        const confirmed = window.confirm('Remove this attendance request?');
+        if (!confirmed) return;
+
+        let requests = getAttendanceRequests();
+        requests = requests.filter((entry) => String(entry.id) !== String(requestId));
+        saveAttendanceRequests(requests);
+        if (window.HRDataService && typeof window.HRDataService.deleteAttendanceRequest === 'function') {
+          await window.HRDataService.deleteAttendanceRequest(requestId);
+        }
+
+        renderAttendanceRequestTable();
+      };
+
+      window.removeAttendanceRecord = async function(dateIso, recordIndex) {
+        const confirmed = window.confirm('Remove this attendance record?');
+        if (!confirmed) return;
+
+        const attendance = getAttendances();
+        const records = Array.isArray(attendance[dateIso]) ? attendance[dateIso] : [];
+        const record = records[recordIndex];
+        if (!record) return;
+
+        records.splice(recordIndex, 1);
+        if (records.length === 0) {
+          delete attendance[dateIso];
+        } else {
+          attendance[dateIso] = records;
+        }
+
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+        if (window.HRDataService && typeof window.HRDataService.deleteAttendanceRecord === 'function') {
+          await window.HRDataService.deleteAttendanceRecord(dateIso, record.empId);
+        }
+
+        renderTable(dateInput.value || dateIso);
+      };
+
+      async function clearSelectedAttendance() {
+        const targetDate = dateInput.value;
+        if (!targetDate) return;
+        const confirmed = window.confirm(`Clear all attendance records for ${formatReadableDate(targetDate)}?`);
+        if (!confirmed) return;
+
+        const attendance = getAttendances();
+        const records = Array.isArray(attendance[targetDate]) ? attendance[targetDate] : [];
+        delete attendance[targetDate];
+        localStorage.setItem('sunstar_attendance', JSON.stringify(attendance));
+
+        if (window.HRDataService && typeof window.HRDataService.deleteAttendanceRecord === 'function') {
+          for (const record of records) {
+            await window.HRDataService.deleteAttendanceRecord(targetDate, record.empId);
+          }
+        }
+
+        renderTable(targetDate);
+        renderDtrTable();
+      }
+
+      async function clearAllAttendance() {
+        const confirmed = window.confirm('Clear ALL attendance records for all employees?');
+        if (!confirmed) return;
+        localStorage.setItem('sunstar_attendance', JSON.stringify({}));
+        if (window.HRDataService && typeof window.HRDataService.clearAttendanceRecords === 'function') {
+          await window.HRDataService.clearAttendanceRecords();
+        }
+        renderTable(dateInput.value || getManilaIsoDate());
+        renderDtrTable();
+      }
+
+      async function clearAllAttendanceRequests() {
+        const confirmed = window.confirm('Clear ALL attendance requests (OT/Special Work/OB)?');
+        if (!confirmed) return;
+        saveAttendanceRequests([]);
+        if (window.HRDataService && typeof window.HRDataService.clearAttendanceRequests === 'function') {
+          await window.HRDataService.clearAttendanceRequests();
+        }
+        renderAttendanceRequestTable();
+      }
 
       window.openSanctionModal = function(dateIso, recordIndex) {
         const attendance = getAttendances();
@@ -1139,6 +1229,9 @@
       dtrEmployeeSelect.addEventListener('change', renderDtrTable);
       dtrMonthInput.addEventListener('change', renderDtrTable);
       printDtrBtn.addEventListener('click', printDtrReport);
+      clearSelectedAttendanceBtn.addEventListener('click', clearSelectedAttendance);
+      clearAllAttendanceBtn.addEventListener('click', clearAllAttendance);
+      clearAttendanceRequestsBtn.addEventListener('click', clearAllAttendanceRequests);
 
       window.addEventListener('storage', async function(event) {
         if (event.key && event.key !== 'sunstar_attendance' && event.key !== 'sunstar_employees' && event.key !== ATTENDANCE_REQUEST_KEY) return;

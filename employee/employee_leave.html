@@ -210,10 +210,15 @@
                  <span class="h-2 w-8 bg-sun-yellow rounded-full"></span>
                  Request History
               </h2>
-              <button onclick="openLeaveModal()" class="bg-sun-yellow text-zinc-900 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-sun-yellowLight transition-all active:scale-[0.98] shadow-lg shadow-sun-yellow/10 flex items-center gap-2 border border-sun-yellowDark">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                 Apply for Leave
-              </button>
+              <div class="flex items-center gap-2">
+                 <button onclick="clearMyLeaveRequests()" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-red-700 hover:bg-red-100 transition-all">
+                    Clear My Leave Data
+                 </button>
+                 <button onclick="openLeaveModal()" class="bg-sun-yellow text-zinc-900 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-sun-yellowLight transition-all active:scale-[0.98] shadow-lg shadow-sun-yellow/10 flex items-center gap-2 border border-sun-yellowDark">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    Apply for Leave
+                 </button>
+              </div>
            </div>
            <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
               <table class="w-full text-left text-sm border-collapse">
@@ -862,9 +867,14 @@
              <td class="px-8 py-5 border-r border-zinc-50 font-black text-xs text-zinc-900">${l.days} ${l.days > 1 ? 'Days' : 'Day'}</td>
              <td class="px-8 py-5 border-r border-zinc-50"><span class="${statusClasses}">${l.status === 'Approve' ? 'Approved' : (l.status === 'Decline' ? 'Declined' : l.status)}</span></td>
              <td class="px-8 py-5 text-right">
-                <button onclick="viewNote('${escapedNote}')" class="h-8 w-8 bg-zinc-50 rounded-lg flex items-center justify-center text-zinc-400 hover:text-sun-yellowDark hover:bg-sun-yellowLight/50 transition-all ml-auto border border-zinc-100">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                </button>
+                <div class="flex justify-end gap-2">
+                  <button onclick="viewNote('${escapedNote}')" class="h-8 w-8 bg-zinc-50 rounded-lg flex items-center justify-center text-zinc-400 hover:text-sun-yellowDark hover:bg-sun-yellowLight/50 transition-all border border-zinc-100">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </button>
+                  <button onclick="removeMyLeaveRequest(${l.id})" class="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-700 hover:bg-red-100 transition">
+                    Remove
+                  </button>
+                </div>
              </td>
           `;
         tbody.appendChild(tr);
@@ -1013,6 +1023,41 @@
        document.getElementById('noteContent').textContent = msg || '-- No note provided --';
        document.getElementById('viewNoteModal').classList.remove('hidden');
     }
+
+    window.removeMyLeaveRequest = async function(leaveId) {
+      const confirmed = window.confirm('Remove this leave request?');
+      if (!confirmed) return;
+
+      let leaves = getLeaves();
+      leaves = leaves.filter(entry => !(isMyLeave(entry) && Number(entry.id) === Number(leaveId)));
+      localStorage.setItem(LEAVE_KEY, JSON.stringify(leaves));
+
+      if (window.HRDataService && typeof window.HRDataService.deleteLeave === 'function') {
+        await window.HRDataService.deleteLeave(leaveId);
+      }
+
+      initPage();
+    };
+
+    window.clearMyLeaveRequests = async function() {
+      const confirmed = window.confirm('Clear all of your leave requests? This cannot be undone.');
+      if (!confirmed) return;
+
+      const leaves = getLeaves();
+      const myLeaveIds = leaves
+        .filter(isMyLeave)
+        .map(entry => entry.id);
+      const remaining = leaves.filter(entry => !isMyLeave(entry));
+      localStorage.setItem(LEAVE_KEY, JSON.stringify(remaining));
+
+      if (window.HRDataService && typeof window.HRDataService.deleteLeave === 'function') {
+        for (const leaveId of myLeaveIds) {
+          await window.HRDataService.deleteLeave(leaveId);
+        }
+      }
+
+      initPage();
+    };
 
      function refreshProfilePic() {
        resolveActiveUser();

@@ -187,6 +187,9 @@
 
         <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 class="text-lg font-bold text-zinc-900">Leave Requests History</h2>
+          <button id="clearAllLeavesBtn" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-red-700 hover:bg-red-100 transition">
+            Clear All Leave Data
+          </button>
         </div>
 
         <div class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
@@ -581,6 +584,9 @@
                   <option value="Approve" ${l.status === 'Approve' ? 'selected' : ''}>Approve</option>
                   <option value="Decline" ${l.status === 'Decline' ? 'selected' : ''}>Decline</option>
                 </select>
+                <button onclick="removeLeaveRequest(${l.id})" class="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-700 hover:bg-red-100 transition">
+                  Remove
+                </button>
               </div>
             </td>
           `;
@@ -730,6 +736,38 @@
         }
       };
 
+      window.removeLeaveRequest = async function(id) {
+        const confirmed = window.confirm('Remove this leave request permanently?');
+        if (!confirmed) return;
+
+        let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
+        leaves = leaves.filter(l => Number(l.id) !== Number(id));
+        localStorage.setItem('sunstar_leaves', JSON.stringify(leaves));
+
+        if (window.HRDataService && typeof window.HRDataService.deleteLeave === 'function') {
+          await window.HRDataService.deleteLeave(id);
+        }
+
+        renderLeaveTable();
+        document.getElementById('successMessage').textContent = 'Leave request removed.';
+        document.getElementById('successModal').classList.remove('hidden');
+      };
+
+      async function clearAllLeaveRequests() {
+        const confirmed = window.confirm('Clear ALL leave requests? This cannot be undone.');
+        if (!confirmed) return;
+
+        localStorage.setItem('sunstar_leaves', JSON.stringify([]));
+        if (window.HRDataService && typeof window.HRDataService.clearLeaves === 'function') {
+          await window.HRDataService.clearLeaves();
+        }
+
+        currentPage = 1;
+        renderLeaveTable();
+        document.getElementById('successMessage').textContent = 'All leave requests were cleared.';
+        document.getElementById('successModal').classList.remove('hidden');
+      }
+
       async function syncToAttendance(leave) {
         if(!leave.dateOfLeave) return;
         let attendance = JSON.parse(localStorage.getItem('sunstar_attendance')) || {};
@@ -764,6 +802,7 @@
          let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
          if(currentPage < Math.ceil(leaves.length / itemsPerPage)) { currentPage++; renderLeaveTable(); }
       });
+      document.getElementById('clearAllLeavesBtn').addEventListener('click', clearAllLeaveRequests);
 
       window.addEventListener('storage', async function(event) {
         if (event.key && event.key !== 'sunstar_leaves' && event.key !== 'sunstar_attendance' && event.key !== 'sunstar_employees') return;

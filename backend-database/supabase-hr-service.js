@@ -793,6 +793,60 @@
     return true;
   }
 
+  async function deleteLeave(leaveId) {
+    if (!hasClient()) return false;
+    const id = Number(leaveId);
+    if (!Number.isFinite(id)) return false;
+
+    const { error: deleteError } = await window.supabaseClient
+      .from("leave_requests")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) {
+      console.error("deleteLeave failed", deleteError);
+      return false;
+    }
+
+    const { error: attachmentError } = await window.supabaseClient
+      .from(LEAVE_ATTACHMENT_TABLE)
+      .delete()
+      .eq("leave_request_id", id);
+
+    if (attachmentError && !isLeaveAttachmentTableMissing(attachmentError)) {
+      console.error("deleteLeave attachments failed", attachmentError);
+      return false;
+    }
+
+    return true;
+  }
+
+  async function clearLeaves() {
+    if (!hasClient()) return false;
+
+    const { error: deleteError } = await window.supabaseClient
+      .from("leave_requests")
+      .delete()
+      .neq("id", -1);
+
+    if (deleteError) {
+      console.error("clearLeaves failed", deleteError);
+      return false;
+    }
+
+    const { error: attachmentError } = await window.supabaseClient
+      .from(LEAVE_ATTACHMENT_TABLE)
+      .delete()
+      .neq("leave_request_id", -1);
+
+    if (attachmentError && !isLeaveAttachmentTableMissing(attachmentError)) {
+      console.error("clearLeaves attachments failed", attachmentError);
+      return false;
+    }
+
+    return true;
+  }
+
   async function fetchAttendanceGrouped() {
     if (!hasClient()) return null;
 
@@ -853,6 +907,47 @@
 
     if (error) {
       console.error("upsertAttendanceRecord failed", error);
+      return false;
+    }
+
+    return true;
+  }
+
+  async function deleteAttendanceRecord(workDate, employeeId) {
+    if (!hasClient()) return false;
+    if (!workDate || employeeId === undefined || employeeId === null || employeeId === "") return false;
+
+    const { error } = await window.supabaseClient
+      .from("attendance_records")
+      .delete()
+      .eq("work_date", workDate)
+      .eq("employee_id", employeeId);
+
+    if (error) {
+      console.error("deleteAttendanceRecord failed", error);
+      return false;
+    }
+
+    return true;
+  }
+
+  async function clearAttendanceRecords(employeeId) {
+    if (!hasClient()) return false;
+
+    let query = window.supabaseClient
+      .from("attendance_records")
+      .delete();
+
+    if (employeeId !== undefined && employeeId !== null && employeeId !== "") {
+      query = query.eq("employee_id", employeeId);
+    } else {
+      query = query.neq("employee_id", "__none__");
+    }
+
+    const { error } = await query;
+
+    if (error) {
+      console.error("clearAttendanceRecords failed", error);
       return false;
     }
 
@@ -968,6 +1063,57 @@
     return true;
   }
 
+  async function deleteAttendanceRequest(requestId) {
+    if (!hasClient() || !requestId) return false;
+    if (isAttendanceRequestTableMarkedMissing()) return true;
+
+    const { error } = await window.supabaseClient
+      .from(ATTENDANCE_REQUEST_TABLE)
+      .delete()
+      .eq("id", requestId);
+
+    if (error) {
+      if (isAttendanceRequestTableMissing(error)) {
+        markAttendanceRequestTableMissing();
+        return true;
+      }
+      console.error("deleteAttendanceRequest failed", error);
+      return false;
+    }
+
+    clearAttendanceRequestTableMissingMark();
+    return true;
+  }
+
+  async function clearAttendanceRequests(employeeId) {
+    if (!hasClient()) return false;
+    if (isAttendanceRequestTableMarkedMissing()) return true;
+
+    let query = window.supabaseClient
+      .from(ATTENDANCE_REQUEST_TABLE)
+      .delete();
+
+    if (employeeId !== undefined && employeeId !== null && employeeId !== "") {
+      query = query.eq("employee_id", employeeId);
+    } else {
+      query = query.neq("id", "");
+    }
+
+    const { error } = await query;
+
+    if (error) {
+      if (isAttendanceRequestTableMissing(error)) {
+        markAttendanceRequestTableMissing();
+        return true;
+      }
+      console.error("clearAttendanceRequests failed", error);
+      return false;
+    }
+
+    clearAttendanceRequestTableMissingMark();
+    return true;
+  }
+
   async function syncTrainingsLocalFromRemote() {
     const remote = await fetchTrainings();
     if (!Array.isArray(remote)) return false;
@@ -1010,10 +1156,16 @@
     upsertTrainingDevEntry,
     fetchLeaves,
     upsertLeave,
+    deleteLeave,
+    clearLeaves,
     fetchAttendanceGrouped,
     upsertAttendanceRecord,
+    deleteAttendanceRecord,
+    clearAttendanceRecords,
     fetchAttendanceRequests,
     upsertAttendanceRequest,
+    deleteAttendanceRequest,
+    clearAttendanceRequests,
     syncTrainingsLocalFromRemote,
     syncTrainingDevEntriesLocalFromRemote,
     syncLeavesLocalFromRemote,
