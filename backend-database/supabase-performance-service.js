@@ -59,16 +59,27 @@ function normalizeTemplateRows(templateRows) {
 
 async function resolveActiveAdminId() {
   const sessionEmail = String(localStorage.getItem(SESSION_ADMIN_EMAIL_KEY) || "").trim().toLowerCase();
-  if (!sessionEmail) return null;
+  if (sessionEmail) {
+    const byEmail = await window.supabaseClient
+      .from("admin_accounts")
+      .select("id")
+      .eq("email", sessionEmail)
+      .limit(1)
+      .maybeSingle();
+    if (!byEmail.error && byEmail.data && byEmail.data.id !== undefined && byEmail.data.id !== null) {
+      return Number(byEmail.data.id);
+    }
+  }
 
-  const byEmail = await window.supabaseClient
+  // Fallback for environments where session email is unavailable/stale.
+  const firstAdmin = await window.supabaseClient
     .from("admin_accounts")
     .select("id")
-    .eq("email", sessionEmail)
+    .order("id", { ascending: true })
     .limit(1)
     .maybeSingle();
-  if (!byEmail.error && byEmail.data && byEmail.data.id !== undefined && byEmail.data.id !== null) {
-    return Number(byEmail.data.id);
+  if (!firstAdmin.error && firstAdmin.data && firstAdmin.data.id !== undefined && firstAdmin.data.id !== null) {
+    return Number(firstAdmin.data.id);
   }
   return null;
 }

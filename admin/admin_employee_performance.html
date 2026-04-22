@@ -640,6 +640,12 @@
         }
         if (Array.isArray(templateRows) && templateRows.length) {
           localStorage.setItem(APPRAISAL_TEMPLATE_KEY, JSON.stringify(templateRows));
+        } else if (window.PerformanceDataService && typeof window.PerformanceDataService.upsertAppraisalTemplate === 'function') {
+          // Backfill remote template so other browsers receive the same criteria.
+          const currentLocalTemplate = getAppraisalTemplate();
+          if (Array.isArray(currentLocalTemplate) && currentLocalTemplate.length) {
+            await window.PerformanceDataService.upsertAppraisalTemplate(currentLocalTemplate);
+          }
         }
 
         if (Array.isArray(perfRows) || Array.isArray(peerRows) || Array.isArray(managerRows) || Array.isArray(templateRows)) {
@@ -720,7 +726,10 @@
 
         setAppraisalTemplate(nextTemplate);
         if (window.PerformanceDataService && typeof window.PerformanceDataService.upsertAppraisalTemplate === 'function') {
-          await window.PerformanceDataService.upsertAppraisalTemplate(nextTemplate);
+          const synced = await window.PerformanceDataService.upsertAppraisalTemplate(nextTemplate);
+          if (!synced) {
+            alert('Appraisal template saved locally, but remote sync failed. Other browsers may still show older criteria until sync is restored.');
+          }
         }
         closeTemplateModal();
         renderEvaluationCriteriaFields(null);
