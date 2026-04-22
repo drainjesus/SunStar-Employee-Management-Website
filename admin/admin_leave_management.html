@@ -185,8 +185,14 @@
           </div>
         </div>
 
-        <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h2 class="text-lg font-bold text-zinc-900">Leave Requests History</h2>
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-zinc-900">Leave Requests History</h2>
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Go to date/time</span>
+              <input type="datetime-local" id="leaveDateTimeFilter" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white">
+            </div>
+          </div>
           <button id="clearAllLeavesBtn" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-red-700 hover:bg-red-100 transition">
             Clear All Leave Data
           </button>
@@ -326,6 +332,7 @@
       const prevPageBtn = document.getElementById('prevPageBtn');
       const nextPageBtn = document.getElementById('nextPageBtn');
       const paginationInfo = document.getElementById('paginationInfo');
+      const leaveDateTimeFilter = document.getElementById('leaveDateTimeFilter');
 
       let currentPage = 1;
       const itemsPerPage = 5;
@@ -491,6 +498,19 @@
         tbody.innerHTML = '';
         window.leaveDetailsStore = {};
         let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
+        const filterValue = String(leaveDateTimeFilter && leaveDateTimeFilter.value ? leaveDateTimeFilter.value : '').trim();
+        if (filterValue) {
+          const filterDate = new Date(filterValue);
+          if (!Number.isNaN(filterDate.getTime())) {
+            leaves = leaves.filter((leave) => {
+              const filedDate = leave.createdAt
+                ? new Date(leave.createdAt)
+                : new Date(`${leave.dateFiled || ''}T${leave.timeFiled || '00:00:00'}`);
+              if (Number.isNaN(filedDate.getTime())) return true;
+              return filedDate >= filterDate;
+            });
+          }
+        }
         updateOverviewCounts(leaves);
         updateLeaveTypeBalances(leaves);
         // Sort by filed date + time, newest first
@@ -798,9 +818,13 @@
       }
 
       prevPageBtn.addEventListener('click', () => { if(currentPage > 1) { currentPage--; renderLeaveTable(); }});
-      nextPageBtn.addEventListener('click', () => { 
-         let leaves = JSON.parse(localStorage.getItem('sunstar_leaves')) || [];
-         if(currentPage < Math.ceil(leaves.length / itemsPerPage)) { currentPage++; renderLeaveTable(); }
+      nextPageBtn.addEventListener('click', () => {
+         currentPage++;
+         renderLeaveTable();
+      });
+      leaveDateTimeFilter.addEventListener('change', () => {
+        currentPage = 1;
+        renderLeaveTable();
       });
       document.getElementById('clearAllLeavesBtn').addEventListener('click', clearAllLeaveRequests);
 

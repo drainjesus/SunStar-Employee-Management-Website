@@ -252,6 +252,12 @@
                     </div>
                  </div>
               </div>
+              <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+                 <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Go to date/time</span>
+                    <input type="datetime-local" id="attendanceHistoryDateTimeFilter" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white">
+                 </div>
+              </div>
               <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
                  <table class="w-full text-left text-sm border-collapse">
                     <thead>
@@ -273,6 +279,13 @@
                     </div>
                     <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No attendance records found</p>
                  </div>
+                <div class="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/60 px-6 py-3">
+                  <span id="attendanceHistoryPageInfo" class="text-xs font-bold text-zinc-500">Showing 0 to 0 of 0 entries</span>
+                  <div class="flex items-center gap-2">
+                    <button id="attendanceHistoryPrevBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Back</button>
+                    <button id="attendanceHistoryNextBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+                  </div>
+                </div>
               </div>
            </div>
         </div>
@@ -286,6 +299,12 @@
               <div class="flex items-center gap-2">
                 <button onclick="clearMyAttendanceRequests()" class="rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-widest text-red-700 hover:bg-red-100 transition">Clear My Requests</button>
                 <span class="rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-500">OT / Special Holiday Work / OB</span>
+              </div>
+           </div>
+           <div class="border-b border-zinc-100 bg-zinc-50/40 px-6 py-3 sm:px-8 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                 <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Go to date/time</span>
+                 <input type="datetime-local" id="attendanceRequestDateTimeFilter" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white">
               </div>
            </div>
            <div class="overflow-x-auto">
@@ -306,6 +325,13 @@
            </div>
            <div id="noAttendanceRequestMsg" class="hidden px-8 py-14 text-center">
               <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No pending or completed attendance requests yet.</p>
+           </div>
+           <div class="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/60 px-6 py-3 sm:px-8">
+              <span id="attendanceRequestPageInfo" class="text-xs font-bold text-zinc-500">Showing 0 to 0 of 0 entries</span>
+              <div class="flex items-center gap-2">
+                 <button id="attendanceRequestPrevBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Back</button>
+                 <button id="attendanceRequestNextBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+              </div>
            </div>
         </section>
 
@@ -519,11 +545,14 @@
       const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
       const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
       const MANILA_TIME_ZONE = 'Asia/Manila';
+      const LOG_PAGE_SIZE = 5;
       const CLOCK_IN_START_MINUTES = 8 * 60;
       const DEFAULT_SHIFT_END_MINUTES = 17 * 60;
       const DEFAULT_SHIFT_SCHEDULE = 'Newsroom Day Shift (08:00 AM - 05:00 PM)';
       let currentActionType = '';
       let activeUser = null;
+      let attendanceHistoryPage = 1;
+      let attendanceRequestPage = 1;
 
       function formatSanctionAtLabel(value) {
          if (!value) return '';
@@ -918,6 +947,10 @@
          const data = getAttendances();
          const tbody = document.getElementById('attendanceHistory');
          const noData = document.getElementById('noDataMsg');
+         const pageInfo = document.getElementById('attendanceHistoryPageInfo');
+         const prevBtn = document.getElementById('attendanceHistoryPrevBtn');
+         const nextBtn = document.getElementById('attendanceHistoryNextBtn');
+         const filterInput = document.getElementById('attendanceHistoryDateTimeFilter');
          tbody.innerHTML = '';
 
          const userName = getActiveUserName().toLowerCase();
@@ -931,16 +964,43 @@
                }
             });
          });
+         const filterValue = String(filterInput && filterInput.value ? filterInput.value : '').trim();
+         if (filterValue) {
+            const filterDate = new Date(filterValue);
+            if (!Number.isNaN(filterDate.getTime())) {
+               allRecords = allRecords.filter((rec) => {
+                  const baseDate = String(rec.dateIso || '');
+                  const clockInRaw = String(rec.clockIn || '').trim();
+                  const normalizedClockIn = clockInRaw && !clockInRaw.includes('--') ? clockInRaw : '12:00 AM';
+                  const combined = new Date(`${baseDate} ${normalizedClockIn}`);
+                  if (Number.isNaN(combined.getTime())) return true;
+                  return combined >= filterDate;
+               });
+            }
+         }
 
          allRecords.sort((a, b) => String(b.dateIso || '').localeCompare(String(a.dateIso || '')));
+         const totalItems = allRecords.length;
+         const totalPages = Math.max(1, Math.ceil(totalItems / LOG_PAGE_SIZE));
+         if (attendanceHistoryPage > totalPages) attendanceHistoryPage = totalPages;
+         const startIndex = (attendanceHistoryPage - 1) * LOG_PAGE_SIZE;
+         const pagedRecords = allRecords.slice(startIndex, startIndex + LOG_PAGE_SIZE);
 
          if (allRecords.length === 0) {
             noData.classList.remove('hidden');
+            pageInfo.textContent = 'Showing 0 to 0 of 0 entries';
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
             return;
          }
 
          noData.classList.add('hidden');
-         allRecords.forEach(rec => {
+         const endDisplay = Math.min(startIndex + LOG_PAGE_SIZE, totalItems);
+         pageInfo.textContent = `Showing ${startIndex + 1} to ${endDisplay} of ${totalItems} entries`;
+         prevBtn.disabled = attendanceHistoryPage === 1;
+         nextBtn.disabled = attendanceHistoryPage === totalPages;
+
+         pagedRecords.forEach(rec => {
             const tr = document.createElement('tr');
             tr.className = 'hover:bg-zinc-50 transition border-b border-zinc-100 last:border-0';
 
@@ -1015,6 +1075,10 @@
       function renderAttendanceRequestHistory() {
          const tbody = document.getElementById('attendanceRequestHistory');
          const noData = document.getElementById('noAttendanceRequestMsg');
+         const pageInfo = document.getElementById('attendanceRequestPageInfo');
+         const prevBtn = document.getElementById('attendanceRequestPrevBtn');
+         const nextBtn = document.getElementById('attendanceRequestNextBtn');
+         const filterInput = document.getElementById('attendanceRequestDateTimeFilter');
          if (!tbody || !noData) return;
 
          tbody.innerHTML = '';
@@ -1028,20 +1092,42 @@
             if (String(request.empId || '') === String(activeUser.id)) return true;
             return String(request.employeeName || '').trim().toLowerCase() === userName;
          });
+         const filterValue = String(filterInput && filterInput.value ? filterInput.value : '').trim();
+         const filteredRequests = allRequests.filter((request) => {
+            if (!filterValue) return true;
+            const filterDate = new Date(filterValue);
+            if (Number.isNaN(filterDate.getTime())) return true;
+            const createdDate = new Date(request.createdAt || `${request.requestDate || ''}T00:00:00`);
+            if (Number.isNaN(createdDate.getTime())) return true;
+            return createdDate >= filterDate;
+         });
 
-         allRequests.sort((a, b) => {
+         filteredRequests.sort((a, b) => {
             const dateDiff = String(b.requestDate || '').localeCompare(String(a.requestDate || ''));
             if (dateDiff !== 0) return dateDiff;
             return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
          });
+         const totalItems = filteredRequests.length;
+         const totalPages = Math.max(1, Math.ceil(totalItems / LOG_PAGE_SIZE));
+         if (attendanceRequestPage > totalPages) attendanceRequestPage = totalPages;
+         const startIndex = (attendanceRequestPage - 1) * LOG_PAGE_SIZE;
+         const pagedRequests = filteredRequests.slice(startIndex, startIndex + LOG_PAGE_SIZE);
 
-         if (allRequests.length === 0) {
+         if (filteredRequests.length === 0) {
             noData.classList.remove('hidden');
+            pageInfo.textContent = 'Showing 0 to 0 of 0 entries';
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
             return;
          }
 
          noData.classList.add('hidden');
-         allRequests.forEach((request) => {
+         const endDisplay = Math.min(startIndex + LOG_PAGE_SIZE, totalItems);
+         pageInfo.textContent = `Showing ${startIndex + 1} to ${endDisplay} of ${totalItems} entries`;
+         prevBtn.disabled = attendanceRequestPage === 1;
+         nextBtn.disabled = attendanceRequestPage === totalPages;
+
+         pagedRequests.forEach((request) => {
             const tr = document.createElement('tr');
             tr.className = 'hover:bg-zinc-50 transition border-b border-zinc-100 last:border-0';
 
@@ -1487,6 +1573,38 @@
          initAttendance();
          refreshProfilePic();
          setInterval(updateDateTime, 1000);
+      });
+
+      document.getElementById('attendanceHistoryPrevBtn').addEventListener('click', () => {
+         if (attendanceHistoryPage <= 1) return;
+         attendanceHistoryPage -= 1;
+         renderHistory();
+      });
+
+      document.getElementById('attendanceHistoryNextBtn').addEventListener('click', () => {
+         attendanceHistoryPage += 1;
+         renderHistory();
+      });
+
+      document.getElementById('attendanceRequestPrevBtn').addEventListener('click', () => {
+         if (attendanceRequestPage <= 1) return;
+         attendanceRequestPage -= 1;
+         renderAttendanceRequestHistory();
+      });
+
+      document.getElementById('attendanceRequestNextBtn').addEventListener('click', () => {
+         attendanceRequestPage += 1;
+         renderAttendanceRequestHistory();
+      });
+
+      document.getElementById('attendanceHistoryDateTimeFilter').addEventListener('change', () => {
+         attendanceHistoryPage = 1;
+         renderHistory();
+      });
+
+      document.getElementById('attendanceRequestDateTimeFilter').addEventListener('change', () => {
+         attendanceRequestPage = 1;
+         renderAttendanceRequestHistory();
       });
 
       window.addEventListener('storage', function() {

@@ -221,6 +221,10 @@
               </div>
            </div>
            <div class="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+              <div class="border-b border-zinc-100 bg-zinc-50/60 px-6 py-3 flex flex-wrap items-center justify-between gap-2">
+                 <p class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Filter by filed date/time</p>
+                 <input type="datetime-local" id="leaveHistoryDateTimeFilter" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white">
+              </div>
               <table class="w-full text-left text-sm border-collapse">
                  <thead>
                     <tr class="border-b border-zinc-100 bg-zinc-50/50">
@@ -242,6 +246,13 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-300"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
                  </div>
                  <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No leave requests found</p>
+              </div>
+              <div class="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/60 px-6 py-3">
+                 <span id="leaveHistoryPageInfo" class="text-xs font-bold text-zinc-500">Showing 0 to 0 of 0 entries</span>
+                 <div class="flex items-center gap-2">
+                    <button id="leaveHistoryPrevBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Back</button>
+                    <button id="leaveHistoryNextBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+                 </div>
               </div>
            </div>
         </div>
@@ -425,6 +436,7 @@
     const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
     const MAX_LEAVE_DOCUMENTS = 3;
     const MAX_LEAVE_DOCUMENT_SIZE_BYTES = 5 * 1024 * 1024;
+    const LEAVE_HISTORY_PAGE_SIZE = 5;
     const LEAVE_LIMITS = {
       Vacation: 7,
       Sick: 15,
@@ -434,6 +446,7 @@
     };
 
     let activeUser = null;
+    let leaveHistoryPage = 1;
 
     function safeParse(value, fallback) {
       try {
@@ -819,19 +832,47 @@
       const leaves = getLeaves();
       const tbody = document.getElementById('leaveHistoryBody');
       const noData = document.getElementById('noDataMsg');
+      const pageInfo = document.getElementById('leaveHistoryPageInfo');
+      const prevBtn = document.getElementById('leaveHistoryPrevBtn');
+      const nextBtn = document.getElementById('leaveHistoryNextBtn');
+      const dateTimeFilterInput = document.getElementById('leaveHistoryDateTimeFilter');
 
       tbody.innerHTML = '';
-      const myLeaves = leaves.filter(isMyLeave);
+      const myLeaves = leaves
+        .filter(isMyLeave)
+        .filter((leave) => {
+          const filterValue = String(dateTimeFilterInput && dateTimeFilterInput.value ? dateTimeFilterInput.value : '').trim();
+          if (!filterValue) return true;
+          const filterDate = new Date(filterValue);
+          if (Number.isNaN(filterDate.getTime())) return true;
+          const filedDate = leave.createdAt
+            ? new Date(leave.createdAt)
+            : new Date(`${leave.dateFiled || ''}T${leave.timeFiled || '00:00:00'}`);
+          if (Number.isNaN(filedDate.getTime())) return true;
+          return filedDate >= filterDate;
+        });
       myLeaves.sort((a, b) => getFiledSortValue(b) - getFiledSortValue(a));
+      const totalItems = myLeaves.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / LEAVE_HISTORY_PAGE_SIZE));
+      if (leaveHistoryPage > totalPages) leaveHistoryPage = totalPages;
+      const startIndex = (leaveHistoryPage - 1) * LEAVE_HISTORY_PAGE_SIZE;
+      const pagedLeaves = myLeaves.slice(startIndex, startIndex + LEAVE_HISTORY_PAGE_SIZE);
 
       if (myLeaves.length === 0) {
         noData.classList.remove('hidden');
+        pageInfo.textContent = 'Showing 0 to 0 of 0 entries';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
         return;
       }
 
       noData.classList.add('hidden');
+      const endDisplay = Math.min(startIndex + LEAVE_HISTORY_PAGE_SIZE, totalItems);
+      pageInfo.textContent = `Showing ${startIndex + 1} to ${endDisplay} of ${totalItems} entries`;
+      prevBtn.disabled = leaveHistoryPage === 1;
+      nextBtn.disabled = leaveHistoryPage === totalPages;
 
-      myLeaves.forEach(l => {
+      pagedLeaves.forEach(l => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-zinc-50/50 transition';
         const filedDate = formatFiledDate(l.dateFiled, l.createdAt);
@@ -1141,6 +1182,22 @@
       await syncLeavesFromSupabase();
       initPage();
       refreshProfilePic();
+    });
+
+    document.getElementById('leaveHistoryPrevBtn').addEventListener('click', function() {
+      if (leaveHistoryPage <= 1) return;
+      leaveHistoryPage -= 1;
+      renderHistory();
+    });
+
+    document.getElementById('leaveHistoryNextBtn').addEventListener('click', function() {
+      leaveHistoryPage += 1;
+      renderHistory();
+    });
+
+    document.getElementById('leaveHistoryDateTimeFilter').addEventListener('change', function() {
+      leaveHistoryPage = 1;
+      renderHistory();
     });
   </script>
 </body>

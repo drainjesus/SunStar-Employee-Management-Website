@@ -141,6 +141,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
               <input type="date" id="attendanceDate" class="h-9 rounded-md border border-zinc-200 px-3 text-sm font-bold text-zinc-700 focus:border-sun-yellow outline-none bg-white shadow-sm hover:cursor-pointer">
+              <input type="datetime-local" id="attendanceDateTimeJump" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white" title="Jump to specific date and time">
               <button id="nextDateBtn" class="flex items-center justify-center h-9 w-9 rounded-md border border-zinc-300 text-zinc-500 hover:bg-zinc-50 transition-colors bg-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
               </button>
@@ -164,6 +165,13 @@
               </tbody>
             </table>
           </div>
+          <div class="flex items-center justify-between border-t border-zinc-200 bg-zinc-50 px-6 py-3">
+            <span id="attendancePageInfo" class="text-xs font-bold text-zinc-500">Showing 0 to 0 of 0 entries</span>
+            <div class="flex items-center gap-2">
+              <button id="attendancePrevBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Back</button>
+              <button id="attendanceNextBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+            </div>
+          </div>
         </section>
 
         <section>
@@ -171,6 +179,10 @@
             <div>
               <h2 class="text-lg font-bold text-zinc-900 uppercase tracking-tight">Attendance Requests</h2>
               <p class="text-xs text-zinc-500 font-medium mt-1">Approve or decline Overtime, Special Holiday Work, and Official Business requests.</p>
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Go to date/time</span>
+                <input type="datetime-local" id="attendanceRequestDateTimeFilter" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white">
+              </div>
             </div>
             <button id="clearAttendanceRequestsBtn" class="h-9 rounded-md border border-red-200 bg-red-50 px-3 text-[10px] font-black uppercase tracking-widest text-red-700 hover:bg-red-100 transition">Clear All Requests</button>
           </div>
@@ -193,6 +205,13 @@
                   <!-- Dynamically populated -->
                 </tbody>
               </table>
+            </div>
+            <div class="flex items-center justify-between border-t border-zinc-200 bg-zinc-50 px-6 py-3">
+              <span id="attendanceRequestPageInfo" class="text-xs font-bold text-zinc-500">Showing 0 to 0 of 0 entries</span>
+              <div class="flex items-center gap-2">
+                <button id="attendanceRequestPrevBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Back</button>
+                <button id="attendanceRequestNextBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+              </div>
             </div>
           </div>
         </section>
@@ -349,10 +368,18 @@
 
     document.addEventListener("DOMContentLoaded", async function () {
       const dateInput = document.getElementById('attendanceDate');
+      const attendanceDateTimeJump = document.getElementById('attendanceDateTimeJump');
       const prevDateBtn = document.getElementById('prevDateBtn');
       const nextDateBtn = document.getElementById('nextDateBtn');
       const tbody = document.getElementById('attendanceTableBody');
       const requestBody = document.getElementById('attendanceRequestBody');
+      const attendancePageInfo = document.getElementById('attendancePageInfo');
+      const attendancePrevBtn = document.getElementById('attendancePrevBtn');
+      const attendanceNextBtn = document.getElementById('attendanceNextBtn');
+      const attendanceRequestDateTimeFilter = document.getElementById('attendanceRequestDateTimeFilter');
+      const attendanceRequestPageInfo = document.getElementById('attendanceRequestPageInfo');
+      const attendanceRequestPrevBtn = document.getElementById('attendanceRequestPrevBtn');
+      const attendanceRequestNextBtn = document.getElementById('attendanceRequestNextBtn');
       const controlBody = document.getElementById('employeeControlBody');
       const clearSelectedAttendanceBtn = document.getElementById('clearSelectedAttendanceBtn');
       const clearAllAttendanceBtn = document.getElementById('clearAllAttendanceBtn');
@@ -364,6 +391,9 @@
       const dtrPresentCount = document.getElementById('dtrPresentCount');
       const printDtrBtn = document.getElementById('printDtrBtn');
       let dtrEmployeeSearchTerm = '';
+      const LOG_PAGE_SIZE = 5;
+      let attendancePage = 1;
+      let attendanceRequestPage = 1;
 
       function safeParse(value, fallback) {
         try {
@@ -628,13 +658,25 @@
           const shift = String(rec.shift || '').trim().toLowerCase();
           return status !== 'official business' && shift !== 'official business' && !rec.isOfficialBusiness;
         });
+        const totalItems = records.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / LOG_PAGE_SIZE));
+        if (attendancePage > totalPages) attendancePage = totalPages;
+        const startIndex = (attendancePage - 1) * LOG_PAGE_SIZE;
+        const pagedRecords = records.slice(startIndex, startIndex + LOG_PAGE_SIZE);
          
          if (records.length === 0) {
           tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-sm text-zinc-400 italic">No attendance records found for this date.</td></tr>`;
+          attendancePageInfo.textContent = 'Showing 0 to 0 of 0 entries';
+          attendancePrevBtn.disabled = true;
+          attendanceNextBtn.disabled = true;
             return;
          }
+        const endDisplay = Math.min(startIndex + LOG_PAGE_SIZE, totalItems);
+        attendancePageInfo.textContent = `Showing ${startIndex + 1} to ${endDisplay} of ${totalItems} entries`;
+        attendancePrevBtn.disabled = attendancePage === 1;
+        attendanceNextBtn.disabled = attendancePage === totalPages;
          
-         records.forEach(({ rec, index: originalIndex }) => {
+         pagedRecords.forEach(({ rec, index: originalIndex }) => {
           normalizeAttendanceRecordFields(rec);
 
             const tr = document.createElement('tr');
@@ -727,21 +769,42 @@
       function renderAttendanceRequestTable() {
         requestBody.innerHTML = '';
         const requests = getAttendanceRequests();
+        const filterValue = String(attendanceRequestDateTimeFilter && attendanceRequestDateTimeFilter.value ? attendanceRequestDateTimeFilter.value : '').trim();
 
         const sorted = requests
           .slice()
+          .filter((request) => {
+            if (!filterValue) return true;
+            const filterDate = new Date(filterValue);
+            if (Number.isNaN(filterDate.getTime())) return true;
+            const createdDate = new Date(request.createdAt || `${request.requestDate || ''}T00:00:00`);
+            if (Number.isNaN(createdDate.getTime())) return true;
+            return createdDate >= filterDate;
+          })
           .sort((a, b) => {
             const dateDiff = String(b.requestDate || '').localeCompare(String(a.requestDate || ''));
             if (dateDiff !== 0) return dateDiff;
             return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
           });
+        const totalItems = sorted.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / LOG_PAGE_SIZE));
+        if (attendanceRequestPage > totalPages) attendanceRequestPage = totalPages;
+        const startIndex = (attendanceRequestPage - 1) * LOG_PAGE_SIZE;
+        const pagedRequests = sorted.slice(startIndex, startIndex + LOG_PAGE_SIZE);
 
         if (sorted.length === 0) {
           requestBody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-zinc-400 text-sm italic">No attendance requests available.</td></tr>';
+          attendanceRequestPageInfo.textContent = 'Showing 0 to 0 of 0 entries';
+          attendanceRequestPrevBtn.disabled = true;
+          attendanceRequestNextBtn.disabled = true;
           return;
         }
+        const endDisplay = Math.min(startIndex + LOG_PAGE_SIZE, totalItems);
+        attendanceRequestPageInfo.textContent = `Showing ${startIndex + 1} to ${endDisplay} of ${totalItems} entries`;
+        attendanceRequestPrevBtn.disabled = attendanceRequestPage === 1;
+        attendanceRequestNextBtn.disabled = attendanceRequestPage === totalPages;
 
-        sorted.forEach((request) => {
+        pagedRequests.forEach((request) => {
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-zinc-50 transition duration-150';
 
@@ -1215,12 +1278,47 @@
          const currentIso = dateInput.value;
          const newIso = shiftIsoDate(currentIso, offset);
          dateInput.value = newIso;
+         attendancePage = 1;
          renderTable(newIso);
       }
 
       prevDateBtn.addEventListener('click', () => updateDateObj(-1));
       nextDateBtn.addEventListener('click', () => updateDateObj(1));
-      dateInput.addEventListener('change', (e) => renderTable(e.target.value));
+      dateInput.addEventListener('change', (e) => {
+        attendancePage = 1;
+        renderTable(e.target.value);
+      });
+      attendanceDateTimeJump.addEventListener('change', (e) => {
+        const value = String(e.target.value || '').trim();
+        if (!value) return;
+        const datePart = value.split('T')[0];
+        if (!datePart) return;
+        dateInput.value = datePart;
+        attendancePage = 1;
+        renderTable(datePart);
+      });
+      attendancePrevBtn.addEventListener('click', () => {
+        if (attendancePage <= 1) return;
+        attendancePage -= 1;
+        renderTable(dateInput.value || getManilaIsoDate());
+      });
+      attendanceNextBtn.addEventListener('click', () => {
+        attendancePage += 1;
+        renderTable(dateInput.value || getManilaIsoDate());
+      });
+      attendanceRequestDateTimeFilter.addEventListener('change', () => {
+        attendanceRequestPage = 1;
+        renderAttendanceRequestTable();
+      });
+      attendanceRequestPrevBtn.addEventListener('click', () => {
+        if (attendanceRequestPage <= 1) return;
+        attendanceRequestPage -= 1;
+        renderAttendanceRequestTable();
+      });
+      attendanceRequestNextBtn.addEventListener('click', () => {
+        attendanceRequestPage += 1;
+        renderAttendanceRequestTable();
+      });
       dtrEmployeeSearch.addEventListener('input', () => {
         dtrEmployeeSearchTerm = dtrEmployeeSearch.value || '';
         renderDtrEmployeeOptions();
@@ -1239,6 +1337,8 @@
         await syncAttendanceFromSupabase();
         await syncAttendanceRequestsFromSupabase();
         const activeDate = dateInput.value || getManilaIsoDate();
+        attendancePage = 1;
+        attendanceRequestPage = 1;
         renderTable(activeDate);
         renderAttendanceRequestTable();
         renderControl();
@@ -1249,6 +1349,7 @@
       // Init logic
       const todayIso = getManilaIsoDate();
       dateInput.value = todayIso;
+      attendanceDateTimeJump.value = `${todayIso}T00:00`;
       dtrMonthInput.value = getCurrentMonthValue();
       renderDtrEmployeeOptions();
       renderTable(todayIso);

@@ -197,9 +197,20 @@
         <div class="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
           <div class="p-6 border-b border-zinc-100 bg-zinc-50/50">
             <h2 class="font-bold text-zinc-900 uppercase tracking-tighter">Submitted Entries</h2>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Go to date/time</span>
+              <input type="datetime-local" id="trainingEntriesDateTimeFilter" class="h-9 rounded-md border border-zinc-200 px-3 text-xs font-bold text-zinc-700 bg-white">
+            </div>
           </div>
           <div id="trainingRecords" class="p-6 space-y-3">
             <!-- Dynamically populated -->
+          </div>
+          <div class="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/60 px-6 py-3">
+            <span id="trainingEntriesPageInfo" class="text-xs font-bold text-zinc-500">Showing 0 to 0 of 0 entries</span>
+            <div class="flex items-center gap-2">
+              <button id="trainingEntriesPrevBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Back</button>
+              <button id="trainingEntriesNextBtn" class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+            </div>
           </div>
         </div>
 
@@ -320,9 +331,11 @@
     const TRAINING_DEV_KEY = 'sunstar_training_development_entries';
     const SESSION_ROLE_KEY = 'sunstar_logged_in_role';
     const SESSION_USER_KEY = 'sunstar_logged_in_user_id';
+    const TRAINING_ENTRIES_PAGE_SIZE = 5;
 
     let activeUserId = null;
     let activeUserName = '';
+    let trainingEntriesPage = 1;
 
     function safeParse(value, fallback) {
       try {
@@ -462,18 +475,47 @@
 
     function renderTrainingEntries() {
       const records = document.getElementById('trainingRecords');
-      const entries = getTrainingDevEntries().filter(entry => String(entry.employeeId) === String(activeUserId));
+      const pageInfo = document.getElementById('trainingEntriesPageInfo');
+      const prevBtn = document.getElementById('trainingEntriesPrevBtn');
+      const nextBtn = document.getElementById('trainingEntriesNextBtn');
+      const filterInput = document.getElementById('trainingEntriesDateTimeFilter');
+      const filterValue = String(filterInput && filterInput.value ? filterInput.value : '').trim();
+      const entries = getTrainingDevEntries()
+        .filter(entry => String(entry.employeeId) === String(activeUserId))
+        .filter((entry) => {
+          if (!filterValue) return true;
+          const filterDate = new Date(filterValue);
+          if (Number.isNaN(filterDate.getTime())) return true;
+          const createdDate = new Date(entry.createdAt || 0);
+          if (Number.isNaN(createdDate.getTime())) return true;
+          return createdDate >= filterDate;
+        });
 
       if (entries.length === 0) {
         records.innerHTML = `
           <div class="text-center py-10 border border-dashed border-zinc-200 rounded-xl">
             <p class="text-xs font-black uppercase tracking-widest text-zinc-400 italic">No entries yet</p>
           </div>`;
+        pageInfo.textContent = 'Showing 0 to 0 of 0 entries';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
         return;
       }
 
-      records.innerHTML = entries
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      const sortedEntries = entries
+        .slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const totalItems = sortedEntries.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / TRAINING_ENTRIES_PAGE_SIZE));
+      if (trainingEntriesPage > totalPages) trainingEntriesPage = totalPages;
+      const startIndex = (trainingEntriesPage - 1) * TRAINING_ENTRIES_PAGE_SIZE;
+      const pagedEntries = sortedEntries.slice(startIndex, startIndex + TRAINING_ENTRIES_PAGE_SIZE);
+      const endDisplay = Math.min(startIndex + TRAINING_ENTRIES_PAGE_SIZE, totalItems);
+      pageInfo.textContent = `Showing ${startIndex + 1} to ${endDisplay} of ${totalItems} entries`;
+      prevBtn.disabled = trainingEntriesPage === 1;
+      nextBtn.disabled = trainingEntriesPage === totalPages;
+
+      records.innerHTML = pagedEntries
         .map(entry => {
           const safeEntryId = String(entry.id || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
           return `
@@ -753,6 +795,22 @@
           }
         }
         document.getElementById('trainingDevForm').reset();
+        renderTrainingEntries();
+      });
+
+      document.getElementById('trainingEntriesPrevBtn').addEventListener('click', () => {
+        if (trainingEntriesPage <= 1) return;
+        trainingEntriesPage -= 1;
+        renderTrainingEntries();
+      });
+
+      document.getElementById('trainingEntriesNextBtn').addEventListener('click', () => {
+        trainingEntriesPage += 1;
+        renderTrainingEntries();
+      });
+
+      document.getElementById('trainingEntriesDateTimeFilter').addEventListener('change', () => {
+        trainingEntriesPage = 1;
         renderTrainingEntries();
       });
     });
